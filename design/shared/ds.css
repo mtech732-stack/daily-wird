@@ -91,7 +91,7 @@
 .t-near{--c:var(--near);--ci:var(--near);--on:var(--on-near)}
 .t-new{--c:var(--new);--ci:var(--new-ink);--on:var(--on-new)}
 .t-ink{--c:var(--ink);--ci:var(--ink);--on:var(--paper)}
-/* الدرجات الخمس (القرار 13): ممتلئ · نصف · ربع · باهت (مخطّط) · فارغ — بالامتلاء لا باللون */
+/* الدرجات الخمس (القرار 14): ممتلئ · نصف · ربع · باهت (مخطّط) · فارغ — بالامتلاء لا باللون */
 .L1{background:var(--c);color:var(--on)}
 .L2{background:linear-gradient(to top,var(--c) 50%,transparent 50%);box-shadow:inset 0 0 0 2px var(--c);color:var(--ci)}
 .L2 .n{transform:translateY(-9px);font-size:11px}
