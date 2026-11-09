@@ -14,6 +14,11 @@ const ADD='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="c
 /* العدد مع المعدود، والأرقام إنجليزية */
 function hizbs(list){const n=list.length;
   if(n===1)return `الحزب ${N(list[0])}`;if(n===2)return 'حزبين';if(n<=10)return `${N(n)} أحزاب`;return `${N(n)} حزباً`;}
+/* المرفوع (نائب الفاعل في الإشعار): ح 9 · حزبان · 3 أحزاب · 11 حزباً */
+function hizbsNom(list){const n=list.length;
+  if(n===1)return `ح ${N(list[0])}`;if(n===2)return 'حزبان';if(n<=10)return `${N(n)} أحزاب`;return `${N(n)} حزباً`;}
+/* الضمير العائد: ـه · ـهما · ـها */
+const P=n=>n===1?'ه':n===2?'هما':'ها';
 function hizbsSubj(list){const n=list.length;
   if(n===1)return `الحزب ${N(list[0])}`;if(n===2)return `الحزبان ${N(list[0])} و${N(list[1])}`;return `${N(n)} أحزاب`;}
 const firstSura=h=>SN[R[(h-1)*4+1].suras[0]];
@@ -86,23 +91,24 @@ function conflictDlg(S,ui){
   const q=one?`الحزب ${N(c[0])} موجود في ${TT[from]}. أتنقله؟`:`${hizbsSubj(c)} موجود${c.length===2?'ان':'ة'} في ${TT[from]}. أتنقل${c.length===2?'هما':'ها'}؟`;
   const rest=ui.sel.size-c.length;
   return `<div class="dim top"></div><div class="dlg" role="alertdialog"><h4>${q}</h4>
-    <p>${one?'سجلّ تلاوته ينتقل معه كما هو.':'سجلّ تلاوتها ينتقل معها كما هو.'}${rest?` ويُضاف ما سواه${c.length>1?'ا':''} في الحالين.`:''}</p>
+    <p>سجلّ تلاوت${P(c.length)} ينتقل مع${P(c.length)} كما هو.${rest?` ويُضاف ما سوا${P(c.length)} في الحالين.`:''}</p>
     <button class="btn pri" data-conf="move">انقل${one?'ه':c.length===2?'هما':'ها'} إلى ${TT[ui.t]}</button>
     <button class="btn quiet" data-conf="keep">اترك${one?'ه':c.length===2?'هما':'ها'} في ${TT[from]}</button></div>`;
 }
 /* ── تأكيد الإزالة (5.1) ── */
 function removeDlg(S,ui){
   const sel=[...ui.sel].sort((a,b)=>a-b),one=sel.length===1;
-  return `<div class="dim top"></div><div class="dlg" role="alertdialog"><h4>أتزيل ${one?`الحزب ${N(sel[0])}`:hizbs(sel)} من ${TT[ui.t]}؟</h4>
-    <p>يبقى سجلّ ${one?'تلاوته':'تلاوتها'} محفوظاً، فإن ${one?'أعدته':'أعدتها'} ظهر عمر${one?'ه':'ها'} كما كان.</p>
-    <button class="btn pri" data-rm="yes">أزل${one?'ه':'ها'}</button><button class="btn quiet" data-rm="no">إلغاء</button></div>`;
+  return `<div class="dim top"></div><div class="dlg" role="alertdialog"><h4>أتزيل ${one?`الحزب ${N(sel[0])}`:sel.length===2?`الحزبين ${N(sel[0])} و${N(sel[1])}`:hizbs(sel)} من ${TT[ui.t]}؟</h4>
+    <p>يبقى سجلّ تلاوت${P(sel.length)} محفوظاً، فإن أعدت${P(sel.length)} ظهر عمر${P(sel.length)} كما كان.</p>
+    <button class="btn pri" data-rm="yes">أزل${P(sel.length)}</button><button class="btn quiet" data-rm="no">إلغاء</button></div>`;
 }
 /* ── القوائم ── */
-function trackMenu(ui){
+function trackMenu(S,ui){
+  const has=S[ui.t].length; /* م21: لا نقل ولا إزالة في مسار فارغ */
   return `<div class="dim" data-close style="background:transparent"></div><div class="menu" data-anchor="more" role="menu">
     <div class="mi" data-tm="add"><span>إضافة</span>${ADD}</div>
-    <div class="mi" data-tm="move"><span>نقل</span>${MOVE}</div>
-    <div class="mi" data-tm="remove"><span>إزالة</span>${TRASH}</div></div>`;
+    ${has?`<div class="mi" data-tm="move"><span>نقل</span>${MOVE}</div>
+    <div class="mi" data-tm="remove"><span>إزالة</span>${TRASH}</div>`:''}</div>`;
 }
 function hizbMenu(ui){
   const h=ui.h,o=OTHER[ui.t];
@@ -118,7 +124,7 @@ function overlay(S,ui){
     case 'conf':return addSheet(S,ui)+conflictDlg(S,ui);
     case 'manage':return manageSheet(S,ui);
     case 'rdlg':return (ui.from==='manage'?manageSheet(S,ui):'')+removeDlg(S,ui);
-    case 'tmenu':return trackMenu(ui);
+    case 'tmenu':return trackMenu(S,ui);
     case 'hmenu':return hizbMenu(ui);
   }
   return toast;
@@ -159,14 +165,14 @@ function interactive(scr,S,ui0){
     $('[data-go]',()=>{const sel=[...ui.sel].sort((a,b)=>a-b);if(!sel.length)return;
       if(ui.ov==='add'){const c=sel.filter(h=>trackOf(S,h)&&trackOf(S,h)!==ui.t);
         if(c.length){ui.ov='conf';ui.conf=c;render();return;}
-        addTo(S,ui.t,sel);toast(sel.length===1?`أُضيف ح ${N(sel[0])} إلى ${TT[ui.t]}`:`أُضيف ${hizbs(sel)} إلى ${TT[ui.t]}`.replace('أُضيف حزبين','أُضيف حزبان'));}
-      else if(ui.mode==='move'){const o=OTHER[ui.t];addTo(S,o,sel);if(!S[ui.t].length&&S.open===ui.t)S.open=null;toast(`نُقل ${sel.length===1?'ح '+N(sel[0]):hizbs(sel)} إلى ${TT[o]}`);}
+        addTo(S,ui.t,sel);toast(`أُضيف ${hizbsNom(sel)} إلى ${TT[ui.t]}`);}
+      else if(ui.mode==='move'){const o=OTHER[ui.t];addTo(S,o,sel);if(!S[ui.t].length&&S.open===ui.t)S.open=null;toast(`نُقل ${hizbsNom(sel)} إلى ${TT[o]}`);}
       else{ui.ov='rdlg';ui.from='manage';render();}});
     $('[data-conf]',e=>{const sel=[...ui.sel].sort((a,b)=>a-b),list=e.dataset.conf==='move'?sel:sel.filter(h=>!ui.conf.includes(h));
       if(list.length)addTo(S,ui.t,list);
-      toast(list.length?`أُضيف ${list.length===1?'ح '+N(list[0]):hizbs(list)} إلى ${TT[ui.t]}`:'لم يُضف شيء');});
+      toast(list.length?`أُضيف ${hizbsNom(list)} إلى ${TT[ui.t]}`:'لم يُضف شيء');});
     $('[data-rm]',e=>{if(e.dataset.rm==='no'){ui={ov:null,sel:new Set()};render();return;}
-      const sel=[...ui.sel];removeFrom(S,ui.t,sel);toast(`أُزيل ${sel.length===1?'ح '+N(sel[0]):hizbs(sel)} · سجلّه محفوظ`);});
+      const sel=[...ui.sel];removeFrom(S,ui.t,sel);toast(`أُزيل ${hizbsNom(sel)} · سجلّ${P(sel.length)} محفوظ`);});
     $('[data-more]',e=>{ui={ov:'tmenu',t:e.dataset.more,sel:new Set()};render();});
     $('[data-tm]',e=>{const a=e.dataset.tm,t=ui.t;ui=a==='add'?{ov:'add',t,sel:new Set()}:{ov:'manage',mode:a,t,sel:new Set()};render();});
     $('[data-hm]',e=>{const a=e.dataset.hm;

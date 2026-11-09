@@ -62,9 +62,11 @@ function current(S,t){
   const bm=bookmark(S,t)||trackQuarters(S,t)[0],hb=R[bm].hizb,rs=quartersOf(hb),tq=trackQuarters(S,t);
   const secs=sections(S,t),sharedAll=new Set(secs.flatMap(s=>[...s.shared]));
   const sur=[...new Set(rs.filter(r=>tq.includes(r)).flatMap(r=>R[r].suras))];
-  const name=sur.length>3?`${SN[sur[0]]} ← ${SN[sur[sur.length-1]]}`:sur.map(s=>SN[s]).join(' · ');
+  /* م19: سورتان أو أكثر على سطرين (أكثر من اثنتين: أولها ← آخرها)، فلا يُقطع الاسم */
+  const parts=sur.length>2?[`${SN[sur[0]]} ←`,SN[sur[sur.length-1]]]:sur.map(s=>SN[s]);
+  const name=parts.length>1?`<b class="two">${parts.map(p=>`<i>${p}</i>`).join('')}</b>`:`<b>${parts[0]}</b>`;
   const qs=rs.map(r=>tq.includes(r)?qBox(S,r,t,sharedAll.has(r)&&R[r].suras.length>1):'<div class="q gap"></div>').join('');
-  return `<div class="cur"><div class="row"><div class="lbl" data-h="${hb}" data-t="${t}">${BM}ح ${N(hb)}</div><div class="qs">${qs}</div><div class="side"><b>${name}</b><span>الجزء ${N(R[bm].juz)}</span></div></div></div>`;
+  return `<div class="cur"><div class="row"><div class="lbl" data-h="${hb}" data-t="${t}">${BM}ح ${N(hb)}</div><div class="qs">${qs}</div><div class="side">${name}<span>الجزء ${N(R[bm].juz)}</span></div></div></div>`;
 }
 const stamp=(S,t)=>S.noStamp?'':`<div class="stamp">${CLOCK}<b>آخر إدخال ${rel(S.last[t][0])}</b><span class="sd">${S.last[t][1]}</span></div>`;
 const head=(t,meta)=>`<div class="th"><span class="mk"></span><h3>${TT[t]}</h3><span class="meta2">${meta}</span><span class="more" data-more="${t}" role="button" aria-label="قائمة المسار">⋯</span></div>`;
