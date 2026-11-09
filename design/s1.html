@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ش1 · المحفوظ</title>
+<link rel="stylesheet" href="shared/ds.css">
+<link rel="stylesheet" href="shared/s1.css">
+<link rel="stylesheet" href="shared/page.css">
+<style>
+h2.grp{font-size:20px;font-weight:600;margin:34px 0 4px}
+p.grp{margin:0 0 16px;color:var(--pg-muted);font-size:14.5px;max-width:80ch}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <h1>ش1 · المحفوظ: التصميم</h1>
+    <p>الشاشة الرئيسية كما تُبنى في الشريحة 1: المسارات الثلاثة فارغة أول مرة، وإضافة جزء أو حزب، والعرض بالسور، ومنع الحزب في مسارين، والنقل والإزالة. لا تظليل فيها بعدُ (ش2)، فكل الأرباع «لم يُتلَ»، وموضع التوقّف على أول ربع في المسار. والعدّاد ومفاتيح الرموز وسطر «آخر إدخال» لا تظهر هنا لأنها تُبنى في ش2 وش5. الحدود حقيقية من الجدول المعتمد. القياسات في <code>system.md</code> §12.</p>
+    <nav class="links"><a href="index.html">نظام التصميم</a><a href="main.html">الشاشة الرئيسية</a><a href="juz-amma.html">جزء عمّ</a><a href="s1.html" aria-current="page">ش1 · المحفوظ</a><a href="mockups.html">النماذج المعتمدة</a></nav>
+  </header>
+  <div class="bar">
+    <button id="bGray">فحص الرمادي</button>
+    <button id="bDark">ليلاً</button>
+    <button id="bOrn">بلا زخرفة (للمقارنة)</button>
+  </div>
+
+  <h2 class="grp">جرّبها بنفسك</h2>
+  <p class="grp">تبدأ فارغة. أضف جزءاً أو حزباً، ثم جرّب «عرض كامل المراجعة»، والضغط المطوّل على «ح [رقم]» (أو الضغط بالزرّ الأيمن على الحاسوب)، وقائمة «⋯».</p>
+  <div class="gal" id="g0"></div>
+
+  <h2 class="grp">1 · أول فتحة: المسارات الثلاثة فارغة</h2>
+  <div class="gal" id="g1"></div>
+
+  <h2 class="grp">2 · إضافة جزء أو حزب (7.2) ومنع الحزب في مسارين (5.1)</h2>
+  <div class="gal" id="g2"></div>
+
+  <h2 class="grp">3 · الطيّ على موضع التوقّف وفتح الأرشيف مرتّباً بالسور (7.1 · 7.1.1)</h2>
+  <div class="gal" id="g3"></div>
+
+  <h2 class="grp">4 · النقل والإزالة مع حفظ السجلّ (5.1 · 5.2)</h2>
+  <div class="gal" id="g4"></div>
+
+  <h2 class="grp">5 · أصغر شاشة وأكبرها</h2>
+  <div class="gal" id="g5"></div>
+</div>
+<script src="shared/quran.js"></script>
+<script src="shared/ds.js"></script>
+<script src="shared/s1.js"></script>
+<script>
+const {phone,fitAll,scrollToBm}=WIRD,{interactive,still,st}=S1;
+const G=id=>document.getElementById(id);
+const fig=(g,o)=>{const s=phone(G(g),o);s.classList.add('wl');s.dataset.id=o.id||'';return s;};
+const mine=o=>st(Object.assign({far:[1,2,3,4,5,6,7,8,9],near:[10,11]},o));
+const toRow=(t,h,off=120)=>s=>{const sc=s.querySelector('.scroll'),l=s.querySelector(`.track[data-track="${t}"] .lbl[data-h="${h}"]`);if(l)sc.scrollTop=l.getBoundingClientRect().top-sc.getBoundingClientRect().top+sc.scrollTop-off;};
+
+interactive(fig('g0',{id:'',title:'هاتف تفاعلي',cap:'كل ما في هذه الصفحة يعمل فيه. لا يُحفظ شيء؛ أعد تحميل الصفحة لتبدأ من جديد.'}),st({}));
+
+still(fig('g1',{id:'s1-empty',title:'1 · فارغة',cap:'لكل مسار بطاقته وعنوانه، وسطر هادئ يقول إنه فارغ، وزرّ واحد يفتح ورقة الإضافة على هذا المسار. المحفوظ الجديد بلا زرّ: اختيار الحزب الذي تحفظه في ش4.'}),st({}));
+
+still(fig('g2',{id:'s1-add',title:'2 · ورقة الإضافة',cap:'تنزلق من الأسفل. المسار أولاً (البعيد أو القريب)، ثم صفّ لكل جزء من 30: دائرة الجزء تختاره كلّه (حزباه)، وكل حزب يُختار وحده. وتحت رقم الحزب اسم السورة التي يبدأ بها، عوناً على ربط الحزب بسورته.'}),st({}),{ov:'add',t:'far',sel:new Set()});
+still(fig('g2',{id:'s1-add-states',title:'3 · حالات الحزب في الورقة',cap:'البعيد فيه ح 1–8، والقريب فيه ح 10–11. ح 1–8 محايدة «في هذا المسار» لا تُضغط. ح 10 و11 بإطار متقطّع «في القريب». واختير الجزء 5 كلّه: ح 9 وح 10 ممتلئان بصحّ، ودائرة الجزء ممتلئة.'}),mine({far:[1,2,3,4,5,6,7,8]}),{ov:'add',t:'far',sel:new Set([9,10])});
+still(fig('g2',{id:'s1-conflict',title:'4 · الحزب في مسار آخر',cap:'عند «أضف» يسأل التطبيق بنصّ الوثيقة: «الحزب موجود في [المسار]. أتنقله؟». والاختيار الآمن ظاهر بالقدر نفسه. ح 9 يُضاف في الحالين.'}),mine({far:[1,2,3,4,5,6,7,8]}),{ov:'conf',t:'far',sel:new Set([9,10]),conf:[10]});
+still(fig('g2',{id:'s1-added',title:'5 · بعد الإضافة',cap:'أضاف الأجزاء 1–5 إلا ح 10. تُطوى الورقة، وتظهر البطاقة مطويّة على موضع التوقّف، مع إشعار عابر لثانيتين ونصف.'}),mine({near:[]}),{toast:'أُضيف 9 أحزاب إلى مراجعة البعيد'});
+
+still(fig('g3',{id:'s1-fold',title:'6 · مطويّة على موضع التوقّف',cap:'لا تظليل بعدُ، فموضع التوقّف على أول ربع في كل مسار: ح 1 في البعيد، وح 10 في القريب. وتحت البطاقة شريط «عرض كامل المراجعة».'}),mine());
+still(fig('g3',{id:'s1-archive-top',title:'7 · أرشيف البعيد: أوّله',cap:'قسم لكل سورة. الربع 1 من ح 1 مشترك بين الفاتحة والبقرة: يظهر تحت الاثنتين بزاوية مقطوعة. والجزء وسم صغير عند أول حزب فيه. والقريب مطويّ: لا يُفتح إلا مسار واحد.'}),mine({open:'far'}));
+still(fig('g3',{id:'s1-archive-split',title:'8 · الحزب المقسوم',cap:'ح 5 مقسوم بين البقرة وآل عمران بربع مشترك، وح 8 مقسوم بين آل عمران والنساء بلا ربع مشترك. كل ربع في خانته الثابتة، وما ليس في السورة فراغ في مكانه.'}),mine({open:'far'}),{},toRow('far',5,60));
+still(fig('g3',{id:'s1-two-tracks',title:'9 · سورة في مسارين',cap:'النساء: ح 9 في البعيد، وح 10–11 في القريب (الجزء 5 منقسم بين المسارين). فيظهر قسم النساء في كل مسار بأرباعه وحدها. هنا أرشيف القريب.'}),mine({open:'near'}));
+still(fig('g3',{id:'s1-amma',title:'10 · جمع السور القصيرة',cap:'جزء عمّ في البعيد: السور التي تقع كلها في الأرباع نفسها قسم واحد عنوانه أسماؤها متتابعة.'}),st({far:[59,60],open:'far'}));
+
+still(fig('g4',{id:'s1-track-menu',title:'11 · قائمة المسار «⋯»',cap:'إضافة · نقل · إزالة. («ابدأ دورة جديدة» تُضاف إليها في ش3.) عنوان البطاقة نفسه لا يفتح شيئاً.'}),mine(),{ov:'tmenu',t:'near'});
+still(fig('g4',{id:'s1-empty-menu',title:'11ب · «⋯» في مسار فارغ',cap:'لا نقل ولا إزالة حيث لا شيء؛ تبقى «إضافة» وحدها.'}),mine({near:[]}),{ov:'tmenu',t:'near'});
+still(fig('g4',{id:'s1-hizb-menu',title:'12 · قائمة الحزب بالضغط المطوّل',cap:'ضغطة مطوّلة على «ح 10» ترفع صفّه وتفتح قائمته: نقل إلى المسار الآخر · إزالة. والإزالة مفصولة بفراغ وبرمزها، لا باللون.'}),mine(),{ov:'hmenu',t:'near',h:10});
+still(fig('g4',{id:'s1-move',title:'13 · نقل من قائمة المسار',cap:'الورقة نفسها، بأحزاب هذا المسار وحده في أماكنها. يختار ما يشاء، والوجهة مكتوبة. ينقل بلا سؤال، لأن النقل لا يمحو شيئاً.'}),mine(),{ov:'manage',mode:'move',t:'near',sel:new Set([10])});
+still(fig('g4',{id:'s1-remove',title:'14 · تأكيد الإزالة',cap:'الإزالة وحدها تُسأل عنها صراحة، ويُذكَّر المالك أن السجلّ باقٍ: إن أعاد الحزب ظهر عمره كما كان.'}),mine(),{ov:'rdlg',t:'near',sel:new Set([11])});
+still(fig('g4',{id:'s1-moved',title:'15 · بعد النقل',cap:'نُقل ح 10 إلى البعيد: البعيد صار ح 1–10، والقريب ح 11 وحده. وإشعار عابر يؤكّد ما جرى.'}),mine({far:[1,2,3,4,5,6,7,8,9,10],near:[11]}),{toast:'نُقل ح 10 إلى مراجعة البعيد'});
+
+still(fig('g5',{id:'s1-375-fold',size:'s375',title:'16 · 375×667 مطويّة',cap:'آيفون SE.'}),mine());
+still(fig('g5',{id:'s1-375-add',size:'s375',title:'17 · 375×667 ورقة الإضافة',cap:'الورقة أعلى قليلاً، والصفوف كما هي.'}),mine({far:[1,2,3,4,5,6,7,8]}),{ov:'add',t:'far',sel:new Set([9,10])});
+still(fig('g5',{id:'s1-440-fold',size:'s440',title:'18 · 440×956 مطويّة',cap:'Pro Max.'}),mine());
+still(fig('g5',{id:'s1-stress-60',title:'19 · البعيد بستين حزباً: ورقة الإضافة',cap:'كل الأحزاب «في هذا المسار»، فلا يُختار شيء والزرّ معطّل.'}),st({far:[...Array(60)].map((_,i)=>i+1)}),{ov:'add',t:'far',sel:new Set()},s=>{s.querySelector('.jlist').scrollTop=1e6;});
+
+setTimeout(fitAll,60);fitAll();
+G('bGray').onclick=e=>{document.querySelectorAll('.phone').forEach(p=>p.classList.toggle('gray'));e.target.classList.toggle('on');};
+G('bDark').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>{p.classList.toggle('wd');});e.target.classList.toggle('on');};
+G('bOrn').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>p.classList.toggle('plain'));e.target.classList.toggle('on');};
+if(location.hash.includes('gray'))G('bGray').click();
+if(location.hash.includes('dark'))G('bDark').click();
+</script>
+</body>
+</html>
