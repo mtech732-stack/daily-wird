@@ -2,7 +2,8 @@
 """يبني data/quran-boundaries.json من ملف «تنزيل» الوصفي data/source/tanzil-quran-data.xml.
 
 لا يضيف حدّاً من عنده. كل ما يفعله:
-- يطبّق التصحيحات الستة والعشرين التي اعتمدها المالك بمصحفه (PAGE_CORRECTIONS وQUARTER_CORRECTIONS أدناه).
+- يطبّق التصحيحات الستة والعشرين التي اعتمدها المالك بمصحفه (PAGE_CORRECTIONS وQUARTER_CORRECTIONS أدناه)،
+  وتصحيح إملاء ثلاثة أسماء سور (SURA_NAME_CORRECTIONS).
 - ينقل بداية كل وجه (604) وبداية كل ربع (240) واسم كل سورة وعدد آياتها (114) كما هي.
 - يشتقّ آخر آية في كل ربع: الآية التي تسبق مباشرة أول آية في الربع الذي بعده (والربع 240 ينتهي بآخر المصحف 114:6).
 - يشتقّ أول وجه وآخر وجه يمسّهما الربع: الآية تُنسب إلى الوجه الذي تبدأ فيه (فالمصدر يعطي بدايات الأوجه وحدها).
@@ -42,6 +43,10 @@ PAGE_CORRECTIONS = {
 }
 QUARTER_CORRECTIONS = {106: (15, 49)}
 
+# إملاء أسماء السور (س4، بتفويض المالك 9 نوفمبر 2026): همزة الوصل والقطع كما في عناوين مصحف المدينة.
+# لا يمسّ الحدود. انظر data/SOURCE.md
+SURA_NAME_CORRECTIONS = {76: "الإنسان", 82: "الانفطار", 84: "الانشقاق"}
+
 
 def corrected(starts, fixes):
     return [(n, fixes.get(n, r)) for n, r in starts]
@@ -49,7 +54,8 @@ def corrected(starts, fixes):
 
 def read_source(path=SRC):
     root = ET.parse(path).getroot()
-    suras = [(int(e.get("index")), e.get("name"), int(e.get("ayas")), int(e.get("start")))
+    suras = [(int(e.get("index")), SURA_NAME_CORRECTIONS.get(int(e.get("index")), e.get("name")),
+              int(e.get("ayas")), int(e.get("start")))
              for e in root.iter("sura")]
     def starts(tag):
         return [(int(e.get("index")), (int(e.get("sura")), int(e.get("aya")))) for e in root.iter(tag)]
