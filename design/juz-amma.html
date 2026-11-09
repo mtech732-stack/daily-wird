@@ -16,7 +16,7 @@
   </header>
   <div class="bar">
     <button id="bGray">فحص الرمادي</button>
-    <button id="bOrn">مقترح: زخرفة رأس السورة</button>
+    <button id="bOrn">بلا زخرفة (للمقارنة)</button>
   </div>
   <div class="gal" id="gal"></div>
   <section class="blk" style="margin-top:28px"><h2>الأقسام كما حسبها المحرّك من الجدول</h2><div class="scrollx"><table id="tb"><thead><tr><th>القسم</th><th>الأرباع</th><th>مشترك مع قسم آخر</th></tr></thead><tbody></tbody></table></div></section>
@@ -36,7 +36,7 @@ const S=mk();
 document.querySelector('#tb tbody').innerHTML=sections(S,'far').map(s=>`<tr><td>${s.suras.map(x=>SN[x]).join(' · ')}</td><td>${s.rs.map(r=>`ح ${R[r].hizb} ر ${(r-1)%4+1}`).join('، ')}</td><td>${s.shared.size?[...s.shared].map(r=>`ح ${R[r].hizb} ر ${(r-1)%4+1}`).join('، '):'—'}</td></tr>`).join('');
 fitAll();
 document.getElementById('bGray').onclick=e=>{document.querySelectorAll('.phone').forEach(p=>p.classList.toggle('gray'));e.target.classList.toggle('on');};
-document.getElementById('bOrn').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>p.classList.toggle('orn'));e.target.classList.toggle('on');};
+document.getElementById('bOrn').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>p.classList.toggle('plain'));e.target.classList.toggle('on');};
 if(location.hash.includes('gray'))document.getElementById('bGray').click();
 </script>
 </body>

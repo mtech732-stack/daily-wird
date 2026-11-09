@@ -16,7 +16,7 @@
   </header>
   <div class="bar">
     <button id="bGray">فحص الرمادي</button>
-    <button id="bOrn">مقترح: زخرفة رأس السورة</button>
+    <button id="bOrn">بلا زخرفة (للمقارنة)</button>
   </div>
   <div class="gal" id="gal"></div>
 </div>
@@ -40,9 +40,8 @@ show({id:'stress-60',title:'8 · أطول محتوى: البعيد بستين ح
   state({far:all,near:[],newHizb:null,open:'far',ages:S=>{for(let r=1;r<=240;r++){const m=r%7;S.age[r]=m===0?null:m<3?2:m<5?20:60;}for(let r=1;r<=150;r++)S.cyc.far.add(r);}}),s=>{s.querySelector('.scroll').scrollTop=1e6;});
 fitAll();
 document.getElementById('bGray').onclick=e=>{document.querySelectorAll('.phone').forEach(p=>p.classList.toggle('gray'));e.target.classList.toggle('on');};
-document.getElementById('bOrn').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>p.classList.toggle('orn'));e.target.classList.toggle('on');};
+document.getElementById('bOrn').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>p.classList.toggle('plain'));e.target.classList.toggle('on');};
 if(location.hash.includes('gray'))document.getElementById('bGray').click();
-if(location.hash.includes('orn'))document.getElementById('bOrn').click();
 </script>
 </body>
 </html>

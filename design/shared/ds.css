@@ -184,10 +184,11 @@
 /* فحص الرمادي */
 .gray .scr,.gray.scr,.gray .q,.gray.sw{filter:grayscale(1)}
 
-/* ── مقترحات تنتظر اعتماد المالك (مطفأة افتراضياً) ── */
+/* ── الزخرفة من روح الشعار (اعتمدها المالك 9 نوفمبر 2026). والصنف .plain يطفئها للمقارنة وحدها ── */
 /* م-أ · رأس السورة بروح الإطار: مسطرتان ذهبيتان رفيعتان، غليظة ورفيعة، كما في الشعار */
-.orn .sur>.sh{position:relative;padding:0 0 7px;margin-bottom:6px}
-.orn .sur>.sh:after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;
+.sur>.sh{position:relative;padding:0 0 7px;margin-bottom:6px}
+.sur>.sh:after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;
   background:linear-gradient(var(--gilt),var(--gilt)) 0 0/100% 2px no-repeat,linear-gradient(var(--gilt),var(--gilt)) 0 4px/100% 1px no-repeat;opacity:.75}
+.plain .sur>.sh{padding:0;margin-bottom:4px}.plain .sur>.sh:after{display:none}
 /* م-ب · علامة موضع التوقّف بشريط الشعار (فاصل عريض بشقّ عميق) */
-.bmk .b2{display:none}.orn .bmk .b1{display:none}.orn .bmk .b2{display:inline}
+.bmk .b1{display:none}.plain .bmk .b1{display:inline}.plain .bmk .b2{display:none}

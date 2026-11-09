@@ -44,19 +44,19 @@ ol.list li{margin:0 0 8px}
   </header>
   <div class="bar">
     <button id="bGray">فحص الرمادي</button>
-    <button id="bOrn">مقترح: زخرفة رأس السورة</button>
+    <button id="bOrn">بلا زخرفة (للمقارنة)</button>
   </div>
 
   <section class="blk">
-    <h2>ما تحتاج أن تعتمده</h2>
-    <p>الشكل كما اعتمدته في النماذج. وهذه وحدها ما تغيّر أو أُضيف، وكل واحد منها يمكن ردّه:</p>
+    <h2>ما اعتمدته</h2>
+    <p>الشكل كما اعتمدته في النماذج. وهذه ما تغيّر أو أُضيف، واعتمدتها كلها في 9 نوفمبر 2026:</p>
     <ol class="list">
       <li><b>رقم الوجه على البرتقالي صار كحلياً بدل الأبيض.</b> الأبيض على البرتقالي تباينه 2.7 وحدّ الوثيقة 4.5؛ والكحلي الليلي 5.6.</li>
       <li><b>حدود المربّع «لم يُتلَ» والمخطّط أوضح قليلاً</b> (70% بدل 38% و55%)، حتى يُرى المربّع الفارغ بتباين 3:1 على الأقل. والأوجه غير المحفوظة نهاراً حدّها وأرقامها برتقالي معتّق <code>#9A5800</code> لأن البرتقالي نفسه لا يُقرأ رقماً على الورق (2.6).</li>
       <li><b>رقم الربع المخطّط على رقعة صغيرة بلون الأرضية</b>، فلا يضيع بين الخطوط.</li>
       <li><b>شريط «عرض كامل المراجعة» ومسّ الأزرار الصغيرة 44 نقطة</b> (قاعدة 8.3)، بمساحة لمس غير مرئية حتى لا يكبر الشكل.</li>
       <li><b>العدّاد يتكيّف مع طول الشاشة:</b> قطره 122 على 393×852 كما في النماذج، ويصير صفّاً أفقياً على 375×667 حتى تبقى البطاقات الثلاث ظاهرة بلا تمرير. وعند فتح الأرشيف يصير شريطاً أفقياً بارتفاع 88.</li>
-      <li><b>مقترح زخرفة لم يُفعَّل</b> (زرّ «مقترح» أعلاه): مسطرتان ذهبيتان تحت اسم السورة، غليظة ورفيعة، من إطار رأس السورة في الشعار، وعلامة موضع التوقّف بشقّ الشريط نفسه. لا تدخل التطبيق إلا إن اخترتها.</li>
+      <li><b>زخرفة من روح الشعار، مفعّلة باعتمادك:</b> مسطرتان ذهبيتان تحت اسم السورة، غليظة ورفيعة، من إطار رأس السورة في الشعار، وعلامة موضع التوقّف بشقّ الشريط نفسه.</li>
     </ol>
   </section>
 
@@ -101,7 +101,7 @@ ol.list li{margin:0 0 8px}
   </section>
 
   <section class="blk">
-    <h2>7 · مقترح الزخرفة (ينتظر اختيارك)</h2>
+    <h2>7 · الزخرفة (اعتمدتها)</h2>
     <p>من روح الشعار: إطار رأس السورة بمسطرتيه الذهبيتين، وشريط الفاصل بشقّه العميق. الأولى في كل قسم سورة، والثانية في علامة الكتاب بجانب رقم الحزب. هادئتان، ولا تحملان معنى، فلا تمسّان فحص الرمادي.</p>
     <div class="ba" id="orn"></div>
   </section>
@@ -169,12 +169,12 @@ function comp(mode){
 comps.innerHTML=comp('wl')+comp('wd');
 /* ── الزخرفة قبل وبعد ── */
 const sec=()=>{const w=document.createElement('div');w.innerHTML=screenHTML(owner({open:'far'}));return [...w.querySelectorAll('.sur')][2].outerHTML;};
-orn.innerHTML=`<div><div class="pane wl scr" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>كما في النماذج</div>
-<div><div class="pane wl scr orn" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>بالزخرفة المقترحة</div>
-<div><div class="pane wd scr" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>ليلاً كما في النماذج</div>
-<div><div class="pane wd scr orn" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>ليلاً بالزخرفة</div>`;
+orn.innerHTML=`<div><div class="pane wl scr plain" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>بلا زخرفة (النماذج)</div>
+<div><div class="pane wl scr" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>بالزخرفة المعتمدة</div>
+<div><div class="pane wd scr plain" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>ليلاً بلا زخرفة (النماذج)</div>
+<div><div class="pane wd scr" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>ليلاً بالزخرفة</div>`;
 bGray.onclick=e=>{document.body.classList.toggle('gray-all');document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('gray'));e.target.classList.toggle('on');};
-bOrn.onclick=e=>{document.querySelectorAll('.comp').forEach(p=>p.classList.toggle('orn'));e.target.classList.toggle('on');};
+bOrn.onclick=e=>{document.querySelectorAll('.comp').forEach(p=>p.classList.toggle('plain'));e.target.classList.toggle('on');};
 if(location.hash.includes('gray'))bGray.click();
 </script>
 </body>
