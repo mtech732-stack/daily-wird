@@ -88,7 +88,7 @@ def main():
 
     print("— المطابقة بالمصدر —")
     rebuilt = build_boundaries.build()
-    check("الملف يطابق ما يُبنى من ملف «تنزيل» حرفاً بحرف",
+    check("الملف يطابق ما يُبنى من ملف «تنزيل» مع التصحيحات المعتمدة (القرار 12) حرفاً بحرف",
           build_boundaries.dump(rebuilt) == (DATA / "quran-boundaries.json").read_text(encoding="utf-8"))
     return finish(len(shared))
 

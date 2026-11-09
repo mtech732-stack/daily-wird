@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """يبني data/quran-boundaries.json من ملف «تنزيل» الوصفي data/source/tanzil-quran-data.xml.
 
-لا يضيف حدّاً من خارج المصدر ولا يصحّح فيه شيئاً. كل ما يفعله:
+لا يضيف حدّاً من عنده. كل ما يفعله:
+- يطبّق التصحيحات الستة والعشرين التي اعتمدها المالك بمصحفه (PAGE_CORRECTIONS وQUARTER_CORRECTIONS أدناه).
 - ينقل بداية كل وجه (604) وبداية كل ربع (240) واسم كل سورة وعدد آياتها (114) كما هي.
 - يشتقّ آخر آية في كل ربع: الآية التي تسبق مباشرة أول آية في الربع الذي بعده (والربع 240 ينتهي بآخر المصحف 114:6).
 - يشتقّ أول وجه وآخر وجه يمسّهما الربع: الآية تُنسب إلى الوجه الذي تبدأ فيه (فالمصدر يعطي بدايات الأوجه وحدها).
@@ -29,6 +30,23 @@ JUZ_ORDINALS = [
 ]
 
 
+# تصحيحات اعتمدها المالك (9 نوفمبر 2026) بعد ورقة المطابقة (6.3 البند 3):
+# مصحفه من طبعة مجمّع الملك فهد التي في hafsData_v18، وخالفه «تنزيل» في هذه الحدود وحدها.
+# كل قيمة منقولة من بيانات المجمّع، وأكّدها المالك بمصحفه. انظر data/SOURCE.md وdata/المطابقة/إجابات-المالك.md
+PAGE_CORRECTIONS = {
+    121: (5, 78), 122: (5, 84), 123: (5, 91), 145: (6, 131), 532: (55, 19), 533: (55, 42),
+    534: (55, 70), 565: (68, 17), 568: (69, 36), 570: (70, 41), 576: (74, 19), 584: (79, 17),
+    586: (80, 41), 588: (83, 5), 589: (83, 34), 590: (84, 25), 592: (87, 11), 593: (88, 23),
+    594: (89, 23), 595: (90, 19), 596: (92, 10), 597: (94, 3), 598: (96, 13), 599: (98, 6),
+    600: (100, 6),
+}
+QUARTER_CORRECTIONS = {106: (15, 49)}
+
+
+def corrected(starts, fixes):
+    return [(n, fixes.get(n, r)) for n, r in starts]
+
+
 def read_source(path=SRC):
     root = ET.parse(path).getroot()
     suras = [(int(e.get("index")), e.get("name"), int(e.get("ayas")), int(e.get("start")))
@@ -40,6 +58,8 @@ def read_source(path=SRC):
 
 def build(path=SRC):
     suras, pages, quarters = read_source(path)
+    pages = corrected(pages, PAGE_CORRECTIONS)
+    quarters = corrected(quarters, QUARTER_CORRECTIONS)
     suras.sort(); pages.sort(); quarters.sort()
     ayas = {n: count for n, _, count, _ in suras}
     # الترتيب المطلق للآية في المصحف (0 … 6235)
@@ -80,7 +100,7 @@ def build(path=SRC):
     return {
         "format": 1,
         "mushaf": "مصحف المدينة النبوية · 604 أوجه · حفص",
-        "source": "Tanzil quran-data.xml 1.0 (ترخيص cc-by) · انظر data/SOURCE.md",
+        "source": "Tanzil quran-data.xml 1.0 (ترخيص cc-by) مع 26 تصحيحاً من بيانات مجمّع الملك فهد أكّدها المالك بمصحفه · انظر data/SOURCE.md",
         "ayaRef": "[السورة، الآية]",
         "pages": [{"n": n, "first": list(r)} for n, r in pages],
         "quarters": q_out,
