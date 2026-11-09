@@ -1,0 +1,179 @@
+<title>ورقة مطابقة المصحف</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+/* عمود واحد بعرض الهاتف: بطاقة لكل موضع، ثم ملحق جدولي، ثم زرّ نسخ النتيجة */
+:root{
+  --paper:#F7F4EC; --ink:#0F3F6E; --muted:#4F6680; --line:#DCD5C4; --card:#FFFDF7;
+  --orange:#DF8C16; --orange-ink:#8A5208; --chosen:#0F3F6E; --chosen-ink:#F7F4EC; --soft:#EFE9DA;
+  --f:"IBM Plex Sans Arabic",system-ui,-apple-system,"Geeza Pro",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#13283E; --ink:#F2EDE2; --muted:#B4C0CE; --line:#2C4561; --card:#18314B;
+  --orange:#E79A2E; --orange-ink:#F0B562; --chosen:#F2EDE2; --chosen-ink:#13283E; --soft:#1F3A57; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#13283E; --ink:#F2EDE2; --muted:#B4C0CE; --line:#2C4561; --card:#18314B;
+  --orange:#E79A2E; --orange-ink:#F0B562; --chosen:#F2EDE2; --chosen-ink:#13283E; --soft:#1F3A57; color-scheme:dark}
+html{direction:rtl}
+body{background:var(--paper);color:var(--ink);font-family:var(--f);font-size:16px;line-height:1.75;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+main{max-width:640px;margin-inline:auto;display:flex;flex-direction:column;gap:20px}
+h1{font-size:1.6rem;margin:0;line-height:1.3;text-wrap:balance}
+h2{font-size:1.2rem;margin:12px 0 0;text-wrap:balance}
+p{margin:0}
+.lead{color:var(--muted)}
+.how{background:var(--soft);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.how ol{margin:0;padding-inline-start:20px}
+.pos{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.pos header{display:flex;align-items:center;gap:10px}
+.num{inline-size:30px;block-size:30px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-weight:700;font-size:.9rem;flex:none}
+.pos h3{margin:0;font-size:1.25rem}
+.juz{margin-inline-start:auto;font-size:.8rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:0 10px}
+.facts{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.facts li{min-width:0}
+.ref{font-weight:600}
+q{quotes:"«" "»"}
+.rub{color:var(--orange-ink);font-weight:700}
+.meta{display:block;font-size:.85rem;color:var(--muted)}
+.none{color:var(--muted)}
+.ask{font-weight:600}
+.opt{border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;gap:4px}
+.opt.alt{border-style:dashed;border-color:var(--orange)}
+.tag{font-size:.8rem;font-weight:700;color:var(--muted)}
+.full{background:var(--soft);border-radius:14px;padding:12px 16px;display:flex;flex-direction:column;gap:6px}
+.ans{display:flex;gap:8px;flex-wrap:wrap}
+.ans button{font:inherit;font-weight:600;min-height:44px;min-width:44px;padding:0 18px;border-radius:12px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer}
+.ans button[aria-pressed="true"]{background:var(--chosen);color:var(--chosen-ink)}
+.ans button[aria-pressed="true"]::before{content:"✓ "}
+.ans button:focus-visible,.copy:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.ans.sm button{padding:0 10px;font-size:.9rem}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:start;vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:.85rem;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.pg{font-weight:700;font-variant-numeric:tabular-nums}
+.result{position:sticky;bottom:env(safe-area-inset-bottom,0px);background:var(--paper);border-top:1px solid var(--line);padding-block:12px;display:flex;flex-direction:column;gap:8px}
+.copy{font:inherit;font-weight:700;min-height:48px;border:0;border-radius:14px;background:var(--orange);color:#13283E;cursor:pointer}
+#out{font-size:.9rem;white-space:pre-wrap;word-break:break-word;margin:0}
+#count,#msg{font-size:.85rem;color:var(--muted);margin:0}
+.result .row{display:flex;align-items:center;gap:12px}
+.result .copy{flex:none;padding:0 22px}
+.src{font-size:.8rem;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.ans button{transition:background .15s}}
+</style>
+<main>
+  <h1>ورقة مطابقة المصحف</h1>
+  <p class="lead">عشرة مواضع من جدول الحدود الذي سيقوم عليه التطبيق. افتح مصحفك على كل وجه، وقل: مطابق أو غير مطابق. لا تحتاج أكثر من عشر دقائق.</p>
+  <div class="how">
+    <b>كيف تقرؤها</b>
+    <ol>
+      <li><b>أول آية في الوجه</b>: أول آية تبدأ في أعلى الصفحة. وإن كانت آية من الوجه السابق تكتمل في أعلاه، فالعبرة بأول آية تبدأ فيه.</li>
+      <li><b>علامة الربع ۞</b>: الزخرفة في الهامش أو قبل الآية التي يبدأ بها ربع الحزب.</li>
+      <li>في بعض المواضع وصفان: <b>أ</b> كما في الجدول، و<b>ب</b> كما في طبعة أخرى. اختر ما يطابق مصحفك، أو «غيرهما» إن لم يطابق أيّاً منهما.</li>
+    </ol>
+  </div>
+
+  <h2>المواضع العشرة</h2>
+<article class="pos" id="p1"><header><span class="num">1</span><h3>الوجه 22</h3><span class="juz">الجزء 2</span></header><ul class="facts"><li>أول آية في الوجه: <span class="ref">البقرة 142</span> <q>سيقول السفهاء من الناس ما…</q></li><li>علامة الربع <b class="rub">۞</b> قبل <span class="ref">البقرة 142</span> <q>سيقول السفهاء من الناس ما…</q><span class="meta">بداية الربع 9، من الحزب 3</span></li></ul><div class="ans" role="group" aria-label="جواب الموضع 1"><button type="button" id="m1-0" data-k="m1" data-v="مطابق">مطابق</button><button type="button" id="m1-1" data-k="m1" data-v="غير مطابق">غير مطابق</button></div></article>
+<article class="pos" id="p2"><header><span class="num">2</span><h3>الوجه 62</h3><span class="juz">الجزء 3</span></header><ul class="facts"><li>أول آية في الوجه: <span class="ref">آل عمران 92</span> <q>لن تنالوا البر حتى تنفقوا…</q></li><li>علامة الربع <b class="rub">۞</b> قبل <span class="ref">آل عمران 93</span> <q>كل الطعام كان حلا لبني…</q><span class="meta">بداية الربع 25، من الحزب 7</span></li></ul><div class="ans" role="group" aria-label="جواب الموضع 2"><button type="button" id="m2-0" data-k="m2" data-v="مطابق">مطابق</button><button type="button" id="m2-1" data-k="m2" data-v="غير مطابق">غير مطابق</button></div><p class="ask">وسؤال آخر في هذا الوجه: أين علامة بداية الجزء الرابع؟</p>
+<div class="opt"><span class="tag">أ · الجدول</span><ul class="facts"><li>مع علامة الربع، قبل <span class="ref">آل عمران 93</span> <q>كل الطعام كان حلا لبني…</q></li></ul></div>
+<div class="opt alt"><span class="tag">ب · طبعة أخرى</span><ul class="facts"><li>قبل <span class="ref">آل عمران 92</span> <q>لن تنالوا البر حتى تنفقوا…</q></li></ul></div>
+<div class="ans" role="group" aria-label="علامة الجزء في الوجه 62"><button type="button" id="j62-0" data-k="j62" data-v="أ">أ</button><button type="button" id="j62-1" data-k="j62" data-v="ب">ب</button><button type="button" id="j62-2" data-k="j62" data-v="غيرهما">غيرهما</button></div></article>
+<article class="pos" id="p3"><header><span class="num">3</span><h3>الوجه 122</h3><span class="juz">الجزء 7</span></header><p class="ask">أيّ الوصفين يطابق مصحفك؟</p>
+<div class="opt"><span class="tag">أ · الجدول</span><ul class="facts"><li>أول آية في الوجه: <span class="ref">المائدة 83</span> <q>وإذا سمعوا ما أنزل إلى…</q></li><li>لا تبدأ في هذا الوجه علامة ربع <b class="rub">۞</b></li></ul></div>
+<div class="opt alt"><span class="tag">ب · طبعة أخرى</span><ul class="facts"><li>أول آية في الوجه: <span class="ref">المائدة 84</span> <q>وما لنا لا نؤمن بالله…</q></li></ul></div>
+<div class="ans" role="group" aria-label="جواب الموضع 3"><button type="button" id="m3-0" data-k="m3" data-v="أ">أ</button><button type="button" id="m3-1" data-k="m3" data-v="ب">ب</button><button type="button" id="m3-2" data-k="m3" data-v="غيرهما">غيرهما</button></div></article>
+<article class="pos" id="p4"><header><span class="num">4</span><h3>الوجه 145</h3><span class="juz">الجزء 8</span></header><p class="ask">أيّ الوصفين يطابق مصحفك؟</p>
+<div class="opt"><span class="tag">أ · الجدول</span><ul class="facts"><li>أول آية في الوجه: <span class="ref">الأنعام 132</span> <q>ولكل درجات مما عملوا وما…</q></li><li>لا تبدأ في هذا الوجه علامة ربع <b class="rub">۞</b></li></ul></div>
+<div class="opt alt"><span class="tag">ب · طبعة أخرى</span><ul class="facts"><li>أول آية في الوجه: <span class="ref">الأنعام 131</span> <q>ذلك أن لم يكن ربك…</q></li></ul></div>
+<div class="ans" role="group" aria-label="جواب الموضع 4"><button type="button" id="m4-0" data-k="m4" data-v="أ">أ</button><button type="button" id="m4-1" data-k="m4" data-v="ب">ب</button><button type="button" id="m4-2" data-k="m4" data-v="غيرهما">غيرهما</button></div></article>
+<article class="pos" id="p5"><header><span class="num">5</span><h3>الوجه 222</h3><span class="juz">الجزء 12</span></header><ul class="facts"><li>أول آية في الوجه: <span class="ref">هود 6</span> <q>وما من دابة في الأرض…</q></li><li>علامة الربع <b class="rub">۞</b> قبل <span class="ref">هود 6</span> <q>وما من دابة في الأرض…</q><span class="meta">بداية الربع 89، من الحزب 23</span></li></ul><div class="ans" role="group" aria-label="جواب الموضع 5"><button type="button" id="m5-0" data-k="m5" data-v="مطابق">مطابق</button><button type="button" id="m5-1" data-k="m5" data-v="غير مطابق">غير مطابق</button></div></article>
+<article class="pos" id="p6"><header><span class="num">6</span><h3>الوجه 264</h3><span class="juz">الجزء 14</span></header><ul class="facts"><li>أول آية في الوجه: <span class="ref">الحجر 32</span> <q>قال يا إبليس ما لك ألا…</q></li></ul><p class="ask">أيّ الوصفين يطابق مصحفك؟</p>
+<div class="opt"><span class="tag">أ · الجدول</span><ul class="facts"><li>علامة الربع <b class="rub">۞</b> قبل <span class="ref">الحجر 50</span> <q>وأن عذابي هو العذاب الأليم…</q><span class="meta">بداية الربع 106، من الحزب 27</span></li></ul></div>
+<div class="opt alt"><span class="tag">ب · طبعة أخرى</span><ul class="facts"><li>علامة الربع <b class="rub">۞</b> قبل <span class="ref">الحجر 49</span> <q>نبئ عبادي أني أنا الغفور الرحيم…</q></li></ul></div>
+<div class="ans" role="group" aria-label="جواب الموضع 6"><button type="button" id="m6-0" data-k="m6" data-v="أ">أ</button><button type="button" id="m6-1" data-k="m6" data-v="ب">ب</button><button type="button" id="m6-2" data-k="m6" data-v="غيرهما">غيرهما</button></div></article>
+<article class="pos" id="p7"><header><span class="num">7</span><h3>الوجه 402</h3><span class="juz">الجزء 21</span></header><ul class="facts"><li>أول آية في الوجه: <span class="ref">العنكبوت 46</span> <q>ولا تجادلوا أهل الكتاب إلا…</q></li><li>علامة الربع <b class="rub">۞</b> قبل <span class="ref">العنكبوت 46</span> <q>ولا تجادلوا أهل الكتاب إلا…</q><span class="meta">بداية الربع 161، من الحزب 41</span></li></ul><div class="ans" role="group" aria-label="جواب الموضع 7"><button type="button" id="m7-0" data-k="m7" data-v="مطابق">مطابق</button><button type="button" id="m7-1" data-k="m7" data-v="غير مطابق">غير مطابق</button></div></article>
+<article class="pos" id="p8"><header><span class="num">8</span><h3>الوجه 533</h3><span class="juz">الجزء 27</span></header><p class="ask">أيّ الوصفين يطابق مصحفك؟</p>
+<div class="opt"><span class="tag">أ · الجدول</span><ul class="facts"><li>أول آية في الوجه: <span class="ref">الرحمن 41</span> <q>يعرف المجرمون بسيماهم فيؤخذ بالنواصي…</q></li><li>لا تبدأ في هذا الوجه علامة ربع <b class="rub">۞</b></li></ul></div>
+<div class="opt alt"><span class="tag">ب · طبعة أخرى</span><ul class="facts"><li>أول آية في الوجه: <span class="ref">الرحمن 42</span> <q>فبأي آلاء ربكما تكذبان…</q></li></ul></div>
+<div class="ans" role="group" aria-label="جواب الموضع 8"><button type="button" id="m8-0" data-k="m8" data-v="أ">أ</button><button type="button" id="m8-1" data-k="m8" data-v="ب">ب</button><button type="button" id="m8-2" data-k="m8" data-v="غيرهما">غيرهما</button></div></article>
+<article class="pos" id="p9"><header><span class="num">9</span><h3>الوجه 586</h3><span class="juz">الجزء 30</span></header><p class="ask">أيّ الوصفين يطابق مصحفك؟</p>
+<div class="opt"><span class="tag">أ · الجدول</span><ul class="facts"><li>أول آية في الوجه: <span class="ref">التكوير 1</span> <q>إذا الشمس كورت…</q></li><li>لا تبدأ في هذا الوجه علامة ربع <b class="rub">۞</b></li></ul></div>
+<div class="opt alt"><span class="tag">ب · طبعة أخرى</span><ul class="facts"><li>أول آية في الوجه: <span class="ref">عبس 41</span> <q>ترهقها قترة…</q></li></ul></div>
+<div class="ans" role="group" aria-label="جواب الموضع 9"><button type="button" id="m9-0" data-k="m9" data-v="أ">أ</button><button type="button" id="m9-1" data-k="m9" data-v="ب">ب</button><button type="button" id="m9-2" data-k="m9" data-v="غيرهما">غيرهما</button></div></article>
+<article class="pos" id="p10"><header><span class="num">10</span><h3>الوجه 597</h3><span class="juz">الجزء 30</span></header><p class="ask">أيّ الوصفين يطابق مصحفك؟</p>
+<div class="opt"><span class="tag">أ · الجدول</span><ul class="facts"><li>أول آية في الوجه: <span class="ref">التين 1</span> <q>والتين والزيتون…</q></li><li>لا تبدأ في هذا الوجه علامة ربع <b class="rub">۞</b></li></ul></div>
+<div class="opt alt"><span class="tag">ب · طبعة أخرى</span><ul class="facts"><li>أول آية في الوجه: <span class="ref">الشرح 3</span> <q>الذي أنقض ظهرك…</q></li></ul></div>
+<div class="ans" role="group" aria-label="جواب الموضع 10"><button type="button" id="m10-0" data-k="m10" data-v="أ">أ</button><button type="button" id="m10-1" data-k="m10" data-v="ب">ب</button><button type="button" id="m10-2" data-k="m10" data-v="غيرهما">غيرهما</button></div></article>
+
+  <h2>ملحق: عشرون وجهاً آخر يختلف فيها المصدران</h2>
+  <p class="lead">اختياري، وفي نحو خمس دقائق. لكل وجه اختر: <b>أ</b> إن بدأ بما في الجدول، أو <b>ب</b> إن بدأ بما في الطبعة الأخرى، أو <b>غيرهما</b>.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>الوجه</th><th>أ · الجدول</th><th>ب · طبعة أخرى</th><th>مصحفك</th></tr></thead>
+    <tbody>
+<tr><td class="pg">121</td><td><span class="ref">المائدة 77</span> <q>قل يا أهل الكتاب لا تغلوا…</q></td><td><span class="ref">المائدة 78</span> <q>لعن الذين كفروا من بني…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 121"><button type="button" id="x121-0" data-k="x121" data-v="أ">أ</button><button type="button" id="x121-1" data-k="x121" data-v="ب">ب</button><button type="button" id="x121-2" data-k="x121" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">123</td><td><span class="ref">المائدة 90</span> <q>يا أيها الذين آمنوا إنما الخمر…</q></td><td><span class="ref">المائدة 91</span> <q>إنما يريد الشيطان أن يوقع…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 123"><button type="button" id="x123-0" data-k="x123" data-v="أ">أ</button><button type="button" id="x123-1" data-k="x123" data-v="ب">ب</button><button type="button" id="x123-2" data-k="x123" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">532</td><td><span class="ref">الرحمن 17</span> <q>رب المشرقين ورب المغربين…</q></td><td><span class="ref">الرحمن 19</span> <q>مرج البحرين يلتقيان…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 532"><button type="button" id="x532-0" data-k="x532" data-v="أ">أ</button><button type="button" id="x532-1" data-k="x532" data-v="ب">ب</button><button type="button" id="x532-2" data-k="x532" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">534</td><td><span class="ref">الرحمن 68</span> <q>فيهما فاكهة ونخل ورمان…</q></td><td><span class="ref">الرحمن 70</span> <q>فيهن خيرات حسان…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 534"><button type="button" id="x534-0" data-k="x534" data-v="أ">أ</button><button type="button" id="x534-1" data-k="x534" data-v="ب">ب</button><button type="button" id="x534-2" data-k="x534" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">565</td><td><span class="ref">القلم 16</span> <q>سنسمه على الخرطوم…</q></td><td><span class="ref">القلم 17</span> <q>إنا بلوناهم كما بلونا أصحاب…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 565"><button type="button" id="x565-0" data-k="x565" data-v="أ">أ</button><button type="button" id="x565-1" data-k="x565" data-v="ب">ب</button><button type="button" id="x565-2" data-k="x565" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">568</td><td><span class="ref">الحاقة 35</span> <q>فليس له اليوم هاهنا حميم…</q></td><td><span class="ref">الحاقة 36</span> <q>ولا طعام إلا من غسلين…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 568"><button type="button" id="x568-0" data-k="x568" data-v="أ">أ</button><button type="button" id="x568-1" data-k="x568" data-v="ب">ب</button><button type="button" id="x568-2" data-k="x568" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">570</td><td><span class="ref">المعارج 40</span> <q>فلا أقسم برب المشارق والمغارب…</q></td><td><span class="ref">المعارج 41</span> <q>على أن نبدل خيرا منهم…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 570"><button type="button" id="x570-0" data-k="x570" data-v="أ">أ</button><button type="button" id="x570-1" data-k="x570" data-v="ب">ب</button><button type="button" id="x570-2" data-k="x570" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">576</td><td><span class="ref">المدثر 18</span> <q>إنه فكر وقدر…</q></td><td><span class="ref">المدثر 19</span> <q>فقتل كيف قدر…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 576"><button type="button" id="x576-0" data-k="x576" data-v="أ">أ</button><button type="button" id="x576-1" data-k="x576" data-v="ب">ب</button><button type="button" id="x576-2" data-k="x576" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">584</td><td><span class="ref">النازعات 16</span> <q>إذ ناداه ربه بالواد المقدس…</q></td><td><span class="ref">النازعات 17</span> <q>اذهب إلى فرعون إنه طغى…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 584"><button type="button" id="x584-0" data-k="x584" data-v="أ">أ</button><button type="button" id="x584-1" data-k="x584" data-v="ب">ب</button><button type="button" id="x584-2" data-k="x584" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">588</td><td><span class="ref">المطففين 7</span> <q>كلا إن كتاب الفجار لفي…</q></td><td><span class="ref">المطففين 5</span> <q>ليوم عظيم…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 588"><button type="button" id="x588-0" data-k="x588" data-v="أ">أ</button><button type="button" id="x588-1" data-k="x588" data-v="ب">ب</button><button type="button" id="x588-2" data-k="x588" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">589</td><td><span class="ref">المطففين 35</span> <q>على الأرائك ينظرون…</q></td><td><span class="ref">المطففين 34</span> <q>فاليوم الذين آمنوا من الكفار…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 589"><button type="button" id="x589-0" data-k="x589" data-v="أ">أ</button><button type="button" id="x589-1" data-k="x589" data-v="ب">ب</button><button type="button" id="x589-2" data-k="x589" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">590</td><td><span class="ref">البروج 1</span> <q>والسماء ذات البروج…</q></td><td><span class="ref">الانشقاق 25</span> <q>إلا الذين آمنوا وعملوا الصالحات…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 590"><button type="button" id="x590-0" data-k="x590" data-v="أ">أ</button><button type="button" id="x590-1" data-k="x590" data-v="ب">ب</button><button type="button" id="x590-2" data-k="x590" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">592</td><td><span class="ref">الأعلى 16</span> <q>بل تؤثرون الحياة الدنيا…</q></td><td><span class="ref">الأعلى 11</span> <q>ويتجنبها الأشقى…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 592"><button type="button" id="x592-0" data-k="x592" data-v="أ">أ</button><button type="button" id="x592-1" data-k="x592" data-v="ب">ب</button><button type="button" id="x592-2" data-k="x592" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">593</td><td><span class="ref">الفجر 1</span> <q>والفجر…</q></td><td><span class="ref">الغاشية 23</span> <q>إلا من تولى وكفر…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 593"><button type="button" id="x593-0" data-k="x593" data-v="أ">أ</button><button type="button" id="x593-1" data-k="x593" data-v="ب">ب</button><button type="button" id="x593-2" data-k="x593" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">594</td><td><span class="ref">الفجر 24</span> <q>يقول يا ليتني قدمت لحياتي…</q></td><td><span class="ref">الفجر 23</span> <q>وجيء يومئذ بجهنم يومئذ يتذكر…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 594"><button type="button" id="x594-0" data-k="x594" data-v="أ">أ</button><button type="button" id="x594-1" data-k="x594" data-v="ب">ب</button><button type="button" id="x594-2" data-k="x594" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">595</td><td><span class="ref">الشمس 1</span> <q>والشمس وضحاها…</q></td><td><span class="ref">البلد 19</span> <q>والذين كفروا بآياتنا هم أصحاب…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 595"><button type="button" id="x595-0" data-k="x595" data-v="أ">أ</button><button type="button" id="x595-1" data-k="x595" data-v="ب">ب</button><button type="button" id="x595-2" data-k="x595" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">596</td><td><span class="ref">الليل 15</span> <q>لا يصلاها إلا الأشقى…</q></td><td><span class="ref">الليل 10</span> <q>فسنيسره للعسرى…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 596"><button type="button" id="x596-0" data-k="x596" data-v="أ">أ</button><button type="button" id="x596-1" data-k="x596" data-v="ب">ب</button><button type="button" id="x596-2" data-k="x596" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">598</td><td><span class="ref">القدر 1</span> <q>إنا أنزلناه في ليلة القدر…</q></td><td><span class="ref">العلق 13</span> <q>أرأيت إن كذب وتولى…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 598"><button type="button" id="x598-0" data-k="x598" data-v="أ">أ</button><button type="button" id="x598-1" data-k="x598" data-v="ب">ب</button><button type="button" id="x598-2" data-k="x598" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">599</td><td><span class="ref">البينة 8</span> <q>جزاؤهم عند ربهم جنات عدن…</q></td><td><span class="ref">البينة 6</span> <q>إن الذين كفروا من أهل…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 599"><button type="button" id="x599-0" data-k="x599" data-v="أ">أ</button><button type="button" id="x599-1" data-k="x599" data-v="ب">ب</button><button type="button" id="x599-2" data-k="x599" data-v="غيرهما">غيرهما</button></div></td></tr>
+<tr><td class="pg">600</td><td><span class="ref">العاديات 10</span> <q>وحصل ما في الصدور…</q></td><td><span class="ref">العاديات 6</span> <q>إن الإنسان لربه لكنود…</q></td><td><div class="ans sm" role="group" aria-label="الوجه 600"><button type="button" id="x600-0" data-k="x600" data-v="أ">أ</button><button type="button" id="x600-1" data-k="x600" data-v="ب">ب</button><button type="button" id="x600-2" data-k="x600" data-v="غيرهما">غيرهما</button></div></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="full">
+    <b>إجاباتك</b>
+    <p id="out">اختر جواباً لكل موضع، ثم انسخ إجاباتك والصقها في المحادثة.</p>
+  </div>
+  <div class="result">
+    <div class="row"><button type="button" class="copy" id="copy">انسخ إجاباتي</button><p id="count" aria-live="polite"></p></div>
+    <p id="msg" aria-live="polite" hidden></p>
+  </div>
+
+  <p class="src">المصدر: جدول الحدود المبنيّ من بيانات «تنزيل» (Tanzil.net). و«الطبعة الأخرى» من بيانات مجمّع الملك فهد لطباعة المصحف الشريف (الإصدار 18). نصّ أوائل الآيات بالرسم الإملائي للتعرّف عليها فقط.</p>
+</main>
+<script>
+(function(){
+  var KEY='wird-sheet-v2', state={};
+  try{state=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){state={}}
+  var buttons=[].slice.call(document.querySelectorAll('.ans button'));
+  function paint(){buttons.forEach(function(b){b.setAttribute('aria-pressed',state[b.dataset.k]===b.dataset.v?'true':'false')});summary()}
+  function summary(){
+    var main=[],extra=[],missing=0;
+    for(var i=1;i<=10;i++){var v=state['m'+i];if(v)main.push(i+': '+v);else missing++;if(i===2&&state.j62)main.push('2 (الجزء): '+state.j62)}
+    document.querySelectorAll('tbody tr').forEach(function(tr){var n=tr.querySelector('.pg').textContent;var v=state['x'+n];if(v)extra.push(n+': '+v)});
+    var t='ورقة المطابقة\n'+(main.length?main.join(' · '):'(لم تُجب بعد)');
+    if(extra.length)t+='\nالملحق: '+extra.join(' · ');
+    if(missing)t+='\n(بقي '+missing+' من المواضع العشرة)';
+    document.getElementById('out').textContent=t;
+    document.getElementById('count').textContent=missing?('أجبت عن '+(10-missing)+' من 10'):'أجبت عن المواضع العشرة';
+    return t}
+  buttons.forEach(function(b){b.addEventListener('click',function(){
+    state[b.dataset.k]=(state[b.dataset.k]===b.dataset.v)?undefined:b.dataset.v;
+    try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}
+    paint()})});
+  document.getElementById('copy').addEventListener('click',function(){
+    var t=summary(),out=document.getElementById('out'),msg=document.getElementById('msg');
+    function say(s){msg.textContent=s;msg.hidden=false}
+    function sel(){try{var r=document.createRange();r.selectNodeContents(out);var s=getSelection();s.removeAllRanges();s.addRange(r)}catch(e){}
+      out.scrollIntoView({block:'center'});say('لم يُسمح بالنسخ التلقائي. حدّدتُ لك النصّ في «إجاباتك»: اضغط عليه مطوّلاً واختر «نسخ»، ثم الصقه في المحادثة.')}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){say('نُسخت. الصقها في المحادثة.')},sel)}else sel()});
+  paint();
+})();
+</script>
+
