@@ -54,7 +54,7 @@ function archive(S,t){
       quartersOf(hb).forEach(r=>qs+=sec.rs.includes(r)?qBox(S,r,t,sec.shared.has(r)):'<div class="q gap"></div>');
       const j=R[(hb-1)*4+1].juz, jz=juzSeen.has(j)?'':`<span class="juzw"><span class="juz">الجزء ${N(j)}</span></span>`;juzSeen.add(j);
       const isBm=quartersOf(hb).includes(bm)&&sec.rs.includes(bm);
-      h+=`<div class="row"><div class="lbl">${isBm?BM:''}ح ${N(hb)}</div><div class="qs">${qs}</div>${jz}</div>`;});
+      h+=`<div class="row"><div class="lbl" data-h="${hb}" data-t="${t}">${isBm?BM:''}ح ${N(hb)}</div><div class="qs">${qs}</div>${jz}</div>`;});
     h+='</div>';});
   return h;
 }
@@ -64,10 +64,10 @@ function current(S,t){
   const sur=[...new Set(rs.filter(r=>tq.includes(r)).flatMap(r=>R[r].suras))];
   const name=sur.length>3?`${SN[sur[0]]} ← ${SN[sur[sur.length-1]]}`:sur.map(s=>SN[s]).join(' · ');
   const qs=rs.map(r=>tq.includes(r)?qBox(S,r,t,sharedAll.has(r)&&R[r].suras.length>1):'<div class="q gap"></div>').join('');
-  return `<div class="cur"><div class="row"><div class="lbl">${BM}ح ${N(hb)}</div><div class="qs">${qs}</div><div class="side"><b>${name}</b><span>الجزء ${N(R[bm].juz)}</span></div></div></div>`;
+  return `<div class="cur"><div class="row"><div class="lbl" data-h="${hb}" data-t="${t}">${BM}ح ${N(hb)}</div><div class="qs">${qs}</div><div class="side"><b>${name}</b><span>الجزء ${N(R[bm].juz)}</span></div></div></div>`;
 }
-const stamp=(S,t)=>`<div class="stamp">${CLOCK}<b>آخر إدخال ${rel(S.last[t][0])}</b><span class="sd">${S.last[t][1]}</span></div>`;
-const head=(t,meta)=>`<div class="th"><span class="mk"></span><h3>${TT[t]}</h3><span class="meta2">${meta}</span><span class="more" aria-label="قائمة المسار">⋯</span></div>`;
+const stamp=(S,t)=>S.noStamp?'':`<div class="stamp">${CLOCK}<b>آخر إدخال ${rel(S.last[t][0])}</b><span class="sd">${S.last[t][1]}</span></div>`;
+const head=(t,meta)=>`<div class="th"><span class="mk"></span><h3>${TT[t]}</h3><span class="meta2">${meta}</span><span class="more" data-more="${t}" role="button" aria-label="قائمة المسار">⋯</span></div>`;
 const pull=(t,open,label)=>`<div class="pull ${open?'up':''}" data-toggle="${t}" role="button"><span>${open?'طيّ':label}</span><span class="chev">${CHEV}</span></div>`;
 function trackHTML(S,t){
   if(!S[t].length)return '';
@@ -149,5 +149,5 @@ function owner(o={}){
     for(let r=1;r<=22;r++)S.cyc.far.add(r);S.cyc.near.add(37);S.cyc.near.add(38);
     Object.assign(S.done,{112:4,113:4,114:3,115:2,116:1});}},o));
 }
-window.WIRD={Q,R,SN,N,state,owner,screenHTML,sections,keysHTML,qBox,interactive,phone,fitAll,sizeFold,scrollToBm,BM};
+window.WIRD={Q,R,SN,N,state,owner,screenHTML,sections,keysHTML,qBox,interactive,phone,fitAll,sizeFold,scrollToBm,BM,CHEV,GEAR,TT,quartersOf,trackQuarters,bookmark,archive,current,head,pull,trackHTML,newHTML,counterHTML};
 })();

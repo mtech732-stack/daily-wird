@@ -1,0 +1,93 @@
+/* ش1 · المحفوظ · مكوّنات الإضافة والنقل والإزالة والحالة الفارغة
+   المرجع: design/system.md §12. يبني على ds.css ولا يغيّر فيه شيئاً. */
+
+/* ── البطاقة الفارغة ── */
+.track.empty{padding:10px 16px 16px}
+.emp p{margin:2px 0 0;font-size:14px;line-height:1.6;color:var(--muted)}
+.emp .btn{margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px}
+.emp .btn svg{flex:none}
+
+/* ── الزرّ المعطّل ── */
+.btn[disabled]{opacity:.38;cursor:default}
+
+/* ── القائمة (⋯ وقائمة الحزب بالضغط المطوّل) ── */
+.menu{position:absolute;z-index:7;width:252px;background:var(--card);border-radius:14px;border:1px solid var(--line);
+  box-shadow:0 12px 32px rgba(10,22,36,.22);overflow:hidden}
+.menu .mh{padding:10px 16px 8px;font-size:12.5px;color:var(--muted);border-bottom:1px solid var(--line);line-height:1.5}
+.menu .mi{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:0 16px;font-size:16px;
+  border-bottom:1px solid var(--line);cursor:pointer;color:var(--ink)}
+.menu .mi:last-child{border-bottom:none}
+.menu .mi svg{flex:none;color:var(--ink)}
+.menu .gap6{height:6px;background:var(--ghost);border-bottom:1px solid var(--line)}
+/* الصفّ المرفوع تحت قائمة الحزب */
+.row.lift{position:relative;z-index:7;background:var(--card);border-radius:14px;box-shadow:0 8px 24px rgba(10,22,36,.22);margin:0 -6px;padding:0 6px}
+
+/* ── الورقة الطويلة (إضافة · نقل · إزالة) ── */
+.sheet.tall{top:62px;display:flex;flex-direction:column;padding:10px 0 0}
+.s375 .sheet.tall{top:24px}
+.sheet.tall .shd{padding:0 22px}
+.shd .ttl{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.shd .ttl h4{margin:0}
+.lnk{font:inherit;font-size:16px;color:var(--ink);background:none;border:none;min-height:44px;min-width:44px;padding:0;cursor:pointer}
+.shd .why{margin:2px 0 0;font-size:13px;color:var(--muted);line-height:1.6}
+
+/* اختيار المسار: مقطعان، والمختار مرفوع بإطار */
+.seg{display:flex;gap:6px;background:var(--ghost);border-radius:14px;padding:4px;margin:12px 0 6px}
+.seg button{flex:1;min-height:44px;border-radius:11px;border:none;background:transparent;font:inherit;font-size:15px;font-weight:500;
+  color:var(--ink);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.seg .mk{width:4px;height:18px;border-radius:2px;background:var(--c);flex:none}
+.seg button.on{background:var(--card);font-weight:600;box-shadow:0 1px 3px rgba(10,22,36,.14),inset 0 0 0 1.5px var(--ink)}
+.dest{display:flex;align-items:center;gap:8px;min-height:44px;font-size:15px;margin:6px 0 2px}
+.dest span{color:var(--muted)}
+.dest .mk{width:4px;height:18px;border-radius:2px;background:var(--c);flex:none}
+
+/* قائمة الأجزاء: صفّ لكل جزء، وفيه حزباه في مكانين ثابتين */
+.jlist{flex:1 1 auto;overflow-y:auto;padding:2px 22px 12px;scrollbar-width:none}
+.jlist::-webkit-scrollbar{display:none}
+.jrow{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
+.jrow:last-child{border-bottom:none}
+.jbtn{width:92px;flex:none;min-height:52px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;cursor:pointer;
+  background:none;border:none;font-family:inherit;color:var(--ink);padding:0;text-align:right}
+.jbtn.off{cursor:default;color:var(--muted)}
+/* دائرة اختيار الجزء كلّه: فارغة · ممتلئة بصحّ */
+.ck{width:22px;height:22px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ink) 60%,transparent);position:relative}
+.ck.on{background:var(--ink);box-shadow:none}
+.ck.on:after{content:"";position:absolute;width:8px;height:4.5px;border-left:2px solid var(--paper);border-bottom:2px solid var(--paper);transform:rotate(-45deg);top:6.5px;left:6px}
+.jbtn.off .ck{visibility:hidden}
+
+/* خانة الحزب */
+.hc{flex:1 1 0;min-width:0;min-height:52px;border-radius:12px;display:flex;flex-direction:column;justify-content:center;padding:4px 12px;
+  position:relative;cursor:pointer;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ink) 55%,transparent);color:var(--ink);line-height:1.35}
+.hc b{font-size:15px;font-weight:600}
+.hc span{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* مختار: ممتلئ بصحّ في الزاوية */
+.hc.sel{background:var(--ink);color:var(--paper);box-shadow:none}
+.hc.sel span{color:var(--paper);opacity:.85}
+.hc.sel:after{content:"";position:absolute;left:14px;top:50%;width:9px;height:5px;margin-top:-5px;border-left:2.2px solid var(--paper);border-bottom:2.2px solid var(--paper);transform:rotate(-45deg)}
+/* في هذا المسار: محايد بلا إطار، لا يُضغط */
+.hc.here{background:var(--ghost);box-shadow:none;cursor:default}
+.hc.here b,.hc.here span{color:var(--muted)}
+/* في مسار آخر: إطار متقطّع، ويُختار (فيسأل التطبيق عن النقل) */
+.hc.other{box-shadow:none;border:1.5px dashed color-mix(in srgb,var(--ink) 60%,transparent)}
+.hc.other span{display:flex;align-items:center;gap:5px}
+.hc.other span i{width:3px;height:11px;border-radius:2px;background:var(--c);flex:none}
+.hc.other.sel{border-style:solid;border-color:var(--ink)}
+.hc.blank{visibility:hidden;cursor:default}
+
+/* شريط الورقة السفلي */
+.sbar{flex:none;padding:10px 22px 30px;border-top:1px solid var(--line);background:var(--paper)}
+.sbar .btn{margin-top:0}
+.s375 .sbar{padding-bottom:14px}
+
+/* ── الحوار: فوق الورقة إن كانت مفتوحة ── */
+.dim.top{z-index:7}
+.dlg{z-index:8}
+.dlg h4{margin:0 0 6px;font-size:19px;font-weight:600;line-height:1.5}
+.dlg p{margin:0 0 6px;font-size:14.5px;line-height:1.7;color:var(--muted)}
+.dlg .btn{margin-top:10px}
+.dlg .btn+.btn{margin-top:8px}
+
+/* ── إشعار عابر ── */
+.toast{position:absolute;left:50%;transform:translateX(-50%);bottom:42px;z-index:8;background:var(--ink);color:var(--paper);
+  border-radius:999px;padding:10px 18px;font-size:14px;white-space:nowrap;box-shadow:0 6px 18px rgba(10,22,36,.25)}
+.s375 .toast{bottom:20px}
