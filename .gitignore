@@ -1,0 +1,5 @@
+DailyWird.xcodeproj/
+Support/Info.plist
+build/
+*.xcresult
+.DS_Store
