@@ -2,19 +2,32 @@
 """المدقّق · ش0 · المرحلة 5: مطابقة جدول الحدود بمصدر ثانٍ (6.3 البند 2).
 
 المصدر الثاني: بيانات Quran.com (واجهة API الإصدار 4: rub_el_hizb_number وhizb_number وjuz_number وpage_number لكل آية)،
-كما نُشرت سورةً سورةً في المستودع wisnuwiry/alquran-id (المجلّد app/data/، 114 ملفاً).
-الاستعمال: python3 -I مطابقة_المصدر_الثاني.py <مجلّد فيه 1.json … 114.json> <data/quran-boundaries.json>
+كما نُشرت سورةً سورةً في المستودع wisnuwiry/alquran-id عند الإيداع b0b0265 (المجلّد app/data/).
+الاستعمال:
+  git clone https://github.com/wisnuwiry/alquran-id && git -C alquran-id checkout b0b0265
+  python3 -I مطابقة_المصدر_الثاني.py alquran-id/app/data data/quran-boundaries.json
+تقرأ الأداة كل ملف سورة في المجلّد بحقل id فيه، أيّاً كان اسمه، وتتجاهل ما ليس سورة (مثل chapters.json).
+وتطبع بصمة المصدر: sha256 لمحتوى ملفات السور الـ114 متتابعةً بترتيب id.
 """
+import hashlib
 import json
 import sys
 from pathlib import Path
 
 src, table = Path(sys.argv[1]), json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+files = {}
+for f in sorted(src.glob("*.json")):
+    d = json.loads(f.read_text(encoding="utf-8"))
+    if isinstance(d, dict) and "verses" in d and "id" in d:
+        files[d["id"]] = (f, d)
+assert sorted(files) == list(range(1, 115)), "يلزم 114 ملف سورة"
+h = hashlib.sha256()
+for i in range(1, 115):
+    h.update(files[i][0].read_bytes())
+print("بصمة المصدر:", h.hexdigest())
 V = {}
 for i in range(1, 115):
-    d = json.loads((src / f"{i}.json").read_text(encoding="utf-8"))
-    assert d["id"] == i
-    for v in d["verses"]:
+    for v in files[i][1]["verses"]:
         s, a = map(int, v["verse_key"].split(":"))
         V[(s, a)] = v
 assert len(V) == 6236
