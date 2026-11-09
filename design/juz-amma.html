@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>جزء عمّ بالقياس</title>
+<link rel="stylesheet" href="shared/ds.css">
+<link rel="stylesheet" href="shared/page.css">
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <h1>جزء عمّ: جمع السور القصيرة</h1>
+    <p>اختبار 7.1.1: السور المتجاورة التي تقع كلها في الأرباع نفسها تُجمع في قسم واحد عنوانه أسماؤها متتابعة، فلا يتكرّر الربع تحت سور كثيرة. الحدود من الجدول المعتمد: 9 أقسام بدل 37 سورة. العاديات وحدها تقع في ربعين (ح 59 الربع 4 وح 60 الربع 1… انظر الهاتف)، فتأخذ قسماً وحدها، وربعاها مشتركان بزاوية مقطوعة.</p>
+    <nav class="links"><a href="index.html">نظام التصميم</a><a href="main.html">الشاشة الرئيسية</a><a href="juz-amma.html" aria-current="page">جزء عمّ</a><a href="mockups.html">النماذج المعتمدة</a></nav>
+  </header>
+  <div class="bar">
+    <button id="bGray">فحص الرمادي</button>
+    <button id="bOrn">مقترح: زخرفة رأس السورة</button>
+  </div>
+  <div class="gal" id="gal"></div>
+  <section class="blk" style="margin-top:28px"><h2>الأقسام كما حسبها المحرّك من الجدول</h2><div class="scrollx"><table id="tb"><thead><tr><th>القسم</th><th>الأرباع</th><th>مشترك مع قسم آخر</th></tr></thead><tbody></tbody></table></div></section>
+</div>
+<script src="shared/quran.js"></script>
+<script src="shared/ds.js"></script>
+<script>
+const {phone,screenHTML,sizeFold,fitAll,state,sections,SN,R,N}=WIRD;
+const gal=document.getElementById('gal');
+const mk=o=>state(Object.assign({far:[59,60],near:[],newHizb:null,open:'far',last:{far:[1,'الأحد 8 نوفمبر · 5:02 ص']},ages:S=>{
+  const ag={233:0,234:5,235:12,236:40,237:null,238:2,239:25,240:null};Object.assign(S.age,ag);[233,234,235].forEach(r=>S.cyc.far.add(r));}},o));
+function show(o,S,after){const s=phone(gal,o);s.classList.add(o.dark?'wd':'wl');s.dataset.id=o.id;s.innerHTML=screenHTML(S,{keys:false});sizeFold(s);if(after)setTimeout(()=>after(s),30);return s;}
+show({id:'amma-light',title:'1 · جزء عمّ في البعيد، مفتوحاً',cap:'ح 59 وح 60 وحدهما في المسار. لاحظ أن ح 60 يظهر تحت ثلاثة أقسام، وفي كل قسم أرباعه وحدها في أماكنها.'},mk());
+show({id:'amma-dark',dark:1,title:'2 · ليلاً',cap:''},mk());
+show({id:'amma-fold',title:'3 · مطويّاً على موضع التوقّف',cap:'الربع الرابع من ح 59 يضمّ ثلاث سور، فيُكتب في البطاقة المطويّة أوّلها وآخرها.'},mk({open:null}));
+const S=mk();
+document.querySelector('#tb tbody').innerHTML=sections(S,'far').map(s=>`<tr><td>${s.suras.map(x=>SN[x]).join(' · ')}</td><td>${s.rs.map(r=>`ح ${R[r].hizb} ر ${(r-1)%4+1}`).join('، ')}</td><td>${s.shared.size?[...s.shared].map(r=>`ح ${R[r].hizb} ر ${(r-1)%4+1}`).join('، '):'—'}</td></tr>`).join('');
+fitAll();
+document.getElementById('bGray').onclick=e=>{document.querySelectorAll('.phone').forEach(p=>p.classList.toggle('gray'));e.target.classList.toggle('on');};
+document.getElementById('bOrn').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>p.classList.toggle('orn'));e.target.classList.toggle('on');};
+if(location.hash.includes('gray'))document.getElementById('bGray').click();
+</script>
+</body>
+</html>

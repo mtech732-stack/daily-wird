@@ -1,0 +1,189 @@
+/* نظام تصميم «الورد اليومي» · ش0 · المرحلة 6
+   المرجع: design/system.md. القيم هنا هي القيم نفسها بالنقاط (1px هنا = 1pt على الآيفون).
+   الشكل مأخوذ من النماذج المعتمدة (design/mockups.html) دون تغيير، إلا ما وُثّق في system.md §9. */
+
+@font-face{font-family:Plex;font-weight:400;src:url(../fonts/IBMPlexSansArabic-Regular.ttf) format('truetype');font-display:swap}
+@font-face{font-family:Plex;font-weight:500;src:url(../fonts/IBMPlexSansArabic-Medium.ttf) format('truetype');font-display:swap}
+@font-face{font-family:Plex;font-weight:600;src:url(../fonts/IBMPlexSansArabic-SemiBold.ttf) format('truetype');font-display:swap}
+@font-face{font-family:Plex;font-weight:700;src:url(../fonts/IBMPlexSansArabic-Bold.ttf) format('truetype');font-display:swap}
+
+/* ── 1 · الألوان (رموز بأدوارها) ── */
+.wl, :root{
+  --paper:#F7F4EC;   /* الأرضية */
+  --card:#FFFDF8;    /* البطاقة */
+  --ink:#0F3F6E;     /* النصّ */
+  --muted:#5C6F86;   /* النصّ الهادئ */
+  --line:rgba(15,63,110,.14); /* الحدود والفواصل */
+  --far:#0F3F6E;     /* مراجعة البعيد */
+  --near:#145DA0;    /* مراجعة القريب */
+  --new:#DF8C16;     /* المحفوظ الجديد (تعبئة) */
+  --new-ink:#9A5800; /* المحفوظ الجديد (نصّ وحدود على الفاتح) */
+  --on-far:#FFFFFF; --on-near:#FFFFFF; --on-new:#13283E; /* النصّ فوق التعبئة */
+  --gilt:#DF8C16;    /* ذهبي الزخرفة (زينة فقط، لا معنى) */
+  --ghost:rgba(15,63,110,.09);
+  --scrim:rgba(10,22,36,.42);
+}
+.wd, .wl.wd{
+  --paper:#13283E; --card:#1B3450; --ink:#F2EDE2; --muted:#A9B8C9; --line:rgba(242,237,226,.16);
+  --far:#D3DEEA; --near:#6FA8E6; --new:#DF8C16; --new-ink:#DF8C16;
+  --on-far:#13283E; --on-near:#13283E; --on-new:#13283E;
+  --gilt:#E39A33; --ghost:rgba(242,237,226,.10); --scrim:rgba(0,0,0,.5);
+}
+
+/* ── 2 · الشاشة ── */
+.scr{width:393px;height:852px;border-radius:48px;overflow:hidden;position:relative;background:var(--paper);color:var(--ink);display:flex;flex-direction:column;font-family:Plex,system-ui,sans-serif;direction:rtl;text-align:right}
+.scr *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+.s375{width:375px;height:667px;border-radius:0}
+.s440{width:440px;height:956px;border-radius:54px}
+.status{height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 34px;font-size:15px;font-weight:600;direction:ltr}
+.s375 .status{height:20px;font-size:12px;padding:0 8px}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:124px;height:36px;border-radius:20px;background:#000}
+.s375 .island{display:none}
+.scroll{flex:1 1 auto;overflow-y:auto;padding:4px 20px 24px;scrollbar-width:none}
+.s375 .scroll{padding:4px 16px 16px}
+.scroll::-webkit-scrollbar{display:none}
+
+/* رأس الشاشة */
+.apphead{display:flex;align-items:center;justify-content:space-between;margin:0 0 6px}
+.apphead h2{margin:0;font-size:22px;font-weight:600;display:inline}
+.apphead .dt{display:inline;margin-right:8px;font-size:13px;color:var(--muted)}
+.ic{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--ink);border:1px solid var(--line);position:relative}
+.ic:after{content:"";position:absolute;inset:-4px} /* مساحة اللمس 44 */
+
+/* سطر آخر إدخال */
+.stamp{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--muted);margin:0 8px 4px;white-space:nowrap;min-width:0}
+.stamp b{font-weight:600;color:var(--ink)}
+.stamp .sd{color:var(--muted);overflow:hidden;text-overflow:ellipsis}
+.stamp .sd:before{content:"·";margin:0 5px}
+
+/* بطاقة المسار */
+.track{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:10px 16px 0;margin:0 0 8px;overflow:hidden}
+.track.open{padding:10px 8px 0;overflow:visible}
+.track.open .th{padding:0 8px}
+.th{display:flex;align-items:center;gap:10px;margin-bottom:2px;min-height:30px}
+.th .mk{width:5px;height:24px;border-radius:3px;background:var(--c);flex:none}
+.th h3{margin:0;font-size:19px;font-weight:600;flex:1}
+.th .meta2{font-size:13px;color:var(--muted)}
+.th .more{width:44px;height:44px;margin:-7px 0 -7px -12px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:20px}
+
+/* صفّ الحزب */
+.row{display:flex;align-items:center;gap:8px;height:52px}
+.lbl{width:48px;flex:none;font-size:14px;font-weight:500;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.lbl svg{flex:none}
+.qs{display:flex;gap:8px;flex:none}
+.side{margin-right:auto;display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:0;text-align:left}
+.cur{container-type:inline-size}
+@container (max-width:330px){.cur .side b{font-size:13px}.cur .row,.cur .qs{gap:6px}.cur .lbl{width:44px}}
+.side b{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.side span{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.juzw{margin-right:auto;display:flex;flex:none}
+.juz{font-size:11.5px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 7px;white-space:nowrap}
+/* إن ضاق الصفّ (أصغر شاشة أو خطّ أكبر) نزل وسم الجزء إلى سطر رفيع فوق الصفّ، ولا تتحرّك الخانات */
+.sur{container-type:inline-size}
+@container (max-width:309px){.row:has(.juzw){flex-wrap:wrap;height:auto;row-gap:0;padding:0 0 4px}.row .juzw{order:-1;flex-basis:100%;justify-content:flex-end;margin:4px 0 -2px}}
+
+/* مربّع الربع والوجه */
+.q{--ci:var(--c);--on:var(--on-far);width:44px;height:44px;border-radius:11px;position:relative;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;user-select:none;flex:none;cursor:pointer;transition:transform .12s}
+.q:active{transform:scale(.94)}
+.q.gap{visibility:hidden;cursor:default}
+.q .n{position:relative;z-index:1}
+.t-far{--c:var(--far);--ci:var(--far);--on:var(--on-far)}
+.t-near{--c:var(--near);--ci:var(--near);--on:var(--on-near)}
+.t-new{--c:var(--new);--ci:var(--new-ink);--on:var(--on-new)}
+.t-ink{--c:var(--ink);--ci:var(--ink);--on:var(--paper)}
+/* الدرجات الأربع: بالامتلاء لا باللون */
+.L1{background:var(--c);color:var(--on)}
+.L2{background:linear-gradient(to top,var(--c) 50%,transparent 50%);box-shadow:inset 0 0 0 2px var(--c);color:var(--ci)}
+.L2 .n{transform:translateY(-9px);font-size:11px}
+/* الرقم فوق التخطيط يُكتب على رقعة بلون الأرضية حتى يُقرأ */
+.L3 .n{background:var(--cb,var(--card));border-radius:5px;padding:0 4px;line-height:18px}
+.track.open .sur .L3{--cb:var(--paper)}
+.L3{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--c) 70%,transparent) 0 2.5px,transparent 2.5px 7px);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ci) 70%,transparent);color:var(--ci)}
+.L4{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ci) 70%,transparent);color:var(--ci)}
+.ghost{background:var(--ghost);color:var(--muted)}
+/* علامة «اليوم»: دائرة فيها صحّ في الزاوية */
+.today:after{content:"";position:absolute;width:17px;height:17px;border-radius:50%;background:var(--paper);top:-6px;left:-6px;box-shadow:0 0 0 2px var(--ci);z-index:2}
+.today:before{content:"";position:absolute;z-index:3;width:7px;height:4px;border-left:2px solid var(--ci);border-bottom:2px solid var(--ci);transform:rotate(-45deg);top:-1.5px;left:-1px}
+/* موضع التوقّف: إطار مزدوج */
+.bm{outline:3px solid var(--ink);outline-offset:3px}
+/* الربع المشترك: زاوية مقطوعة */
+.cut{position:absolute;top:-1px;right:-1px;width:0;height:0;border-top:15px solid var(--cb,var(--card));border-left:15px solid transparent;z-index:1}
+.track.open .sur .cut{--cb:var(--paper)}
+.pages{display:grid;grid-template-columns:repeat(5,44px);gap:10px 8px;margin:6px 0 4px}
+.pages .q{font-size:12.5px}
+.sub{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:4px;margin:-2px 0 2px}
+
+/* قسم السورة */
+.sur{margin:4px 0 12px;background:var(--card);border-radius:18px;padding:8px 6px 10px;border:1px solid var(--line)}
+.track.open .sur{background:var(--paper)}
+.sh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:2px 0 4px}
+.sh b{font-size:17px;font-weight:600;line-height:1.5}
+.sh span{font-size:12.5px;color:var(--muted);white-space:nowrap;flex:none}
+
+/* شريط الإسدال */
+.pull{display:flex;align-items:center;justify-content:center;gap:6px;margin:4px -16px 0;min-height:36px;position:relative;border-top:1px solid var(--line);font-size:13.5px;font-weight:500;cursor:pointer;user-select:none}
+.track.open .pull{margin:4px -8px 0;position:sticky;bottom:0;background:var(--card);border-radius:0 0 22px 22px;z-index:3}
+.pull:after{content:"";position:absolute;inset:-4px 0} /* مساحة اللمس 44 */
+.chev{color:var(--muted);display:flex}
+.pull.up .chev{transform:rotate(180deg)}
+
+/* العدّاد */
+.fold{display:flex;flex-direction:column}
+/* العدّاد شريطاً (عند فتح الأرشيف): صفّ أفقي بارتفاع 88، ودائرته 64 */
+.counter{flex:none;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:18px;height:88px;padding:0 0 14px;border-top:1px solid var(--line);background:var(--paper)}
+.counter:not(.big) .plus{width:64px;height:64px}
+.counter:not(.big) .plus b{font-size:24px}
+.counter:not(.big) .plus span{font-size:14px}
+.counter.big{flex:1;flex-direction:column;height:auto;border:none;gap:6px;padding:0 0 4px}
+.plus{flex:none;width:76px;height:76px;border-radius:50%;background:var(--ink);color:var(--paper);border:none;font:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.plus b{font-size:26px;font-weight:600;line-height:1.1}
+.plus span{font-size:16px;opacity:.8;line-height:1}
+.counter.big .plus{width:var(--plus,122px);height:var(--plus,122px)}
+.counter.big .plus b{font-size:calc(var(--plus,122px) * .39)}
+.counter.big .plus span{font-size:calc(var(--plus,122px) * .18)}
+.reset{font:inherit;font-size:12px;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:999px;padding:3px 12px;position:relative;cursor:pointer}
+.counter.big .reset{font-size:13px;padding:3px 14px}
+.reset:after{content:"";position:absolute;inset:-9px -4px} /* مساحة اللمس 44 */
+/* الشاشة القصيرة (375×667): يصير العدّاد صفّاً أفقياً، وتبقى من الإشارة مقبضها، فلا تُدفع البطاقات */
+.counter.big.tight{flex:none;flex-direction:row;gap:18px;padding:4px 0 6px}
+.hint.tight{display:none}
+.short .row{height:50px}
+.short .apphead{margin-bottom:2px}
+.short .pages{margin:4px 0 2px}
+.hint{text-align:center;font-size:12px;color:var(--muted);padding:0 0 12px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.hint:before{content:"";width:36px;height:4px;border-radius:2px;background:var(--line)}
+
+/* مفاتيح الرموز */
+.keys{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px 16px 18px;margin:6px 0 10px}
+.keys h3{margin:0 0 6px;font-size:18px;font-weight:600}
+.kgrp{font-size:12.5px;color:var(--muted);margin:10px 0 2px}
+.krow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;justify-items:center;margin-bottom:4px}
+.key{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0 2px;text-align:center}
+.key>span{font-size:12px;line-height:1.4}
+.key .q{cursor:default}
+.ktxt{font-size:12.5px;color:var(--muted);text-align:center;margin-top:10px}
+
+/* الأوراق والحوار والأزرار */
+.dim{position:absolute;inset:0;background:var(--scrim);z-index:5}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:6;background:var(--paper);border-radius:28px 28px 0 0;padding:10px 22px 34px}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 14px}
+.sheet h4{margin:0 0 4px;font-size:21px;font-weight:600}
+.tag{display:inline-block;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;color:var(--muted);margin-right:6px;vertical-align:middle}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:15px}
+.kv span{color:var(--muted)}
+.kv b{font-weight:500;text-align:left}
+.btn{display:block;width:100%;font:inherit;font-size:16px;font-weight:500;border-radius:14px;padding:14px;min-height:50px;margin-top:12px;cursor:pointer;border:1.5px solid var(--ink);background:transparent;color:var(--ink)}
+.btn.pri{background:var(--ink);color:var(--paper)}
+.btn.quiet{border-color:transparent}
+.dlg{position:absolute;z-index:6;left:28px;right:28px;top:300px;background:var(--paper);border-radius:24px;padding:26px 22px 18px;text-align:center}
+
+/* فحص الرمادي */
+.gray .scr,.gray.scr,.gray .q,.gray.sw{filter:grayscale(1)}
+
+/* ── مقترحات تنتظر اعتماد المالك (مطفأة افتراضياً) ── */
+/* م-أ · رأس السورة بروح الإطار: مسطرتان ذهبيتان رفيعتان، غليظة ورفيعة، كما في الشعار */
+.orn .sur>.sh{position:relative;padding:0 0 7px;margin-bottom:6px}
+.orn .sur>.sh:after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;
+  background:linear-gradient(var(--gilt),var(--gilt)) 0 0/100% 2px no-repeat,linear-gradient(var(--gilt),var(--gilt)) 0 4px/100% 1px no-repeat;opacity:.75}
+/* م-ب · علامة موضع التوقّف بشريط الشعار (فاصل عريض بشقّ عميق) */
+.bmk .b2{display:none}.orn .bmk .b1{display:none}.orn .bmk .b2{display:inline}
