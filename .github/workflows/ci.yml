@@ -45,8 +45,12 @@ jobs:
 
       - name: تحديد المحاكيين
         run: |
-          echo "UDID_LARGE=$(scripts/sim-udid.sh "$DEVICE_LARGE" "$IOS_VERSION")" >> "$GITHUB_ENV"
-          echo "UDID_SMALL=$(scripts/sim-udid.sh "$DEVICE_SMALL" "$IOS_VERSION")" >> "$GITHUB_ENV"
+          set -euo pipefail
+          large=$(scripts/sim-udid.sh "$DEVICE_LARGE" "$IOS_VERSION")
+          small=$(scripts/sim-udid.sh "$DEVICE_SMALL" "$IOS_VERSION")
+          echo "$DEVICE_LARGE = $large · $DEVICE_SMALL = $small"
+          echo "UDID_LARGE=$large" >> "$GITHUB_ENV"
+          echo "UDID_SMALL=$small" >> "$GITHUB_ENV"
 
       - name: البناء للاختبار
         run: |
