@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نظام تصميم الورد</title>
+<link rel="stylesheet" href="shared/ds.css">
+<link rel="stylesheet" href="shared/page.css">
+<style>
+.sws{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.sw{border-radius:14px;border:1px solid var(--pg-line);overflow:hidden;background:var(--pg-card)}
+.sw .chip{height:56px;display:flex;align-items:flex-end;padding:6px 10px;font-size:12px}
+.sw .meta{padding:6px 10px 8px;font-size:13px;line-height:1.5}
+.sw .meta code{display:block;color:var(--pg-muted)}
+.duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.pane{border-radius:18px;padding:16px;background:var(--paper);color:var(--ink);border:1px solid var(--line);font-family:Plex,system-ui,sans-serif}
+.pane h3{margin:0 0 10px;font-size:15px;font-weight:600;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:auto repeat(4,44px);gap:12px 10px;align-items:center;justify-items:center}
+.tiles .lab{justify-self:start;font-size:13px;color:var(--muted)}
+.tiles .hd{font-size:12px;color:var(--muted);text-align:center;line-height:1.3}
+.type .r{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);padding:6px 0}
+.type .r span{font-size:12px;color:var(--muted);white-space:nowrap;direction:ltr}
+.space{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.space div{background:color-mix(in srgb,var(--near) 22%,transparent);border:1px dashed var(--near)}
+.space figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--muted)}
+.radii{display:flex;flex-wrap:wrap;gap:12px}
+.radii figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--muted)}
+.radii div{width:64px;height:64px;border:2px solid var(--ink);background:var(--card)}
+.comp{display:flex;flex-direction:column;gap:10px}
+.mini{width:353px;max-width:100%}
+.ba{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.ba>div{display:flex;flex-direction:column;gap:6px;align-items:center;font-size:12.5px;color:var(--muted);text-align:center}
+ol.list{margin:0;padding-right:20px;font-size:14.5px}
+ol.list li{margin:0 0 8px}
+.gray-all .pane,.gray-all .sw .chip{filter:grayscale(1)}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <h1>نظام التصميم · الورد اليومي</h1>
+    <p>النماذج المعتمدة محوّلةً إلى قياسات دقيقة بالنقاط على آيفون 393×852، بألوان هويتك (الكحلي، ولون ورق المصحف، والبرتقالي في مقام الذهبي). كل لون هنا قيس تباينه في الصفحة نفسها لا بالتقدير. والمرجع المكتوب للمهندس: <code>design/system.md</code>.</p>
+    <nav class="links"><a href="index.html" aria-current="page">نظام التصميم</a><a href="main.html">الشاشة الرئيسية</a><a href="juz-amma.html">جزء عمّ</a><a href="mockups.html">النماذج المعتمدة</a></nav>
+  </header>
+  <div class="bar">
+    <button id="bGray">فحص الرمادي</button>
+    <button id="bOrn">مقترح: زخرفة رأس السورة</button>
+  </div>
+
+  <section class="blk">
+    <h2>ما تحتاج أن تعتمده</h2>
+    <p>الشكل كما اعتمدته في النماذج. وهذه وحدها ما تغيّر أو أُضيف، وكل واحد منها يمكن ردّه:</p>
+    <ol class="list">
+      <li><b>رقم الوجه على البرتقالي صار كحلياً بدل الأبيض.</b> الأبيض على البرتقالي تباينه 2.7 وحدّ الوثيقة 4.5؛ والكحلي الليلي 5.6.</li>
+      <li><b>حدود المربّع «لم يُتلَ» والمخطّط أوضح قليلاً</b> (70% بدل 38% و55%)، حتى يُرى المربّع الفارغ بتباين 3:1 على الأقل. والأوجه غير المحفوظة نهاراً حدّها وأرقامها برتقالي معتّق <code>#9A5800</code> لأن البرتقالي نفسه لا يُقرأ رقماً على الورق (2.6).</li>
+      <li><b>رقم الربع المخطّط على رقعة صغيرة بلون الأرضية</b>، فلا يضيع بين الخطوط.</li>
+      <li><b>شريط «عرض كامل المراجعة» ومسّ الأزرار الصغيرة 44 نقطة</b> (قاعدة 8.3)، بمساحة لمس غير مرئية حتى لا يكبر الشكل.</li>
+      <li><b>العدّاد يتكيّف مع طول الشاشة:</b> قطره 122 على 393×852 كما في النماذج، ويصير صفّاً أفقياً على 375×667 حتى تبقى البطاقات الثلاث ظاهرة بلا تمرير. وعند فتح الأرشيف يصير شريطاً أفقياً بارتفاع 88.</li>
+      <li><b>مقترح زخرفة لم يُفعَّل</b> (زرّ «مقترح» أعلاه): مسطرتان ذهبيتان تحت اسم السورة، غليظة ورفيعة، من إطار رأس السورة في الشعار، وعلامة موضع التوقّف بشقّ الشريط نفسه. لا تدخل التطبيق إلا إن اخترتها.</li>
+    </ol>
+  </section>
+
+  <section class="blk">
+    <h2>1 · الألوان بأدوارها</h2>
+    <p>نهاراً وليلاً. الوضع الليلي يتبع إعداد الجهاز. لا أصفر. البرتقالي للمحفوظ الجديد وللزخرفة وحدهما.</p>
+    <div class="duo"><div><h3 style="margin:0 0 8px;font-size:15px">نهاراً</h3><div class="sws" id="swL"></div></div><div><h3 style="margin:0 0 8px;font-size:15px">ليلاً</h3><div class="sws" id="swD"></div></div></div>
+  </section>
+
+  <section class="blk">
+    <h2>2 · التباين مقيساً</h2>
+    <p>حسبته الصفحة الآن من الألوان نفسها بمعادلة WCAG. النصّ 4.5 على الأقل، وحدود المربّعات والعلامات 3 على الأقل.</p>
+    <div class="scrollx"><table id="ct"><thead><tr><th>العنصر</th><th>على</th><th>نهاراً</th><th>ليلاً</th><th>الحدّ</th></tr></thead><tbody></tbody></table></div>
+    <p style="margin-top:12px">عن «3:1 بين درجتين متجاورتين» (8.3): الدرجات الأربع لا تختلف باللون بل بالشكل: ممتلئ، ونصف ممتلئ، ومخطّط، وفارغ. وعلامة كل درجة تتباين مع الأرضية 3:1 على الأقل كما في الجدول. أما 3:1 بين متوسّط إضاءة درجتين متجاورتين فمستحيل حسابياً بأربع درجات بين الورقي والكحلي (يلزمه مدى 27:1، والمتاح 10.6:1)، فكتبت ذلك سؤالاً مفتوحاً (س5) ليُحسم عند البوّابة.</p>
+  </section>
+
+  <section class="blk">
+    <h2>3 · مربّع الربع ومربّع الوجه</h2>
+    <p>44×44 نقطة، زاويته 11، والمسافة بين المربّعات 8. الدرجات الأربع بالامتلاء، والعلامات فوقها بالشكل. جرّب «فحص الرمادي».</p>
+    <div class="duo" id="tilesBox"></div>
+  </section>
+
+  <section class="blk">
+    <h2>4 · الخط وسلّم أحجامه</h2>
+    <p>IBM Plex Sans Arabic مضمّناً، بأوزان 400 و500 و600. الأحجام بالنقاط على الحجم الافتراضي، وكلها تتبع حجم الخط في الجهاز ما عدا الأرقام داخل المربّعات (حتى لا ينكسر صفّ الأرباع).</p>
+    <div class="duo"><div class="pane wl type" id="typeL"></div><div class="pane wd type" id="typeD"></div></div>
+  </section>
+
+  <section class="blk">
+    <h2>5 · المسافات والزوايا</h2>
+    <p>سلّم المسافات: 2 · 4 · 6 · 8 · 10 · 12 · 16 · 20 · 24. والزوايا ليّنة كلها.</p>
+    <div class="duo">
+      <div class="pane wl"><h3>المسافات</h3><div class="space" id="sp"></div></div>
+      <div class="pane wl"><h3>الزوايا</h3><div class="radii" id="rd"></div></div>
+    </div>
+  </section>
+
+  <section class="blk">
+    <h2>6 · المكوّنات</h2>
+    <p>بطاقة المسار مطويّة، وقسم السورة بحزب مقسوم وربع مشترك ووسم الجزء، والعدّاد بشكليه، وورقة التفاصيل. بالحدود الحقيقية.</p>
+    <div class="duo" id="comps"></div>
+  </section>
+
+  <section class="blk">
+    <h2>7 · مقترح الزخرفة (ينتظر اختيارك)</h2>
+    <p>من روح الشعار: إطار رأس السورة بمسطرتيه الذهبيتين، وشريط الفاصل بشقّه العميق. الأولى في كل قسم سورة، والثانية في علامة الكتاب بجانب رقم الحزب. هادئتان، ولا تحملان معنى، فلا تمسّان فحص الرمادي.</p>
+    <div class="ba" id="orn"></div>
+  </section>
+</div>
+<script src="shared/quran.js"></script>
+<script src="shared/ds.js"></script>
+<script>
+const {owner,sections,qBox,N,screenHTML,BM,state}=WIRD;
+/* ── الألوان: تُقرأ من ds.css نفسها ── */
+const ROLES=[['paper','الأرضية'],['card','البطاقة'],['ink','النصّ'],['muted','النصّ الهادئ'],['far','مراجعة البعيد'],['near','مراجعة القريب'],['new','المحفوظ الجديد'],['new-ink','الجديد: نصّ وحدود'],['on-new','نصّ فوق البرتقالي'],['gilt','ذهبي الزخرفة']];
+function tokens(mode){const d=document.createElement('div');d.className=mode;d.style.display='none';document.body.appendChild(d);const cs=getComputedStyle(d);const o={};ROLES.concat([['line'],['on-far'],['on-near']]).forEach(([k])=>o[k]=cs.getPropertyValue('--'+k).trim());d.remove();return o;}
+const TL=tokens('wl'),TD=tokens('wd');
+const sw=(T)=>ROLES.map(([k,n])=>`<div class="sw"><div class="chip" style="background:${T[k]}"></div><div class="meta">${n}<code>${T[k].toUpperCase()}</code></div></div>`).join('');
+swL.innerHTML=sw(TL);swD.innerHTML=sw(TD);
+/* ── التباين (WCAG 2) ── */
+const hex=h=>{h=h.replace('#','');return [0,2,4].map(i=>parseInt(h.substr(i,2),16)/255)};
+const lin=c=>c<=.04045?c/12.92:((c+.055)/1.055)**2.4;
+const Lum=rgb=>{const [r,g,b]=rgb.map(lin);return .2126*r+.7152*g+.0722*b};
+const mix=(f,b,a)=>hex(f).map((v,i)=>v*a+hex(b)[i]*(1-a));
+const cr=(a,b)=>{const x=Lum(Array.isArray(a)?a:hex(a)),y=Lum(Array.isArray(b)?b:hex(b));return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
+const rows=[
+ ['النصّ','البطاقة',T=>cr(T.ink,T.card),4.5],['النصّ','الأرضية',T=>cr(T.ink,T.paper),4.5],
+ ['النصّ الهادئ','البطاقة',T=>cr(T.muted,T.card),4.5],['النصّ الهادئ','الأرضية',T=>cr(T.muted,T.paper),4.5],
+ ['رقم الربع: البعيد ممتلئ','لون البعيد',T=>cr(T['on-far'],T.far),4.5],['رقم الربع: القريب ممتلئ','لون القريب',T=>cr(T['on-near'],T.near),4.5],
+ ['رقم الوجه المحفوظ','البرتقالي',T=>cr(T['on-new'],T.new),4.5],['(قبل التعديل) أبيض على البرتقالي','البرتقالي',T=>cr('#FFFFFF',T.new),4.5,1],
+ ['رقم البعيد في المربّع الفارغ','البطاقة',T=>cr(T.far,T.card),4.5],['رقم القريب في المربّع الفارغ','البطاقة',T=>cr(T.near,T.card),4.5],
+ ['رقم الوجه غير المحفوظ','البطاقة',T=>cr(T['new-ink'],T.card),4.5],
+ ['حدّ «لم يُتلَ» · البعيد 70%','البطاقة',T=>cr(mix(T.far,T.card,.7),T.card),3],['حدّ «لم يُتلَ» · القريب 70%','البطاقة',T=>cr(mix(T.near,T.card,.7),T.card),3],
+ ['حدّ «لم يُحفظ» · الجديد 70%','البطاقة',T=>cr(mix(T['new-ink'],T.card,.7),T.card),3],
+ ['(قبل التعديل) حدّ «لم يُتلَ» 38%','البطاقة',T=>cr(mix(T.near,T.card,.38),T.card),3,1],
+ ['إطار موضع التوقّف','الأرضية',T=>cr(T.ink,T.paper),3],['علامة «اليوم» · القريب','الأرضية',T=>cr(T.near,T.paper),3],
+ ['عنوان المسار ولونه: علامة البعيد','البطاقة',T=>cr(T.far,T.card),3],['علامة القريب','البطاقة',T=>cr(T.near,T.card),3],['علامة الجديد (زينة بجانب العنوان)','البطاقة',T=>cr(T.new,T.card),0]];
+const cell=(v,min,old)=>min?`<td class="${v>=min?'ok':'no'}">${v.toFixed(2)}</td>`:`<td>${v.toFixed(2)}</td>`;
+ct.querySelector('tbody').innerHTML=rows.map(([a,b,f,min,old])=>`<tr${old?' style="opacity:.6"':''}><td>${a}</td><td>${b}</td>${cell(f(TL),min)}${cell(f(TD),min)}<td>${min?min+':1':'—'}</td></tr>`).join('');
+/* ── المربّعات ── */
+function tilePane(mode){
+  const T=['far','near'],L=['L1','L2','L3','L4'],H=['خلال أسبوع','خلال شهر','أكثر من شهر','لم يُتلَ'];
+  let h=`<div class="pane ${mode}"><h3>${mode==='wd'?'ليلاً':'نهاراً'}</h3><div class="tiles"><span></span>${H.map(x=>`<span class="hd">${x}</span>`).join('')}`;
+  T.forEach(t=>{h+=`<span class="lab">${t==='far'?'البعيد':'القريب'}</span>`+L.map(l=>`<div class="q t-${t} ${l}" style="--cb:var(--paper)"><span class="n">3</span></div>`).join('');});
+  h+=`<span class="lab">+ اليوم</span>`+L.map(l=>`<div class="q t-near ${l} today" style="--cb:var(--paper)"><span class="n">3</span></div>`).join('');
+  h+=`<span class="lab">+ موضع التوقّف</span>`+L.map(l=>`<div class="q t-far ${l} bm" style="--cb:var(--paper)"><span class="n">3</span></div>`).join('');
+  h+=`<span class="lab">+ مشترك</span>`+L.map(l=>`<div class="q t-far ${l}" style="--cb:var(--paper)"><i class="cut"></i><span class="n">3</span></div>`).join('');
+  h+=`<span class="lab">الوجه</span><div class="q t-new L1" style="--cb:var(--paper)"><span class="n">117</span></div><div class="q t-new L1 today"><span class="n">118</span></div><div class="q t-new L4 bm"><span class="n">119</span></div><div class="q t-new L4"><span class="n">120</span></div>`;
+  return h+'</div></div>';
+}
+tilesBox.innerHTML=tilePane('wl')+tilePane('wd');
+/* ── الخط ── */
+const TY=[['عنوان التطبيق',22,600,'title2'],['عنوان الورقة',21,600,'title3'],['عنوان المسار',19,600,'headline'],['مفاتيح الرموز',18,600,'headline'],['اسم السورة',17,600,'headline'],['زرّ',16,500,'body'],['السورة في البطاقة المطويّة',15,600,'subheadline'],['سطر في التفاصيل',15,400,'subheadline'],['رقم الحزب «ح 12»',14,500,'subheadline'],['شريط الإسدال',13.5,500,'footnote'],['التاريخ · التقدّم «22 من 36»',13,400,'footnote'],['رقم الربع',13,500,'ثابت'],['آخر إدخال · مدى الأحزاب',12.5,400,'caption1'],['رقم الوجه',12.5,500,'ثابت'],['معنى الرمز',12,400,'caption1'],['وسم الجزء',11.5,400,'caption2'],['رقم الربع نصف الممتلئ',11,500,'ثابت']];
+const ty=TY.map(([n,s,w,st])=>`<div class="r"><span style="font-size:${s}px;font-weight:${w};direction:rtl;color:var(--ink)">${n}</span><span>${s} · ${w} · ${st}</span></div>`).join('');
+typeL.innerHTML='<h3>نهاراً</h3>'+ty;typeD.innerHTML='<h3>ليلاً</h3>'+ty;
+sp.innerHTML=[2,4,6,8,10,12,16,20,24].map(v=>`<figure><div style="width:${v}px;height:40px"></div>${v}</figure>`).join('');
+rd.innerHTML=[['مربّع',11],['زرّ',14],['قسم سورة',18],['بطاقة',22],['حوار',24],['ورقة',28],['وسم','999']].map(([n,v])=>`<figure><div style="border-radius:${v==999?32:v}px"></div>${n} ${v==999?'كامل':v}</figure>`).join('');
+/* ── المكوّنات ── */
+function comp(mode){
+  const S=owner();const S2=owner({open:'far'});
+  const w=document.createElement('div');w.innerHTML=screenHTML(S2);
+  const secs=[...w.querySelectorAll('.sur')].slice(1,3).map(e=>e.outerHTML).join('');
+  w.innerHTML=screenHTML(S);const far=w.querySelector('.stamp').outerHTML+w.querySelector('[data-track="far"]').outerHTML;const nw=[...w.querySelectorAll('.stamp')][2].outerHTML+w.querySelector('[data-track="new"]').outerHTML;
+  return `<div class="pane ${mode} comp scr" style="width:auto;height:auto;border-radius:18px;display:block"><h3>${mode==='wd'?'ليلاً':'نهاراً'}</h3>
+   <div class="mini">${far}</div><div class="mini">${nw}</div>
+   <div class="mini track open" style="--c:var(--far);padding-bottom:8px">${secs}</div>
+   <div class="mini" style="display:flex;gap:18px;align-items:center;justify-content:center"><div class="counter big" style="flex:none;--plus:122px"><button class="reset">تصفير</button><button class="plus"><b>33</b><span>+</span></button></div><div class="counter" style="border:none"><button class="reset">تصفير</button><button class="plus"><b>33</b><span>+</span></button></div></div>
+   <div class="mini">${WIRD.keysHTML()}</div></div>`;
+}
+comps.innerHTML=comp('wl')+comp('wd');
+/* ── الزخرفة قبل وبعد ── */
+const sec=()=>{const w=document.createElement('div');w.innerHTML=screenHTML(owner({open:'far'}));return [...w.querySelectorAll('.sur')][2].outerHTML;};
+orn.innerHTML=`<div><div class="pane wl scr" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>كما في النماذج</div>
+<div><div class="pane wl scr orn" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>بالزخرفة المقترحة</div>
+<div><div class="pane wd scr" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>ليلاً كما في النماذج</div>
+<div><div class="pane wd scr orn" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>ليلاً بالزخرفة</div>`;
+bGray.onclick=e=>{document.body.classList.toggle('gray-all');document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('gray'));e.target.classList.toggle('on');};
+bOrn.onclick=e=>{document.querySelectorAll('.comp').forEach(p=>p.classList.toggle('orn'));e.target.classList.toggle('on');};
+if(location.hash.includes('gray'))bGray.click();
+</script>
+</body>
+</html>

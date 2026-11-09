@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>الشاشة الرئيسية بالقياس</title>
+<link rel="stylesheet" href="shared/ds.css">
+<link rel="stylesheet" href="shared/page.css">
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <h1>الشاشة الرئيسية بقياسها الحقيقي</h1>
+    <p>آيفون 393×852 نقطة أساساً، مع الأصغر 375×667 والأكبر 440×956. المحتوى محفوظك كما في النماذج: البعيد ح 1–9، والقريب ح 10–11، والجديد ح 12، بحدود حقيقية من جدول الحدود المعتمد (بعد القرار 12)، مرتّبة بالسور. فيها حزب مقسوم (ح 8 بين آل عمران والنساء) وربعان مشتركان (الفاتحة والبقرة، والبقرة وآل عمران). الهاتف الأول تفاعلي.</p>
+    <nav class="links"><a href="index.html">نظام التصميم</a><a href="main.html" aria-current="page">الشاشة الرئيسية</a><a href="juz-amma.html">جزء عمّ</a><a href="mockups.html">النماذج المعتمدة</a></nav>
+  </header>
+  <div class="bar">
+    <button id="bGray">فحص الرمادي</button>
+    <button id="bOrn">مقترح: زخرفة رأس السورة</button>
+  </div>
+  <div class="gal" id="gal"></div>
+</div>
+<script src="shared/quran.js"></script>
+<script src="shared/ds.js"></script>
+<script>
+const {phone,owner,screenHTML,interactive,sizeFold,scrollToBm,fitAll,state}=WIRD;
+const gal=document.getElementById('gal');
+function show(o,S,after){const s=phone(gal,o);s.classList.add(o.dark?'wd':'wl');s.dataset.id=o.id||'';s.innerHTML=screenHTML(S);sizeFold(s);if(after)setTimeout(()=>after(s),30);return s;}
+
+const s1=phone(gal,{title:'1 · عند الفتح، نهاراً (تفاعلي)',cap:'ثلاث بطاقات مطويّة على موضع التوقّف، والعدّاد كبير يملأ ما تحتها. اضغط ربعاً أو وجهاً، أو شريط «عرض كامل المراجعة».'});
+s1.classList.add('wl');s1.dataset.id='fold-light';interactive(s1,owner());
+show({id:'fold-dark',dark:1,title:'2 · عند الفتح، ليلاً',cap:'يتبع إعداد الجهاز. ألوان المسارات مضبوطة لتقرأ على الكحلي.'},owner());
+show({id:'archive-top',title:'3 · أرشيف البعيد مفتوحاً: أوّله',cap:'قسم لكل سورة. الربع 1 من ح 1 مشترك بين الفاتحة والبقرة: يظهر تحت الاثنتين بزاوية مقطوعة، وخانات الأرباع الأخرى فراغ في مكانها.'},owner({open:'far'}));
+show({id:'archive-bm',title:'4 · أرشيف البعيد: عند موضع التوقّف',cap:'ينزل إلى موضع التوقّف (ح 6). ح 5 مقسوم بين البقرة وآل عمران بربع مشترك، وح 8 مقسوم بين آل عمران والنساء بلا ربع مشترك. والجزء وسم صغير عند أول حزب فيه. والعدّاد شريط أسفل الشاشة.'},owner({open:'far'}),s=>scrollToBm(s,'far'));
+show({id:'archive-dark',dark:1,title:'5 · الأرشيف ليلاً',cap:'الشريط «طيّ» ملتصق بأسفل البطاقة أثناء التمرير.'},owner({open:'far'}),s=>scrollToBm(s,'far'));
+show({id:'fold-375',size:'s375',title:'6 · أصغر شاشة 375×667',cap:'آيفون SE. البطاقات الثلاث كاملة، والعدّاد يصغر ليملأ ما بقي ولا يُقصّ.'},owner());
+show({id:'fold-440',size:'s440',title:'7 · أكبر شاشة 440×956',cap:'Pro Max. المقاسات نفسها، والزيادة كلها للعدّاد.'},owner());
+const all=[...Array(60)].map((_,i)=>i+1);
+show({id:'stress-60',title:'8 · أطول محتوى: البعيد بستين حزباً',cap:'الأرشيف كاملاً من الفاتحة إلى الناس، بأطول عناوين السور المجموعة (14 سورة في قسم واحد). مرّر داخل الهاتف.'},
+  state({far:all,near:[],newHizb:null,open:'far',ages:S=>{for(let r=1;r<=240;r++){const m=r%7;S.age[r]=m===0?null:m<3?2:m<5?20:60;}for(let r=1;r<=150;r++)S.cyc.far.add(r);}}),s=>{s.querySelector('.scroll').scrollTop=1e6;});
+fitAll();
+document.getElementById('bGray').onclick=e=>{document.querySelectorAll('.phone').forEach(p=>p.classList.toggle('gray'));e.target.classList.toggle('on');};
+document.getElementById('bOrn').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>p.classList.toggle('orn'));e.target.classList.toggle('on');};
+if(location.hash.includes('gray'))document.getElementById('bGray').click();
+if(location.hash.includes('orn'))document.getElementById('bOrn').click();
+</script>
+</body>
+</html>
