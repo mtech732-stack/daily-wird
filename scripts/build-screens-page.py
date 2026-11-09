@@ -35,6 +35,7 @@ for key in shots:
 if missing or not shots:
     sys.exit("لقطات ناقصة: " + ", ".join(missing or ["لا شيء"]))
 
+body = "".join(sections)
 now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 page = f"""<!doctype html>
 <html lang="ar" dir="rtl">
@@ -65,7 +66,7 @@ a {{ color:inherit; }}
 <p>تُحدَّث تلقائياً بعد كل دمج. اضغط أي لقطة لتكبيرها.</p>
 <p>آخر تحديث: {now} · الإيداع <a href="https://github.com/mtech732-stack/daily-wird/commit/{sha}">{sha[:7]}</a> · <a href="{html.escape(run_url)}">التشغيل</a></p>
 </header>
-{"".join(sections)}
+{body}
 </body>
 </html>
 """
