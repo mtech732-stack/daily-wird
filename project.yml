@@ -1,0 +1,70 @@
+# مشروع Xcode يُولَّد من هذا الملف بأداة XcodeGen (في GitHub Actions).
+# لا Mac عند المساعدين، فالملف النصّي هو المرجع، و.xcodeproj يُولَّد ولا يُحفظ في المستودع.
+name: DailyWird
+options:
+  bundleIdPrefix: com.mtech732.dailywird
+  deploymentTarget:
+    iOS: "17.0"
+  developmentLanguage: ar
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    CODE_SIGN_STYLE: Manual
+    DEVELOPMENT_TEAM: ""
+targets:
+  DailyWird:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+    info:
+      path: Support/Info.plist
+      properties:
+        CFBundleDisplayName: الورد اليومي
+        CFBundleDevelopmentRegion: ar
+        CFBundleLocalizations: [ar]
+        CFBundleShortVersionString: "0.1"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIAppFonts:
+          - IBMPlexSansArabic-Regular.ttf
+          - IBMPlexSansArabic-Medium.ttf
+          - IBMPlexSansArabic-SemiBold.ttf
+          - IBMPlexSansArabic-Bold.ttf
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mtech732.dailywird
+        GENERATE_INFOPLIST_FILE: NO
+  DailyWirdTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [AppTests]
+    dependencies:
+      - target: DailyWird
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+  DailyWirdUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [AppUITests]
+    dependencies:
+      - target: DailyWird
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: DailyWird
+schemes:
+  DailyWird:
+    build:
+      targets:
+        DailyWird: all
+    test:
+      targets:
+        - DailyWirdTests
+        - DailyWirdUITests
+      language: ar
+      region: SA
