@@ -15,7 +15,7 @@
 .duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
 .pane{border-radius:18px;padding:16px;background:var(--paper);color:var(--ink);border:1px solid var(--line);font-family:Plex,system-ui,sans-serif}
 .pane h3{margin:0 0 10px;font-size:15px;font-weight:600;color:var(--muted)}
-.tiles{display:grid;grid-template-columns:auto repeat(4,44px);gap:12px 10px;align-items:center;justify-items:center}
+.tiles{display:grid;grid-template-columns:minmax(0,1fr) repeat(5,44px);gap:12px 6px;align-items:center;justify-items:center}
 .tiles .lab{justify-self:start;font-size:13px;color:var(--muted)}
 .tiles .hd{font-size:12px;color:var(--muted);text-align:center;line-height:1.3}
 .type .r{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);padding:6px 0}
@@ -70,12 +70,12 @@ ol.list li{margin:0 0 8px}
     <h2>2 · التباين مقيساً</h2>
     <p>حسبته الصفحة الآن من الألوان نفسها بمعادلة WCAG. النصّ 4.5 على الأقل، وحدود المربّعات والعلامات 3 على الأقل.</p>
     <div class="scrollx"><table id="ct"><thead><tr><th>العنصر</th><th>على</th><th>نهاراً</th><th>ليلاً</th><th>الحدّ</th></tr></thead><tbody></tbody></table></div>
-    <p style="margin-top:12px">عن «3:1 بين درجتين متجاورتين» (8.3): الدرجات الأربع لا تختلف باللون بل بالشكل: ممتلئ، ونصف ممتلئ، ومخطّط، وفارغ. وعلامة كل درجة تتباين مع الأرضية 3:1 على الأقل كما في الجدول. أما 3:1 بين متوسّط إضاءة درجتين متجاورتين فمستحيل حسابياً بأربع درجات بين الورقي والكحلي (يلزمه مدى 27:1، والمتاح 10.6:1)، فكتبت ذلك سؤالاً مفتوحاً (س5) ليُحسم عند البوّابة.</p>
+    <p style="margin-top:12px">عن «3:1 بين درجتين متجاورتين» (8.3): الدرجات الخمس لا تختلف باللون بل بالشكل: ممتلئ، ونصف، وربع، ومخطّط، وفارغ. وعلامة كل درجة تتباين مع الأرضية 3:1 على الأقل كما في الجدول. أما 3:1 بين متوسّط إضاءة درجتين متجاورتين فمستحيل حسابياً بخمس درجات بين الورقي والكحلي (يلزمه مدى 81:1، والمتاح 10.6:1)، فكتبت ذلك سؤالاً مفتوحاً (س5) ليُحسم عند البوّابة.</p>
   </section>
 
   <section class="blk">
     <h2>3 · مربّع الربع ومربّع الوجه</h2>
-    <p>44×44 نقطة، زاويته 11، والمسافة بين المربّعات 8. الدرجات الأربع بالامتلاء، والعلامات فوقها بالشكل. جرّب «فحص الرمادي».</p>
+    <p>44×44 نقطة، زاويته 11، والمسافة بين المربّعات 8. الدرجات الخمس بالأسابيع كما اعتمدتها (القرار 13): ممتلئ خلال 7 أيام، ونصف خلال 15، وربع خلال 22، وباهت بعدها، وفارغ لم يُتلَ. والعلامات فوقها بالشكل. جرّب «فحص الرمادي».</p>
     <div class="duo" id="tilesBox"></div>
   </section>
 
@@ -138,13 +138,13 @@ const cell=(v,min,old)=>min?`<td class="${v>=min?'ok':'no'}">${v.toFixed(2)}</td
 ct.querySelector('tbody').innerHTML=rows.map(([a,b,f,min,old])=>`<tr${old?' style="opacity:.6"':''}><td>${a}</td><td>${b}</td>${cell(f(TL),min)}${cell(f(TD),min)}<td>${min?min+':1':'—'}</td></tr>`).join('');
 /* ── المربّعات ── */
 function tilePane(mode){
-  const T=['far','near'],L=['L1','L2','L3','L4'],H=['خلال أسبوع','خلال شهر','أكثر من شهر','لم يُتلَ'];
+  const T=['far','near'],L=['L1','L2','L3','L4','L5'],H=['خلال 7','خلال 15','خلال 22','أكثر','لم يُتلَ'];
   let h=`<div class="pane ${mode}"><h3>${mode==='wd'?'ليلاً':'نهاراً'}</h3><div class="tiles"><span></span>${H.map(x=>`<span class="hd">${x}</span>`).join('')}`;
   T.forEach(t=>{h+=`<span class="lab">${t==='far'?'البعيد':'القريب'}</span>`+L.map(l=>`<div class="q t-${t} ${l}" style="--cb:var(--paper)"><span class="n">3</span></div>`).join('');});
   h+=`<span class="lab">+ اليوم</span>`+L.map(l=>`<div class="q t-near ${l} today" style="--cb:var(--paper)"><span class="n">3</span></div>`).join('');
   h+=`<span class="lab">+ موضع التوقّف</span>`+L.map(l=>`<div class="q t-far ${l} bm" style="--cb:var(--paper)"><span class="n">3</span></div>`).join('');
   h+=`<span class="lab">+ مشترك</span>`+L.map(l=>`<div class="q t-far ${l}" style="--cb:var(--paper)"><i class="cut"></i><span class="n">3</span></div>`).join('');
-  h+=`<span class="lab">الوجه</span><div class="q t-new L1" style="--cb:var(--paper)"><span class="n">117</span></div><div class="q t-new L1 today"><span class="n">118</span></div><div class="q t-new L4 bm"><span class="n">119</span></div><div class="q t-new L4"><span class="n">120</span></div>`;
+  h+=`<span class="lab">الوجه</span><div class="q t-new L1" style="--cb:var(--paper)"><span class="n">117</span></div><div class="q t-new L1 today"><span class="n">118</span></div><div class="q t-new L5 bm"><span class="n">119</span></div><div class="q t-new L5"><span class="n">120</span></div><span></span>`;
   return h+'</div></div>';
 }
 tilesBox.innerHTML=tilePane('wl')+tilePane('wd');

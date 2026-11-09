@@ -13,7 +13,8 @@ const quartersOf=h=>[1,2,3,4].map(i=>(h-1)*4+i);
 
 function rel(d){if(d===0)return 'اليوم';if(d===1)return 'أمس';if(d===2)return 'قبل يومين';if(d<=6)return `قبل ${N(d)} أيام`;
   if(d<=13)return 'قبل أسبوع';if(d<=20)return 'قبل أسبوعين';if(d<=29)return 'قبل 3 أسابيع';if(d<=59)return 'قبل شهر';if(d<=89)return 'قبل شهرين';return `قبل ${N(Math.floor(d/30))} أشهر`;}
-const lvl=a=>a==null?4:a<=7?1:a<=30?2:3;
+/* درجات العمر (القرار 13): خلال 7 · خلال 15 · خلال 22 · أكثر · لم يُتلَ */
+const lvl=a=>a==null?5:a<=7?1:a<=15?2:a<=22?3:4;
 
 /* الحالة: أحزاب كل مسار، وعمر كل ربع بالأيام (null = لم يُتلَ)، وما ظُلّل في الدورة الحالية */
 function state(o){
@@ -81,7 +82,7 @@ function newHTML(S){
   const idx=Math.max(0,list.indexOf(next===undefined?list[list.length-1]:next)),start=Math.min(Math.floor(idx/5)*5,Math.max(0,list.length-5));
   const shown=open?list:list.slice(start,start+5);
   const sharedFirst=R[(h-1)*4].lastPage===list[0];
-  const box=p=>{const a=S.done[p],cls=['q','t-new',a===undefined?'L4':'L1'];if(a===0)cls.push('today');if(p===next)cls.push('bm');
+  const box=p=>{const a=S.done[p],cls=['q','t-new',a===undefined?'L5':'L1'];if(a===0)cls.push('today');if(p===next)cls.push('bm');
     return `<div class="${cls.join(' ')}" data-p="${p}" role="button">${p===list[0]&&sharedFirst?'<i class="cut"></i>':''}<span class="n">${N(p)}</span></div>`;};
   const sur=[...new Set(quartersOf(h).flatMap(r=>R[r].suras))].map(s=>SN[s]).join(' · ');
   return `${stamp(S,'new')}<div class="track ${open?'open':''}" style="--c:var(--new)" data-track="new">${head('new',`${N(n)} من ${N(list.length)}`)}
@@ -93,11 +94,11 @@ function keysHTML(){
   const k=(c,t,txt)=>`<div class="key"><div class="q ${c} t-${t}" style="--cb:var(--card)">${c.includes('shared')?'<i class="cut"></i>':''}<span class="n">3</span></div><span>${txt}</span></div>`;
   return `<div class="keys"><h3>مفاتيح الرموز</h3>
   <div class="kgrp">عمر الربع منذ آخر تلاوة · يتغيّر وحده مع الأيام</div>
-  <div class="krow">${k('L1','far','خلال أسبوع')}${k('L2','far','خلال شهر')}${k('L3','far','أكثر من شهر')}${k('L4','far','لم يُتلَ')}</div>
+  <div class="krow k5">${k('L1','far','خلال 7 أيام')}${k('L2','far','خلال 15 يوماً')}${k('L3','far','خلال 22 يوماً')}${k('L4','far','أكثر من 22')}${k('L5','far','لم يُتلَ')}</div>
   <div class="kgrp">علامات تُضاف فوق أي ربع، أياً كان عمره</div>
   <div class="krow">${k('ghost today','ink','تلوته اليوم')}${k('ghost bm','ink','موضع التوقّف')}${k('ghost shared','ink','بين سورتين')}<div></div></div>
   <div class="kgrp">المحفوظ الجديد</div>
-  <div class="krow">${k('L1','new','وجه محفوظ')}${k('L4','new','لم يُحفظ')}<div></div><div></div></div>
+  <div class="krow">${k('L1','new','وجه محفوظ')}${k('L5','new','لم يُحفظ')}<div></div><div></div></div>
   <div class="ktxt">ضغطة: تلوته أو تراجع · ضغطة مطوّلة: التفاصيل</div></div>`;
 }
 function screenHTML(S,o={}){
