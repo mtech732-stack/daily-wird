@@ -15,7 +15,7 @@
 .duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
 .pane{border-radius:18px;padding:16px;background:var(--paper);color:var(--ink);border:1px solid var(--line);font-family:Plex,system-ui,sans-serif}
 .pane h3{margin:0 0 10px;font-size:15px;font-weight:600;color:var(--muted)}
-.tiles{display:grid;grid-template-columns:auto repeat(4,44px);gap:12px 10px;align-items:center;justify-items:center}
+.tiles{display:grid;grid-template-columns:minmax(0,1fr) repeat(5,44px);gap:12px 6px;align-items:center;justify-items:center}
 .tiles .lab{justify-self:start;font-size:13px;color:var(--muted)}
 .tiles .hd{font-size:12px;color:var(--muted);text-align:center;line-height:1.3}
 .type .r{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);padding:6px 0}
@@ -44,19 +44,19 @@ ol.list li{margin:0 0 8px}
   </header>
   <div class="bar">
     <button id="bGray">فحص الرمادي</button>
-    <button id="bOrn">مقترح: زخرفة رأس السورة</button>
+    <button id="bOrn">بلا زخرفة (للمقارنة)</button>
   </div>
 
   <section class="blk">
-    <h2>ما تحتاج أن تعتمده</h2>
-    <p>الشكل كما اعتمدته في النماذج. وهذه وحدها ما تغيّر أو أُضيف، وكل واحد منها يمكن ردّه:</p>
+    <h2>ما اعتمدته</h2>
+    <p>الشكل كما اعتمدته في النماذج. وهذه ما تغيّر أو أُضيف، واعتمدتها كلها في 9 نوفمبر 2026:</p>
     <ol class="list">
       <li><b>رقم الوجه على البرتقالي صار كحلياً بدل الأبيض.</b> الأبيض على البرتقالي تباينه 2.7 وحدّ الوثيقة 4.5؛ والكحلي الليلي 5.6.</li>
       <li><b>حدود المربّع «لم يُتلَ» والمخطّط أوضح قليلاً</b> (70% بدل 38% و55%)، حتى يُرى المربّع الفارغ بتباين 3:1 على الأقل. والأوجه غير المحفوظة نهاراً حدّها وأرقامها برتقالي معتّق <code>#9A5800</code> لأن البرتقالي نفسه لا يُقرأ رقماً على الورق (2.6).</li>
       <li><b>رقم الربع المخطّط على رقعة صغيرة بلون الأرضية</b>، فلا يضيع بين الخطوط.</li>
       <li><b>شريط «عرض كامل المراجعة» ومسّ الأزرار الصغيرة 44 نقطة</b> (قاعدة 8.3)، بمساحة لمس غير مرئية حتى لا يكبر الشكل.</li>
       <li><b>العدّاد يتكيّف مع طول الشاشة:</b> قطره 122 على 393×852 كما في النماذج، ويصير صفّاً أفقياً على 375×667 حتى تبقى البطاقات الثلاث ظاهرة بلا تمرير. وعند فتح الأرشيف يصير شريطاً أفقياً بارتفاع 88.</li>
-      <li><b>مقترح زخرفة لم يُفعَّل</b> (زرّ «مقترح» أعلاه): مسطرتان ذهبيتان تحت اسم السورة، غليظة ورفيعة، من إطار رأس السورة في الشعار، وعلامة موضع التوقّف بشقّ الشريط نفسه. لا تدخل التطبيق إلا إن اخترتها.</li>
+      <li><b>زخرفة من روح الشعار، مفعّلة باعتمادك:</b> مسطرتان ذهبيتان تحت اسم السورة، غليظة ورفيعة، من إطار رأس السورة في الشعار، وعلامة موضع التوقّف بشقّ الشريط نفسه.</li>
     </ol>
   </section>
 
@@ -70,12 +70,12 @@ ol.list li{margin:0 0 8px}
     <h2>2 · التباين مقيساً</h2>
     <p>حسبته الصفحة الآن من الألوان نفسها بمعادلة WCAG. النصّ 4.5 على الأقل، وحدود المربّعات والعلامات 3 على الأقل.</p>
     <div class="scrollx"><table id="ct"><thead><tr><th>العنصر</th><th>على</th><th>نهاراً</th><th>ليلاً</th><th>الحدّ</th></tr></thead><tbody></tbody></table></div>
-    <p style="margin-top:12px">عن «3:1 بين درجتين متجاورتين» (8.3): الدرجات الأربع لا تختلف باللون بل بالشكل: ممتلئ، ونصف ممتلئ، ومخطّط، وفارغ. وعلامة كل درجة تتباين مع الأرضية 3:1 على الأقل كما في الجدول. أما 3:1 بين متوسّط إضاءة درجتين متجاورتين فمستحيل حسابياً بأربع درجات بين الورقي والكحلي (يلزمه مدى 27:1، والمتاح 10.6:1)، فكتبت ذلك سؤالاً مفتوحاً (س5) ليُحسم عند البوّابة.</p>
+    <p style="margin-top:12px">عن «3:1 بين درجتين متجاورتين» (8.3): الدرجات الخمس لا تختلف باللون بل بالشكل: ممتلئ، ونصف، وربع، ومخطّط، وفارغ. وعلامة كل درجة تتباين مع الأرضية 3:1 على الأقل كما في الجدول. أما 3:1 بين متوسّط إضاءة درجتين متجاورتين فمستحيل حسابياً بخمس درجات بين الورقي والكحلي (يلزمه مدى 81:1، والمتاح 10.6:1)، فكتبت ذلك سؤالاً مفتوحاً (س5) ليُحسم عند البوّابة.</p>
   </section>
 
   <section class="blk">
     <h2>3 · مربّع الربع ومربّع الوجه</h2>
-    <p>44×44 نقطة، زاويته 11، والمسافة بين المربّعات 8. الدرجات الأربع بالامتلاء، والعلامات فوقها بالشكل. جرّب «فحص الرمادي».</p>
+    <p>44×44 نقطة، زاويته 11، والمسافة بين المربّعات 8. الدرجات الخمس بالأسابيع كما اعتمدتها (القرار 14): ممتلئ خلال 7 أيام، ونصف خلال 15، وربع خلال 22، وباهت بعدها، وفارغ لم يُتلَ. والعلامات فوقها بالشكل. جرّب «فحص الرمادي».</p>
     <div class="duo" id="tilesBox"></div>
   </section>
 
@@ -101,7 +101,7 @@ ol.list li{margin:0 0 8px}
   </section>
 
   <section class="blk">
-    <h2>7 · مقترح الزخرفة (ينتظر اختيارك)</h2>
+    <h2>7 · الزخرفة (اعتمدتها)</h2>
     <p>من روح الشعار: إطار رأس السورة بمسطرتيه الذهبيتين، وشريط الفاصل بشقّه العميق. الأولى في كل قسم سورة، والثانية في علامة الكتاب بجانب رقم الحزب. هادئتان، ولا تحملان معنى، فلا تمسّان فحص الرمادي.</p>
     <div class="ba" id="orn"></div>
   </section>
@@ -138,13 +138,13 @@ const cell=(v,min,old)=>min?`<td class="${v>=min?'ok':'no'}">${v.toFixed(2)}</td
 ct.querySelector('tbody').innerHTML=rows.map(([a,b,f,min,old])=>`<tr${old?' style="opacity:.6"':''}><td>${a}</td><td>${b}</td>${cell(f(TL),min)}${cell(f(TD),min)}<td>${min?min+':1':'—'}</td></tr>`).join('');
 /* ── المربّعات ── */
 function tilePane(mode){
-  const T=['far','near'],L=['L1','L2','L3','L4'],H=['خلال أسبوع','خلال شهر','أكثر من شهر','لم يُتلَ'];
+  const T=['far','near'],L=['L1','L2','L3','L4','L5'],H=['خلال 7','خلال 15','خلال 22','أكثر','لم يُتلَ'];
   let h=`<div class="pane ${mode}"><h3>${mode==='wd'?'ليلاً':'نهاراً'}</h3><div class="tiles"><span></span>${H.map(x=>`<span class="hd">${x}</span>`).join('')}`;
   T.forEach(t=>{h+=`<span class="lab">${t==='far'?'البعيد':'القريب'}</span>`+L.map(l=>`<div class="q t-${t} ${l}" style="--cb:var(--paper)"><span class="n">3</span></div>`).join('');});
   h+=`<span class="lab">+ اليوم</span>`+L.map(l=>`<div class="q t-near ${l} today" style="--cb:var(--paper)"><span class="n">3</span></div>`).join('');
   h+=`<span class="lab">+ موضع التوقّف</span>`+L.map(l=>`<div class="q t-far ${l} bm" style="--cb:var(--paper)"><span class="n">3</span></div>`).join('');
   h+=`<span class="lab">+ مشترك</span>`+L.map(l=>`<div class="q t-far ${l}" style="--cb:var(--paper)"><i class="cut"></i><span class="n">3</span></div>`).join('');
-  h+=`<span class="lab">الوجه</span><div class="q t-new L1" style="--cb:var(--paper)"><span class="n">117</span></div><div class="q t-new L1 today"><span class="n">118</span></div><div class="q t-new L4 bm"><span class="n">119</span></div><div class="q t-new L4"><span class="n">120</span></div>`;
+  h+=`<span class="lab">الوجه</span><div class="q t-new L1" style="--cb:var(--paper)"><span class="n">117</span></div><div class="q t-new L1 today"><span class="n">118</span></div><div class="q t-new L5 bm"><span class="n">119</span></div><div class="q t-new L5"><span class="n">120</span></div><span></span>`;
   return h+'</div></div>';
 }
 tilesBox.innerHTML=tilePane('wl')+tilePane('wd');
@@ -169,12 +169,12 @@ function comp(mode){
 comps.innerHTML=comp('wl')+comp('wd');
 /* ── الزخرفة قبل وبعد ── */
 const sec=()=>{const w=document.createElement('div');w.innerHTML=screenHTML(owner({open:'far'}));return [...w.querySelectorAll('.sur')][2].outerHTML;};
-orn.innerHTML=`<div><div class="pane wl scr" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>كما في النماذج</div>
-<div><div class="pane wl scr orn" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>بالزخرفة المقترحة</div>
-<div><div class="pane wd scr" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>ليلاً كما في النماذج</div>
-<div><div class="pane wd scr orn" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>ليلاً بالزخرفة</div>`;
+orn.innerHTML=`<div><div class="pane wl scr plain" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>بلا زخرفة (النماذج)</div>
+<div><div class="pane wl scr" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>بالزخرفة المعتمدة</div>
+<div><div class="pane wd scr plain" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>ليلاً بلا زخرفة (النماذج)</div>
+<div><div class="pane wd scr" style="width:auto;height:auto;display:block;padding:8px"><div class="track open" style="--c:var(--far);padding:6px;border:none">${sec()}</div></div>ليلاً بالزخرفة</div>`;
 bGray.onclick=e=>{document.body.classList.toggle('gray-all');document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('gray'));e.target.classList.toggle('on');};
-bOrn.onclick=e=>{document.querySelectorAll('.comp').forEach(p=>p.classList.toggle('orn'));e.target.classList.toggle('on');};
+bOrn.onclick=e=>{document.querySelectorAll('.comp').forEach(p=>p.classList.toggle('plain'));e.target.classList.toggle('on');};
 if(location.hash.includes('gray'))bGray.click();
 </script>
 </body>

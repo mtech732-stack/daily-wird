@@ -91,15 +91,17 @@
 .t-near{--c:var(--near);--ci:var(--near);--on:var(--on-near)}
 .t-new{--c:var(--new);--ci:var(--new-ink);--on:var(--on-new)}
 .t-ink{--c:var(--ink);--ci:var(--ink);--on:var(--paper)}
-/* الدرجات الأربع: بالامتلاء لا باللون */
+/* الدرجات الخمس (القرار 14): ممتلئ · نصف · ربع · باهت (مخطّط) · فارغ — بالامتلاء لا باللون */
 .L1{background:var(--c);color:var(--on)}
 .L2{background:linear-gradient(to top,var(--c) 50%,transparent 50%);box-shadow:inset 0 0 0 2px var(--c);color:var(--ci)}
 .L2 .n{transform:translateY(-9px);font-size:11px}
+.L3{background:linear-gradient(to top,var(--c) 25%,transparent 25%);box-shadow:inset 0 0 0 2px var(--c);color:var(--ci)}
+.L3 .n{transform:translateY(-5px)}
 /* الرقم فوق التخطيط يُكتب على رقعة بلون الأرضية حتى يُقرأ */
-.L3 .n{background:var(--cb,var(--card));border-radius:5px;padding:0 4px;line-height:18px}
-.track.open .sur .L3{--cb:var(--paper)}
-.L3{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--c) 70%,transparent) 0 2.5px,transparent 2.5px 7px);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ci) 70%,transparent);color:var(--ci)}
-.L4{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ci) 70%,transparent);color:var(--ci)}
+.L4 .n{background:var(--cb,var(--card));border-radius:5px;padding:0 4px;line-height:18px}
+.track.open .sur .L4{--cb:var(--paper)}
+.L4{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--c) 70%,transparent) 0 2.5px,transparent 2.5px 7px);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ci) 70%,transparent);color:var(--ci)}
+.L5{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ci) 70%,transparent);color:var(--ci)}
 .ghost{background:var(--ghost);color:var(--muted)}
 /* علامة «اليوم»: دائرة فيها صحّ في الزاوية */
 .today:after{content:"";position:absolute;width:17px;height:17px;border-radius:50%;background:var(--paper);top:-6px;left:-6px;box-shadow:0 0 0 2px var(--ci);z-index:2}
@@ -157,6 +159,8 @@
 .keys{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px 16px 18px;margin:6px 0 10px}
 .keys h3{margin:0 0 6px;font-size:18px;font-weight:600}
 .kgrp{font-size:12.5px;color:var(--muted);margin:10px 0 2px}
+.krow.k5{grid-template-columns:repeat(5,1fr);gap:6px}
+.krow.k5 .key>span{white-space:nowrap}
 .krow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;justify-items:center;margin-bottom:4px}
 .key{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0 2px;text-align:center}
 .key>span{font-size:12px;line-height:1.4}
@@ -180,10 +184,11 @@
 /* فحص الرمادي */
 .gray .scr,.gray.scr,.gray .q,.gray.sw{filter:grayscale(1)}
 
-/* ── مقترحات تنتظر اعتماد المالك (مطفأة افتراضياً) ── */
+/* ── الزخرفة من روح الشعار (اعتمدها المالك 9 نوفمبر 2026). والصنف .plain يطفئها للمقارنة وحدها ── */
 /* م-أ · رأس السورة بروح الإطار: مسطرتان ذهبيتان رفيعتان، غليظة ورفيعة، كما في الشعار */
-.orn .sur>.sh{position:relative;padding:0 0 7px;margin-bottom:6px}
-.orn .sur>.sh:after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;
+.sur>.sh{position:relative;padding:0 0 7px;margin-bottom:6px}
+.sur>.sh:after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;
   background:linear-gradient(var(--gilt),var(--gilt)) 0 0/100% 2px no-repeat,linear-gradient(var(--gilt),var(--gilt)) 0 4px/100% 1px no-repeat;opacity:.75}
+.plain .sur>.sh{padding:0;margin-bottom:4px}.plain .sur>.sh:after{display:none}
 /* م-ب · علامة موضع التوقّف بشريط الشعار (فاصل عريض بشقّ عميق) */
-.bmk .b2{display:none}.orn .bmk .b1{display:none}.orn .bmk .b2{display:inline}
+.bmk .b1{display:none}.plain .bmk .b1{display:inline}.plain .bmk .b2{display:none}
