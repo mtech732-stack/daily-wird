@@ -93,8 +93,8 @@ const counterHTML=(S,big)=>`<div class="counter ${big?'big':''}"><button class="
 function keysHTML(){
   const k=(c,t,txt)=>`<div class="key"><div class="q ${c} t-${t}" style="--cb:var(--card)">${c.includes('shared')?'<i class="cut"></i>':''}<span class="n">3</span></div><span>${txt}</span></div>`;
   return `<div class="keys"><h3>مفاتيح الرموز</h3>
-  <div class="kgrp">عمر الربع منذ آخر تلاوة · يتغيّر وحده مع الأيام</div>
-  <div class="krow k5">${k('L1','far','خلال 7 أيام')}${k('L2','far','خلال 15 يوماً')}${k('L3','far','خلال 22 يوماً')}${k('L4','far','أكثر من 22')}${k('L5','far','لم يُتلَ')}</div>
+  <div class="kgrp">عمر الربع بالأيام منذ آخر تلاوة · يتغيّر وحده</div>
+  <div class="krow k5">${k('L1','far','خلال 7')}${k('L2','far','خلال 15')}${k('L3','far','خلال 22')}${k('L4','far','أكثر')}${k('L5','far','لم يُتلَ')}</div>
   <div class="kgrp">علامات تُضاف فوق أي ربع، أياً كان عمره</div>
   <div class="krow">${k('ghost today','ink','تلوته اليوم')}${k('ghost bm','ink','موضع التوقّف')}${k('ghost shared','ink','بين سورتين')}<div></div></div>
   <div class="kgrp">المحفوظ الجديد</div>
