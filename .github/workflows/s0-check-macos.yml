@@ -1,0 +1,27 @@
+# ش0 · المرحلة 1: التحقق من عمل GitHub Actions على macos.
+# لا يبني شيئاً من التطبيق. يطبع نسخة Xcode والمحاكيات المتاحة فقط.
+name: s0-check-macos
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: macOS
+        run: sw_vers
+      - name: Xcode
+        run: xcodebuild -version && xcode-select -p
+      - name: Swift
+        run: swift --version
+      - name: iOS SDK
+        run: xcodebuild -showsdks | grep -i ios
+      - name: iPhone simulators
+        run: xcrun simctl list devices available | grep -i iphone | head -20
