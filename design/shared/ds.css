@@ -123,7 +123,7 @@
 /* شريط الإسدال */
 .pull{display:flex;align-items:center;justify-content:center;gap:6px;margin:4px -16px 0;min-height:36px;position:relative;border-top:1px solid var(--line);font-size:13.5px;font-weight:500;cursor:pointer;user-select:none}
 .track.open .pull{margin:4px -8px 0;position:sticky;bottom:0;background:var(--card);border-radius:0 0 22px 22px;z-index:3}
-.pull:after{content:"";position:absolute;inset:-4px 0} /* مساحة اللمس 44 */
+.pull:after{content:"";position:absolute;inset:-8px 0 0;z-index:4} /* مساحة اللمس 44: امتداد 8 للأعلى داخل البطاقة، فلا يغطّيه ما بعدها (م14) */
 .chev{color:var(--muted);display:flex}
 .pull.up .chev{transform:rotate(180deg)}
 
