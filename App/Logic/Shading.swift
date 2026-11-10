@@ -53,7 +53,7 @@ struct ShadingState {
     /// الأرباع المظلّلة اليوم.
     var today: Set<Int> = []
     /// ضغطة على ربع في مسار.
-    var tap: (_ quarter: Int, _ track: Track) -> Void = { _, _ in }
+    var tap: @MainActor (_ quarter: Int, _ track: Track) -> Void = { _, _ in }
 
     func isToday(_ quarter: Int) -> Bool { today.contains(quarter) }
 }
