@@ -123,14 +123,14 @@ struct ReviewTrackCard: View {
     let narrow: Bool
     /// قائمة الحزب بالضغط المطوّل (§12.5).
     var hizbMenu: HizbMenu?
+    /// التظليل: حالة الأرباع وضغطتها (5.3).
+    var shading: ShadingState?
     let onToggle: () -> Void
     var onAdd: () -> Void = {}
     /// «نقل» و«إزالة» من «⋯» (§12.4).
     var onManage: (ManageMode) -> Void = { _ in }
     /// موضع أسفل شريط «طيّ» في الشاشة المرئية، حين يكون الأرشيف مفتوحاً (م23).
     var onFoldBarMove: (CGFloat) -> Void = { _ in }
-    /// التظليل: حالة الأرباع وضغطتها (5.3).
-    var shading: ShadingState?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
