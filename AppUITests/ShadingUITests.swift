@@ -108,9 +108,35 @@ final class ShadingUITests: XCTestCase {
         expectValue(q1, "تلوته اليوم")
         // تقفز ساعة الاختبار بعد منتصف الليل، فتتحدّث الشاشة وحدها دون فتح جديد.
         app.buttons["test.midnight"].tap()
-        expectValue(q1, "لم يُتلَ")
+        // تظليل الأمس عمره يوم: ممتلئ بلا علامة «اليوم» (5.4).
+        expectValue(q1, "خلال 7 أيام")
         shot(app, "24-after-midnight")
         q1.tap()
         expectValue(q1, "تلوته اليوم")
+    }
+
+    /// 5.4، القرار 14: الدرجات الخمس بالأيام والحدود شاملة: 7 ممتلئ · 8 و15 نصف · 16 و22 ربع ·
+    /// 23 مخطّط · بلا تظليل فارغ (سيناريو المعاين 4). ولقطتها تُفحص بالرمادي.
+    func test_5_4_fiveAgeLevels() {
+        let app = launch(seed: "farReview:1-2", readings: "1:7,2:8,3:15,4:16,5:22,6:23,8:0")
+        let q1 = app.buttons["quarter.farReview.1"]
+        XCTAssertTrue(q1.waitForExistence(timeout: 20))
+        expectValue(q1, "خلال 7 أيام")
+        XCTAssertEqual(app.buttons["quarter.farReview.2"].value as? String, "خلال 15 يوماً")
+        XCTAssertEqual(app.buttons["quarter.farReview.3"].value as? String, "خلال 15 يوماً")
+        XCTAssertEqual(app.buttons["quarter.farReview.4"].value as? String, "خلال 22 يوماً")
+        open("farReview", app)
+        XCTAssertEqual(app.buttons["quarter.farReview.5"].value as? String, "خلال 22 يوماً")
+        XCTAssertEqual(app.buttons["quarter.farReview.6"].value as? String, "أكثر من 22 يوماً")
+        XCTAssertEqual(app.buttons["quarter.farReview.7"].value as? String, "لم يُتلَ")
+        XCTAssertEqual(app.buttons["quarter.farReview.8"].value as? String, "تلوته اليوم")
+        shot(app, "26-age-levels")
+
+        // الضغط على ربع مخطّط يملؤه بعلامة «اليوم»، والتراجع يعيده مخطّطاً.
+        let q6 = app.buttons["quarter.farReview.6"]
+        q6.tap()
+        expectValue(q6, "تلوته اليوم")
+        q6.tap()
+        expectValue(q6, "أكثر من 22 يوماً")
     }
 }
