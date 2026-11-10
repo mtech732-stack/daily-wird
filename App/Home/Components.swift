@@ -83,7 +83,7 @@ private struct HizbMenuModifier: ViewModifier {
                 .contextMenu {
                     Section(Phrase.hizbMenuHeader(hizb)) {
                         Button { menu.onMove(hizb) } label: {
-                            Label("نقل إلى \(Library.otherReviewTrack(menu.track).title)", systemImage: "arrow.left.arrow.right")
+                            Label(Phrase.hizbMenuMove(to: Library.otherReviewTrack(menu.track)), systemImage: "arrow.left.arrow.right")
                         }
                     }
                     Section {

@@ -94,6 +94,12 @@ enum Phrase {
     /// «أزله» · «أزلهما» · «أزلها»
     static func removeAnswer(_ count: Int) -> String { "أزل\(pronoun(count))" }
 
+    /// بند النقل في قائمة الحزب: «نقل إلى مراجعة البعيد». نصّ جاهز لا مفتاح ترجمة،
+    /// لأن الإقحام في مفتاح الترجمة يحيط الاسم بعلامتي عزل خفيّتين (⁨…⁩) يقرؤهما قارئ الشاشة والاختبار.
+    static func hizbMenuMove(to track: Track) -> String {
+        "نقل إلى " + track.title
+    }
+
     /// رأس قائمة الحزب: «ح 10 · النساء · الجزء 5».
     static func hizbMenuHeader(_ hizb: Int) -> String {
         "\(Digits.hizbLabel(hizb)) · \(Quran.suraName(Quran.firstSura(ofHizb: hizb))) · الجزء \(Digits.en(Quran.juz(ofHizb: hizb)))"

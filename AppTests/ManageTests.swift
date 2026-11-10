@@ -106,5 +106,8 @@ final class ManageTests: XCTestCase {
         XCTAssertEqual(Phrase.manageButton([10, 11], removing: true, to: .farReview), "أزل حزبين")
         XCTAssertEqual(Phrase.manageButton([], removing: true, to: .farReview), "اختر جزءاً أو حزباً")
         XCTAssertEqual(Phrase.hizbMenuHeader(10), "ح 10 · النساء · الجزء 5")
+        // نصّ البند بلا علامتي العزل الخفيّتين (⁨…⁩) اللتين يضيفهما الإقحام في مفتاح الترجمة (#48).
+        XCTAssertEqual(Phrase.hizbMenuMove(to: .farReview), "نقل إلى مراجعة البعيد")
+        XCTAssertEqual(Phrase.hizbMenuMove(to: .nearReview), "نقل إلى مراجعة القريب")
     }
 }
