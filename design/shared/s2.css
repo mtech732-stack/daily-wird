@@ -17,6 +17,9 @@
 .q.today:before{animation-name:popc}
 @keyframes popc{from{opacity:0}to{opacity:1}}
 
+/* ذ17: سطر «آخر إدخال» محجوز فارغاً قبل أول إدخال */
+.stamp.blank{visibility:hidden}
+
 /* مفاتيح الرموز: الدرجات الخمس، كل معنى على سطرين */
 .keys .krow.k5 .key>span{white-space:normal;line-height:1.35}
 

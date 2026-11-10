@@ -48,7 +48,7 @@ function tap(S,r,now='5:12 ص'){const h=S.hist[r]||(S.hist[r]=[]);if(h[0]&&h[0].
 function advance(S,n){S.shift+=n;Object.values(S.hist).forEach(h=>h.forEach(e=>e.d+=n));sync(S);}
 
 /* ── الشاشة ── */
-function stamp(S,t){const e=lastOf(S,t);if(!e)return ''; // لا سطر قبل أول إدخال في المسار
+function stamp(S,t){const e=lastOf(S,t);if(!e)return `<div class="stamp blank" aria-hidden="true">${CLOCK}<b>&nbsp;</b></div>`; // لا نصّ قبل أول إدخال (ذ12)، ومكانه محجوز فلا تقفز البطاقة (ذ17)
   return `<div class="stamp" data-stamp="${t}">${CLOCK}<b>آخر إدخال ${rel(e.d)}</b><span class="sd">${dLong(e.d,S)} · ${e.t}</span></div>`;}
 function emptyCard(t){
   const msg=t==='new'?'لم تحدّد بعدُ الحزب الذي تحفظه.':'لم تُضف إليه شيئاً بعد.';
