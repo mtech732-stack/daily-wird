@@ -33,7 +33,7 @@ enum Theme {
     static let text = dynamic(light: 0x0F3F6E, dark: 0xF2EDE2)
     static var ink: Color { text }
     /// النصّ الهادئ.
-    static let muted = dynamic(light: 0x5C6F86, dark: 0xA9B8C9)
+    static let muted = dynamic(light: 0x54657A, dark: 0xA9B8C9)
     /// الحدود والفواصل.
     static let line = dynamic(light: 0x0F3F6E, dark: 0xF2EDE2, lightAlpha: 0.14, darkAlpha: 0.16)
     static let far = dynamic(light: 0x0F3F6E, dark: 0xD3DEEA)
