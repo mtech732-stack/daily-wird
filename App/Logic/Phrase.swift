@@ -41,6 +41,16 @@ enum Phrase {
         "أُضيف \(hizbsNominative(list)) إلى \(track.title)"
     }
 
+    /// الإشعار بعد الإضافة مع النقل (قرار ذوقي): «نُقل ح 10 إلى مراجعة البعيد»،
+    /// أو «أُضيف ح 9 ونُقل ح 10 إلى مراجعة البعيد». و«أُضيف» وحدها حين لا نقل.
+    static func addedToast(added: [Int], moved: [Int], to track: Track) -> String {
+        switch (added.isEmpty, moved.isEmpty) {
+        case (_, true): addedToast(added, to: track)
+        case (true, false): "نُقل \(hizbsNominative(moved)) إلى \(track.title)"
+        case (false, false): "أُضيف \(hizbsNominative(added)) ونُقل \(hizbsNominative(moved)) إلى \(track.title)"
+        }
+    }
+
     /// «في البعيد» · «في القريب» تحت خانة الحزب الذي في مسار آخر (§12.2).
     static func inTrackShort(_ track: Track) -> String {
         switch track {
@@ -49,4 +59,29 @@ enum Phrase {
         case .newMemorization: "في الجديد"
         }
     }
+
+    // MARK: سؤال النقل (5.1، §12.3)
+
+    /// «الحزب 10 موجود في مراجعة القريب. أتنقله؟» · «الحزبان 10 و11 موجودان في …. أتنقلهما؟»
+    /// · «3 أحزاب موجودة في …. أتنقلها؟»
+    static func conflictQuestion(_ list: [Int], in track: Track) -> String {
+        switch list.count {
+        case 1: "الحزب \(Digits.en(list[0])) موجود في \(track.title). أتنقله؟"
+        case 2: "الحزبان \(Digits.en(list[0])) و\(Digits.en(list[1])) موجودان في \(track.title). أتنقلهما؟"
+        case 3...10: "\(Digits.en(list.count)) أحزاب موجودة في \(track.title). أتنقلها؟"
+        default: "\(Digits.en(list.count)) حزباً موجودة في \(track.title). أتنقلها؟"
+        }
+    }
+
+    /// «سجلّ تلاوته ينتقل معه كما هو.» ويُضاف إن كان في الاختيار غيره: «ويُضاف ما سواه في الحالين.»
+    static func conflictNote(_ count: Int, hasOthers: Bool) -> String {
+        let p = pronoun(count)
+        return "سجلّ تلاوت\(p) ينتقل مع\(p) كما هو." + (hasOthers ? " ويُضاف ما سوا\(p) في الحالين." : "")
+    }
+
+    /// «انقله إلى مراجعة البعيد»
+    static func moveAnswer(_ count: Int, to track: Track) -> String { "انقل\(pronoun(count)) إلى \(track.title)" }
+
+    /// «اتركه في مراجعة القريب»
+    static func keepAnswer(_ count: Int, in track: Track) -> String { "اترك\(pronoun(count)) في \(track.title)" }
 }

@@ -14,9 +14,11 @@ struct AddSheet: View {
     /// وضغطة وصلت ولم يتغيّر بها الاختيار، واختيار تغيّر ولم تظهر سمته بعد.
     @State private var receivedTaps = 0
     private static let isUITesting = ProcessInfo.processInfo.arguments.contains("-ui-testing")
-    let onAdd: (_ hizbs: [Int], _ track: Track) -> Void
+    /// سؤال النقل ظاهر فوق الورقة (§12.3).
+    @State private var asking = false
+    let onAdd: (_ hizbs: [Int], _ track: Track, _ moving: Bool) -> Void
 
-    init(track: Track, trackOf: [Int: Track], onAdd: @escaping (_ hizbs: [Int], _ track: Track) -> Void) {
+    init(track: Track, trackOf: [Int: Track], onAdd: @escaping (_ hizbs: [Int], _ track: Track, _ moving: Bool) -> Void) {
         _selection = State(initialValue: AddSelection(track: track, trackOf: trackOf))
         self.onAdd = onAdd
     }
@@ -48,6 +50,16 @@ struct AddSheet: View {
             }
         }
         .background(Theme.paper)
+        .overlay {
+            if asking, let from = selection.conflictTrack {
+                ConflictDialog(conflicts: selection.conflicts, from: from, to: selection.track,
+                               hasOthers: selection.sortedSelection.count > selection.conflicts.count) { moving in
+                    onAdd(selection.sortedSelection, selection.track, moving)
+                    asking = false
+                    dismiss()
+                }
+            }
+        }
         .environment(\.layoutDirection, .rightToLeft)
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
@@ -88,8 +100,13 @@ struct AddSheet: View {
         return VStack(spacing: 0) {
             Rectangle().fill(Theme.line).frame(height: 1)
             Button {
-                onAdd(list, selection.track)
-                dismiss()
+                // الحزب الذي في مسار آخر يُسأل عنه عند «أضف» لا عند اختياره (ذ5).
+                if selection.conflicts.isEmpty {
+                    onAdd(list, selection.track, false)
+                    dismiss()
+                } else {
+                    asking = true
+                }
             } label: {
                 Text(verbatim: Phrase.addButton(list, to: selection.track))
                     .lineLimit(1)
@@ -278,6 +295,49 @@ private struct HizbChip: View {
         case .available: shape.strokeBorder(Theme.ink.opacity(0.55), lineWidth: 1.5)
         case .other: shape.strokeBorder(Theme.ink.opacity(0.6), style: StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
         default: EmptyView()
+        }
+    }
+}
+
+/// سؤال النقل (5.1، §12.3): حوار فوق الورقة بتعتيم ثانٍ، بنصّ الوثيقة، وخياران بالحجم نفسه (ذ5).
+/// فلا يصل التطبيق أبداً إلى حزب في مسارين، ولا ينقل شيئاً دون سؤال.
+private struct ConflictDialog: View {
+    let conflicts: [Int]
+    let from: Track
+    let to: Track
+    let hasOthers: Bool
+    let answer: (_ moving: Bool) -> Void
+
+    var body: some View {
+        ZStack {
+            Theme.scrim.ignoresSafeArea()
+            VStack(alignment: .leading, spacing: 10) {
+                Text(verbatim: Phrase.conflictQuestion(conflicts, in: from))
+                    .font(Theme.font(.semiBold, size: 19, relativeTo: .headline))
+                    .foregroundStyle(Theme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("conflict.question")
+                Text(verbatim: Phrase.conflictNote(conflicts.count, hasOthers: hasOthers))
+                    .font(Theme.font(.regular, size: 14.5, relativeTo: .subheadline))
+                    .foregroundStyle(Theme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+                VStack(spacing: 8) {
+                    Button { answer(true) } label: { Text(verbatim: Phrase.moveAnswer(conflicts.count, to: to)) }
+                        .buttonStyle(PrimaryButtonStyle())
+                        .accessibilityIdentifier("conflict.move")
+                    Button { answer(false) } label: { Text(verbatim: Phrase.keepAnswer(conflicts.count, in: from)) }
+                        .buttonStyle(QuietButtonStyle())
+                        .accessibilityIdentifier("conflict.keep")
+                }
+                .padding(.top, 8)
+            }
+            .padding(.top, 26)
+            .padding(.horizontal, 22)
+            .padding(.bottom, 18)
+            .background(RoundedRectangle(cornerRadius: Theme.Radius.dialog, style: .continuous).fill(Theme.paper))
+            .padding(.horizontal, 28)
+            .accessibilityElement(children: .contain)
+            .accessibilityAddTraits(.isModal)
         }
     }
 }
