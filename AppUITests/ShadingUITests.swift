@@ -83,11 +83,11 @@ final class ShadingUITests: XCTestCase {
     /// 5.3، القرار 2: اليوم يبدأ عند منتصف الليل والتطبيق مفتوح: تختفي علامة «اليوم» دون فتح جديد،
     /// وتصير الضغطة تظليلاً جديداً (سيناريو المعاين 3).
     func test_5_3_todayMarkClearsAtMidnight() {
-        let app = launch(seed: "farReview:1", readings: "1:0@23:58", now: "2026-11-06T23:59:00")
+        let app = launch(seed: "farReview:1", readings: "1:0@23:58", now: "2026-11-06T23:59:30")
         let q1 = app.buttons["quarter.farReview.1"]
         XCTAssertTrue(q1.waitForExistence(timeout: 20))
         expectValue(q1, "تلوته اليوم")
-        // بعد منتصف الليل (60 ث من بدء الساعة) تتحدّث الشاشة وحدها.
+        // بعد منتصف الليل (30 ث من بدء الساعة) تتحدّث الشاشة وحدها.
         expectValue(q1, "لم يُتلَ", timeout: 120)
         shot(app, "24-after-midnight")
         q1.tap()
