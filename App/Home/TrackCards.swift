@@ -104,6 +104,8 @@ struct ReviewTrackCard: View {
     let narrow: Bool
     let onToggle: () -> Void
     var onAdd: () -> Void = {}
+    /// موضع أسفل شريط «طيّ» في الشاشة المرئية، حين يكون الأرشيف مفتوحاً (م23).
+    var onFoldBarMove: (CGFloat) -> Void = { _ in }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -112,7 +114,15 @@ struct ReviewTrackCard: View {
             if isOpen {
                 ArchiveView(layout: layout)
                     .padding(.top, 4)
-                    .padding(.bottom, 8)
+                // «طيّ» في أسفل البطاقة؛ ويلتصق بأسفل الشاشة عند التمرير (م23).
+                PullBar(track: layout.track, isOpen: true, action: onToggle)
+                    .padding(.top, 4)
+                    .padding(.horizontal, -8)
+                    .onGeometryChange(for: CGFloat.self) { proxy in
+                        proxy.frame(in: .named(FoldBarPosition.space)).maxY
+                    } action: { maxY in
+                        onFoldBarMove(maxY)
+                    }
             } else {
                 if let row = layout.foldedRow {
                     FoldedRowView(track: layout.track, row: row, bookmark: layout.bookmarkQuarter, narrow: narrow)
@@ -212,14 +222,25 @@ struct ArchiveView: View {
     }
 }
 
-/// شريط «طيّ» ملتصق بأسفل الشاشة أثناء فتح الأرشيف (7.1): خلفية `card` وزاويتا 22 أسفل.
+/// موضع شريط «طيّ» الذي في أسفل البطاقة المفتوحة، في إحداثيات الشاشة المرئية.
+struct FoldBarPosition: Equatable, Sendable {
+    static let space = "home.scroll"
+    var barMaxY: CGFloat?
+
+    /// الشريط تحت أسفل الشاشة، والبطاقة بادئة فيها: فيُلصق بالأسفل.
+    func isBelow(viewportHeight: CGFloat) -> Bool {
+        guard let barMaxY else { return false }
+        return barMaxY > viewportHeight + 1
+    }
+}
+
+/// شريط «طيّ» ملتصق بأسفل الشاشة حين يكون شريط البطاقة تحتها (7.1، م23): خلفية `card` وزاويتا 22 أسفل.
 struct StickyFoldBar: View {
     let track: Track
     let action: () -> Void
 
     var body: some View {
-        PullBar(track: track, isOpen: true, action: action)
-            .padding(.top, 8) // يعيد ما أخذته مساحة اللمس الممتدّة للأعلى
+        PullBar(track: track, isOpen: true, identifier: "track.\(track.rawValue).pull.sticky", action: action)
             .background(
                 UnevenRoundedRectangle(bottomLeadingRadius: Theme.Radius.card, bottomTrailingRadius: Theme.Radius.card, style: .continuous)
                     .fill(Theme.card)
