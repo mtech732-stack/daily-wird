@@ -241,8 +241,13 @@ final class ShadingUITests: XCTestCase {
         let q2 = app.buttons["quarter.farReview.2"]
         XCTAssertTrue(q2.waitForExistence(timeout: 20))
 
+        // سيناريو المعاين 2: ظُلّل ثم تراجع، فالتفاصيل «مرات التلاوة 0».
+        q2.tap()
+        expectValue(q2, "تلوته اليوم")
+        q2.tap()
+        expectValue(q2, "لم يُتلَ")
         openDetails(q2, app, title: "الحزب 1 · الربع 2")
-        XCTAssertTrue(detailsRow("مرات التلاوة", app).label.contains("0"))
+        XCTAssertTrue(detailsRow("مرات التلاوة", app).label.hasSuffix("0"), detailsRow("مرات التلاوة", app).label)
         XCTAssertTrue(detailsRow("آخر تلاوة", app).label.contains("لم يُتلَ بعد"))
         XCTAssertTrue(detailsRow("آخر التواريخ", app).label.contains("لا تواريخ بعد"))
         closeDetails(app)
@@ -254,7 +259,7 @@ final class ShadingUITests: XCTestCase {
         XCTAssertTrue(detailsRow("السور", app).label.contains("الفاتحة · البقرة"))
         XCTAssertTrue(detailsRow("الأوجه", app).label.contains("1 · 2 · 3 · 4 · 5"))
         XCTAssertTrue(detailsRow("آخر تلاوة", app).label.contains("قبل 3 أيام"))
-        XCTAssertTrue(detailsRow("مرات التلاوة", app).label.contains("3"))
+        XCTAssertTrue(detailsRow("مرات التلاوة", app).label.hasSuffix("3"))
         XCTAssertFalse(app.buttons["details.undo"].exists, "لا تراجع لربع لم يُظلَّل اليوم")
         shot(app, "29-details")
         closeDetails(app)
@@ -262,7 +267,7 @@ final class ShadingUITests: XCTestCase {
         q1.tap()
         expectValue(q1, "تلوته اليوم")
         openDetails(q1, app, title: "الحزب 1 · الربع 1")
-        XCTAssertTrue(detailsRow("مرات التلاوة", app).label.contains("4"))
+        XCTAssertTrue(detailsRow("مرات التلاوة", app).label.hasSuffix("4"))
         XCTAssertTrue(detailsRow("آخر التواريخ", app).label.contains("اليوم"))
         XCTAssertTrue(detailsRow("آخر تلاوة", app).label.contains("اليوم"))
         shot(app, "30-details-today")
@@ -272,5 +277,8 @@ final class ShadingUITests: XCTestCase {
         let gone = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: undo)
         XCTAssertEqual(XCTWaiter().wait(for: [gone], timeout: 20), .completed, "التراجع أغلق الورقة")
         expectValue(q1, "خلال 7 أيام")
+        openDetails(q1, app, title: "الحزب 1 · الربع 1")
+        XCTAssertTrue(detailsRow("مرات التلاوة", app).label.hasSuffix("3"), "التراجع أعاد العدد")
+        closeDetails(app)
     }
 }
