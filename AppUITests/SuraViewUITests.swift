@@ -48,8 +48,11 @@ final class SuraViewUITests: XCTestCase {
         XCTAssertEqual(app.buttons.matching(identifier: "quarter.farReview.20").count, 2)
         // م29: اللقطة تنزل حتى يظهر قسم «النساء» في البعيد: ح 8 بربعيه 3 و4 وحدهما، ثم ح 9.
         let nisa = app.otherElements["section.farReview.4"]
-        for _ in 0..<6 where !(nisa.exists && nisa.isHittable) { app.swipeUp() }
-        XCTAssertTrue(nisa.isHittable, "قسم النساء ظاهر")
+        // isHittable يصدق على عنصر خارج الشاشة في ScrollView، فيُقاس بالإطار (المعاين، #58).
+        let screen = app.windows.firstMatch.frame
+        for _ in 0..<8 where !nisa.exists || nisa.frame.minY > screen.midY { app.swipeUp() }
+        XCTAssertTrue(nisa.exists)
+        XCTAssertLessThan(nisa.frame.minY, screen.maxY - 120, "قسم النساء ظاهر في الشاشة")
         shot(app, "11-suras-split")
     }
 
