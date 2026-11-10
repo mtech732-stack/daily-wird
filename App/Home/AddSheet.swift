@@ -10,7 +10,8 @@ struct AddSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var selection: AddSelection
     /// عدد الضغطات التي وصلت إلى دوائر الأجزاء وخانات الأحزاب. لا يُعرض إلا في اختبارات الواجهة،
-    /// ليفرّق الاختبار بين ضغطة لم تصل إلى التطبيق وضغطة وصلت ولم يتغيّر بها الاختيار.
+    /// ومعه الأحزاب المختارة («2|1,2»)، ليفرّق الاختبار بين ضغطة لم تصل إلى التطبيق،
+    /// وضغطة وصلت ولم يتغيّر بها الاختيار، واختيار تغيّر ولم تظهر سمته بعد.
     @State private var receivedTaps = 0
     private static let isUITesting = ProcessInfo.processInfo.arguments.contains("-ui-testing")
     let onAdd: (_ hizbs: [Int], _ track: Track) -> Void
@@ -42,7 +43,7 @@ struct AddSheet: View {
                     .frame(width: 1, height: 1)
                     .accessibilityElement()
                     .accessibilityIdentifier("add.taps")
-                    .accessibilityValue(Text(verbatim: String(receivedTaps)))
+                    .accessibilityValue(Text(verbatim: "\(receivedTaps)|\(selection.sortedSelection.map(String.init).joined(separator: ","))"))
                     .allowsHitTesting(false)
             }
         }
