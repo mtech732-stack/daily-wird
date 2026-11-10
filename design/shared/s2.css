@@ -38,6 +38,7 @@
 .qd .kv.dates{border-bottom:none;align-items:center}
 .chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
 .chip{font-size:13px;padding:4px 10px;border-radius:999px;background:var(--ghost);color:var(--ink);line-height:1.4;white-space:nowrap}
+.qd .kv .chip{color:var(--ink)} /* م36: يغلب لون `.kv span` الهادئ */
 .chip.now{background:transparent;box-shadow:inset 0 0 0 1.5px var(--ink);font-weight:600}
 .btn.undo{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px}
 
