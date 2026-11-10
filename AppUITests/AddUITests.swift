@@ -93,7 +93,7 @@ final class AddUITests: XCTestCase {
     }
 
     /// 5.1، 7.2: من البطاقة الفارغة تُضاف الأجزاء 1–4 وح 9 إلى البعيد، فتُطوى البطاقة
-    /// على ح 1 بـ «0 من 36»، ويؤكّد الإشعار ما جرى (سيناريو المعاين 2).
+    /// على ح 1 وفيه 36 ربعاً، ويؤكّد الإشعار ما جرى (سيناريو المعاين 2).
     func test_7_2_addJuzAndHizbFromEmptyCard() {
         let app = launch()
         let add = app.buttons["track.farReview.add"]
@@ -121,8 +121,8 @@ final class AddUITests: XCTestCase {
         let toast = app.staticTexts["toast"]
         XCTAssertTrue(toast.waitForExistence(timeout: 20))
         expectLabel(toast, "أُضيف 9 أحزاب إلى مراجعة البعيد")
-        expectLabel(app.staticTexts["track.farReview.progress"], "0 من 36")
-        XCTAssertTrue(app.otherElements["quarter.farReview.1"].exists)
+        expectLabel(app.otherElements["track.farReview.quarterCount"], "36")
+        XCTAssertTrue(app.buttons["quarter.farReview.1"].exists)
         XCTAssertTrue(app.otherElements["track.nearReview.empty"].exists)
         shot(app, "08-added")
     }
@@ -204,8 +204,8 @@ final class AddUITests: XCTestCase {
         app.buttons["conflict.keep"].tap()
         XCTAssertTrue(app.staticTexts["toast"].waitForExistence(timeout: 20))
         expectLabel(app.staticTexts["toast"], "أُضيف ح 9 إلى مراجعة البعيد")
-        expectLabel(app.staticTexts["track.farReview.progress"], "0 من 36")
-        expectLabel(app.staticTexts["track.nearReview.progress"], "0 من 8")
+        expectLabel(app.otherElements["track.farReview.quarterCount"], "36")
+        expectLabel(app.otherElements["track.nearReview.quarterCount"], "8")
 
         // ثم «انقله»: ح 10 ينتقل إلى البعيد، ولا يبقى في القريب.
         app.buttons["track.farReview.more"].tap()
@@ -218,8 +218,8 @@ final class AddUITests: XCTestCase {
         app.buttons["conflict.move"].tap()
         XCTAssertTrue(app.staticTexts["toast"].waitForExistence(timeout: 20))
         expectLabel(app.staticTexts["toast"], "نُقل ح 10 إلى مراجعة البعيد")
-        expectLabel(app.staticTexts["track.farReview.progress"], "0 من 40")
-        expectLabel(app.staticTexts["track.nearReview.progress"], "0 من 4")
+        expectLabel(app.otherElements["track.farReview.quarterCount"], "40")
+        expectLabel(app.otherElements["track.nearReview.quarterCount"], "4")
         shot(app, "15-moved-by-add")
     }
 }

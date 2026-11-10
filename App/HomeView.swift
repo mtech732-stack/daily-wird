@@ -1,12 +1,21 @@
 import SwiftData
+import Combine
 import SwiftUI
+import UIKit
 
 /// الشاشة الرئيسية «الورد اليومي» (7.1) كما تُبنى في ش1: المسارات الثلاثة بترتيب المالك،
 /// كل بطاقة مطويّة على موضع توقّفها، والأرشيف يُفتح من شريط الإسدال.
-/// لا يظهر في ش1: سطر «آخر إدخال» ومفاتيح الرموز (ش2)، والعدّاد (ش5) (design/system.md §12).
+/// وفي ش2: الضغطة على الربع تظلّله بتاريخه ووقته وعليه علامة «اليوم» (5.3، §13.1).
+/// ولا يظهر بعدُ: سطر «آخر إدخال» ومفاتيح الرموز (مراحلهما في ش2)، والعدّاد (ش5).
 struct HomeView: View {
     @Environment(\.modelContext) private var context
     @Query private var placements: [HizbPlacement]
+    @Query private var readings: [QuarterReading]
+    @Environment(\.scenePhase) private var scenePhase
+
+    /// «الآن» الذي تُرسم به الشاشة. يتحدّث عند منتصف الليل والتطبيق مفتوح، ومع العودة من الخلفية،
+    /// ومع تغيّر الوقت في الجهاز، فتختفي علامات «اليوم» دون فتح جديد (القرار 2، §13.2).
+    @State private var now = WirdClock.now()
 
     /// المسار الذي فُتحت عليه ورقة الإضافة (7.2).
     @State private var addTrack: Track?
@@ -34,7 +43,7 @@ struct HomeView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 8) {
-                        HomeHeader()
+                        HomeHeader(now: now)
                             .padding(.bottom, 6)
                         ForEach(Track.allCases, id: \.self) { track in
                             card(for: track, narrow: narrow, proxy: proxy)
@@ -62,6 +71,36 @@ struct HomeView: View {
         .background(Theme.background.ignoresSafeArea())
         // م18: ما جاءت به المزامنة من صفّين مفتوحين للحزب يُسوّى بإغلاق الأقدم، ولا يُحذف شيء.
         .task { try? Library.reconcile(in: context) }
+        // منتصف الليل والتطبيق مفتوح: يُعاد الرسم بيوم جديد (§13.2).
+        .task(id: Shading.nextMidnight(after: now)) {
+            let wait = Shading.nextMidnight(after: now).timeIntervalSince(WirdClock.now())
+            try? await Task.sleep(for: .seconds(max(wait, 0) + 0.5))
+            guard !Task.isCancelled else { return }
+            now = WirdClock.now()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { now = WirdClock.now() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            now = WirdClock.now()
+        }
+        .overlay(alignment: .bottom) {
+            // اختبار منتصف الليل وحده (`-test-clock`): زرّ لا يُرى يقفز بالساعة بعد منتصف الليل،
+            // ثم يُرسل ما يرسله الجهاز عند تغيّر اليوم، فلا ينتظر الاختبار وقتاً حقيقياً.
+            if Self.hasTestClock {
+                Color.clear
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        WirdClock.jumpPastMidnight()
+                        NotificationCenter.default.post(name: UIApplication.significantTimeChangeNotification, object: nil)
+                    }
+                    .accessibilityElement()
+                    .accessibilityLabel(Text(verbatim: "test clock"))
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityIdentifier("test.midnight")
+            }
+        }
         .overlay(alignment: .bottom) {
             if let toast {
                 ToastView(text: toast)
@@ -166,6 +205,9 @@ struct HomeView: View {
 
     /// مدّة الإشعار 2.5 ث (§12.6). وفي اختبارات الواجهة يبقى حتى يُقرأ ويُصوَّر، فالمحاكي البطيء
     /// قد يتجاوز 2.5 ث بين ظهوره وقراءته، فيفشل الاختبار دون خطأ في التطبيق.
+    static let hasTestClock = ProcessInfo.processInfo.arguments.contains("-ui-testing")
+        && ProcessInfo.processInfo.arguments.contains("-test-clock")
+
     static let toastSeconds: Double = ProcessInfo.processInfo.arguments.contains("-ui-testing") ? 30 : 2.5
 
     private func show(_ text: String) {
@@ -189,7 +231,8 @@ struct HomeView: View {
                 let menu = HizbMenu(track: track) { hizb, frame in
                     hizbMenu = HizbMenuRequest(track: track, hizb: hizb, labelFrame: frame)
                 }
-                ReviewTrackCard(layout: layout, isOpen: openTrack == track, narrow: narrow, hizbMenu: menu) {
+                ReviewTrackCard(layout: layout, isOpen: openTrack == track, narrow: narrow, hizbMenu: menu,
+                                shading: shading) {
                     toggle(track, proxy: proxy)
                 } onAdd: {
                     addTrack = track
@@ -202,6 +245,27 @@ struct HomeView: View {
         } else {
             // اختيار الحزب الذي يُحفظ في المحفوظ الجديد في ش4.
             EmptyTrackCard(track: track)
+        }
+    }
+
+    /// حالة التظليل في الشاشة كلها: الربع واحد في السجلّ، فيظهر مظلّلاً حيث ظهر (7.1.1).
+    private var shading: ShadingState {
+        ShadingState(today: Shading.readToday(readings, now: now)) { quarter, track in
+            shade(quarter, in: track)
+        }
+    }
+
+    /// ضغطة على الربع = تلوته اليوم (5.3). يُسجَّل بتاريخه ووقته، ولا تظليل ثانٍ في اليوم نفسه.
+    /// ولا اهتزاز ولا إشعار عابر (ذ11): التغيّر يُرى في المربّع، ويُعلَن لقارئ الشاشة (§13.7).
+    private func shade(_ quarter: Int, in track: Track) {
+        let at = WirdClock.now()
+        now = at
+        do {
+            if try Shading.tap(quarter: quarter, track: track, in: context, now: at) == .shaded {
+                AccessibilityNotification.Announcement("تلوته اليوم").post()
+            }
+        } catch {
+            show("تعذّر التسجيل")
         }
     }
 
@@ -227,16 +291,19 @@ struct Removal: Equatable {
 
 /// رأس هادئ (7.1، §6): اسم التطبيق وتاريخ اليوم على سطر واحد، وزرّ الإعدادات.
 struct HomeHeader: View {
+    /// «الآن» من الشاشة، فيتحدّث التاريخ مع منتصف الليل كما تتحدّث الأرباع.
+    var now: Date = WirdClock.now()
+
     var body: some View {
         HStack(alignment: .center) {
-            TimelineView(.periodic(from: .now, by: 60)) { context in
+            TimelineView(.periodic(from: .now, by: 60)) { _ in
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(verbatim: AppInfo.name)
                         .font(Theme.font(.semiBold, size: 22, relativeTo: .title2))
                         .foregroundStyle(Theme.text)
                         .accessibilityIdentifier("home.title")
                         .accessibilityAddTraits(.isHeader)
-                    Text(verbatim: WirdDate.header(context.date))
+                    Text(verbatim: WirdDate.header(WirdClock.now()))
                         .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
                         .foregroundStyle(Theme.muted)
                         .accessibilityIdentifier("home.date")

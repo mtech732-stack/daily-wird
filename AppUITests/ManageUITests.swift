@@ -95,8 +95,8 @@ final class ManageUITests: XCTestCase {
 
         XCTAssertTrue(app.staticTexts["toast"].waitForExistence(timeout: 20))
         expectLabel(app.staticTexts["toast"], "نُقل ح 10 إلى مراجعة البعيد")
-        expectLabel(app.staticTexts["track.farReview.progress"], "0 من 40")
-        expectLabel(app.staticTexts["track.nearReview.progress"], "0 من 4")
+        expectLabel(app.otherElements["track.farReview.quarterCount"], "40")
+        expectLabel(app.otherElements["track.nearReview.quarterCount"], "4")
         XCTAssertFalse(app.staticTexts["remove.question"].exists, "النقل بلا سؤال")
         shot(app, "17-moved")
     }
@@ -125,7 +125,7 @@ final class ManageUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["toast"].waitForExistence(timeout: 20))
         expectLabel(app.staticTexts["toast"], "أُزيل حزبان · سجلّهما محفوظ")
         XCTAssertTrue(app.otherElements["track.nearReview.empty"].waitForExistence(timeout: 20))
-        expectLabel(app.staticTexts["track.farReview.progress"], "0 من 36")
+        expectLabel(app.otherElements["track.farReview.quarterCount"], "36")
         shot(app, "20-removed")
     }
 
@@ -143,8 +143,8 @@ final class ManageUITests: XCTestCase {
 
         XCTAssertTrue(app.staticTexts["toast"].waitForExistence(timeout: 20))
         expectLabel(app.staticTexts["toast"], "نُقل ح 9 إلى مراجعة القريب")
-        expectLabel(app.staticTexts["track.nearReview.progress"], "0 من 12")
-        expectLabel(app.staticTexts["track.farReview.progress"], "0 من 32")
+        expectLabel(app.otherElements["track.nearReview.quarterCount"], "12")
+        expectLabel(app.otherElements["track.farReview.quarterCount"], "32")
     }
 
     /// 5.1: الإزالة من قائمة الحزب تسأل أولاً، و«إلغاء» لا يزيل شيئاً.
@@ -156,7 +156,7 @@ final class ManageUITests: XCTestCase {
         expectLabel(question, "أتزيل الحزب 1 من مراجعة البعيد؟")
         app.buttons["remove.cancel"].tap()
         XCTAssertTrue(wait(question, "exists == false"))
-        expectLabel(app.staticTexts["track.farReview.progress"], "0 من 36")
+        expectLabel(app.otherElements["track.farReview.quarterCount"], "36")
     }
 
     /// §12.5: الضغط خارج قائمة الحزب يغلقها بلا نقل ولا إزالة.
@@ -165,8 +165,8 @@ final class ManageUITests: XCTestCase {
         let move = pressHizb(app, "farReview", 1, item: "hizbmenu.move")
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.92)).tap()
         XCTAssertTrue(wait(move, "exists == false"), "لم تُغلق القائمة")
-        expectLabel(app.staticTexts["track.farReview.progress"], "0 من 36")
-        expectLabel(app.staticTexts["track.nearReview.progress"], "0 من 8")
+        expectLabel(app.otherElements["track.farReview.quarterCount"], "36")
+        expectLabel(app.otherElements["track.nearReview.quarterCount"], "8")
         XCTAssertFalse(app.staticTexts["toast"].exists, "لا فعل بالضغط خارجها")
     }
 }

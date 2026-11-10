@@ -43,7 +43,7 @@ struct HizbLabel: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            if isBookmark {
+            if isBookmark && Slice.showsBookmark {
                 BookmarkGlyph()
                     .fill(Theme.ink)
                     .frame(width: 11, height: 14)
@@ -58,7 +58,7 @@ struct HizbLabel: View {
         .frame(width: width, height: Theme.Size.touch, alignment: .leading)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(Text(verbatim: "الحزب \(Digits.en(hizb))" + (isBookmark ? "، موضع التوقّف" : "")))
+        .accessibilityLabel(Text(verbatim: "الحزب \(Digits.en(hizb))" + (isBookmark && Slice.showsBookmark ? "، موضع التوقّف" : "")))
         .modifier(HizbMenuModifier(hizb: hizb, menu: menu))
     }
 }
@@ -234,26 +234,64 @@ private struct MenuRowStyle: ButtonStyle {
     }
 }
 
-/// مربّع الربع 44×44 بزاوية 11 (§5). في ش1 لا تظليل، فكل ربع «لم يُتلَ» (الدرجة 5):
-/// فارغ بحدّ 1.5 بلون المسار 70%. وموضع التوقّف إطار 3 بلون النصّ يبعد 3 عن المربّع.
+/// مربّع الربع 44×44 بزاوية 11 (§5)، يُضغط فيُظلَّل (5.3، §13.1).
+/// - لم يُتلَ (الدرجة 5): فارغ بحدّ 1.5 بلون المسار 70%، ورقمه بلون المسار.
+/// - تُلي اليوم: ممتلئ بلون المسار ورقمه `on…` (الدرجة 1)، وعليه علامة «اليوم».
+///   (ودرجات العمر الأخرى في مرحلتها من ش2.)
+/// - موضع التوقّف إطار 3 بلون النصّ يبعد 3 عن المربّع، ولا يظهر في ش2 (ذ16).
+/// - الربع المشترك: الزاوية العليا اليمنى مقطوعة بمثلّث 15 بلون ما تحته (§5، 7.1.1).
 struct QuarterTile: View {
     let track: Track
     let quarter: Int
     let isBookmark: Bool
-    /// ربع مشترك بين سورتين: الزاوية العليا اليمنى مقطوعة بمثلّث 15 بلون ما تحته (§5، 7.1.1).
     var isShared: Bool = false
     /// لون ما تحت المربّع، للزاوية المقطوعة: `card` في البطاقة المطويّة، و`paper` في قسم السورة.
     var under: Color = Theme.card
+    /// حالة التظليل والضغطة. بلا حالة (معاينات ش1) يُرسم المربّع «لم يُتلَ» ولا يُضغط.
+    var shading: ShadingState?
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var isToday: Bool { shading?.isToday(quarter) ?? false }
+    /// ممتلئ (الدرجة 1). في هذه المرحلة: ما تُلي اليوم.
+    private var isFull: Bool { isToday }
 
     var body: some View {
+        Button {
+            shading?.tap(quarter, track)
+        } label: {
+            face
+        }
+        .buttonStyle(TileButtonStyle(reduceMotion: reduceMotion))
+        .disabled(shading == nil)
+        .zIndex(isToday ? 1 : 0)
+        .accessibilityElement()
+        .accessibilityLabel(Text(verbatim:
+            "الحزب \(Digits.en(Quran.quarter(quarter).hizb))، الربع \(Digits.en(Quran.position(ofQuarter: quarter)))"
+            + (isShared ? "، ربع مشترك" : "")
+            + (isBookmark && Slice.showsBookmark ? "، موضع التوقّف" : "")))
+        .accessibilityValue(Text(verbatim: isToday ? "تلوته اليوم" : "لم يُتلَ"))
+        .accessibilityHint(Text(verbatim: "ضغطة: تلوته"))
+        .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("quarter.\(track.rawValue).\(quarter)")
+    }
+
+    private var face: some View {
+        let color = Theme.trackColor(track)
         let ink = Theme.tileInk(track)
-        ZStack {
+        return ZStack {
+            RoundedRectangle(cornerRadius: Theme.Radius.tile, style: .continuous)
+                .fill(color)
+                .opacity(isFull ? 1 : 0)
             RoundedRectangle(cornerRadius: Theme.Radius.tile, style: .continuous)
                 .strokeBorder(ink.opacity(0.7), lineWidth: 1.5)
+                .opacity(isFull ? 0 : 1)
             Text(verbatim: Digits.en(Quran.position(ofQuarter: quarter)))
                 .font(Theme.fixedFont(.medium, size: 13))
-                .foregroundStyle(ink)
+                .foregroundStyle(isFull ? Theme.onTrack(track) : ink)
         }
+        // التعبئة تتغيّر بتلاشٍ 0.15 ث، وفوراً مع «تقليل الحركة» (§13.1).
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: isFull)
         .frame(width: Theme.Size.tile, height: Theme.Size.tile)
         .overlay {
             if isShared {
@@ -261,19 +299,77 @@ struct QuarterTile: View {
             }
         }
         .overlay {
-            if isBookmark {
+            if isBookmark && Slice.showsBookmark {
                 RoundedRectangle(cornerRadius: Theme.Radius.tile + 4.5, style: .continuous)
                     .stroke(Theme.ink, lineWidth: 3)
                     .padding(-4.5)
             }
         }
-        .accessibilityElement()
-        .accessibilityLabel(Text(verbatim:
-            "الحزب \(Digits.en(Quran.quarter(quarter).hizb)) الربع \(Digits.en(Quran.position(ofQuarter: quarter)))"
-            + (isBookmark ? "، موضع التوقّف" : "")
-            + (isShared ? "، بين سورتين" : "")))
-        .accessibilityValue(Text(verbatim: "لم يُتلَ"))
-        .accessibilityIdentifier("quarter.\(track.rawValue).\(quarter)")
+        .overlay {
+            // علامة «اليوم» تظهر من 0.6 إلى حجمها في 0.18 ث (§13.1).
+            ZStack {
+                if isToday {
+                    TodayBadge(ink: ink)
+                        .transition(.scale(scale: 0.6, anchor: UnitPoint(x: 2.5 / 44, y: 2.5 / 44)).combined(with: .opacity))
+                }
+            }
+            .frame(width: Theme.Size.tile, height: Theme.Size.tile)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: isToday)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+        }
+        .contentShape(Rectangle())
+        // الزاوية المقطوعة (العليا اليمنى) وعلامة «اليوم» (العليا اليسرى) بالإحداثيات الفعلية كما في §5.
+        // واتجاه الشاشة من اليمين يعكس رسم الأشكال، فكانت الزاوية تُقطع من اليسار، والعلامة تقع
+        // عليها وصحّها مقلوب. فيُرسم وجه المربّع باتّجاه ثابت؛ ولا نصّ فيه إلا رقم الربع.
+        .environment(\.layoutDirection, .leftToRight)
+    }
+}
+
+/// الضغط يصغّر المربّع إلى 0.94 مدة 0.12 ث (§5)، ولا حركة مع «تقليل الحركة».
+struct TileButtonStyle: ButtonStyle {
+    var reduceMotion: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.94 : 1)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
+/// علامة «اليوم» (§5، 8.3): دائرة 17 بلون الأرضية حدّها 2 بلون رقم المسار، فيها صحّ (7×4، خطّ 2)،
+/// مركزها قرب الزاوية العليا اليسرى وتبرز 6 خارج المربّع. بالإحداثيات الفعلية كما في التصميم،
+/// لا تتبع اتجاه الكتابة. تُميَّز بشكلها لا بلونها، فتُقرأ بالرمادي.
+struct TodayBadge: View {
+    let ink: Color
+
+    var body: some View {
+        ZStack {
+            BadgeDisc(radius: 8.5).fill(Theme.paper)
+            BadgeDisc(radius: 9.5).stroke(ink, lineWidth: 2)
+            BadgeCheck().stroke(ink, style: StrokeStyle(lineWidth: 2, lineCap: .butt, lineJoin: .miter))
+        }
+    }
+}
+
+/// دائرة مركزها (2.5، 2.5) من الزاوية العليا اليسرى للمربّع: أعلى 6- ويسار 6- ونصف قطر 8.5.
+struct BadgeDisc: Shape {
+    var radius: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        let c = CGPoint(x: rect.minX + 2.5, y: rect.minY + 2.5)
+        return Path(ellipseIn: CGRect(x: c.x - radius, y: c.y - radius, width: radius * 2, height: radius * 2))
+    }
+}
+
+/// الصحّ: ضلعا زاوية 7×4 مدوّرة 45° كما في التصميم (ds.css `.today:before`).
+struct BadgeCheck: Shape {
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: rect.minX - 1.1, y: rect.minY + 1.85))
+        p.addLine(to: CGPoint(x: rect.minX + 2.44, y: rect.minY + 5.39))
+        p.addLine(to: CGPoint(x: rect.minX + 8.1, y: rect.minY - 0.27))
+        return p
     }
 }
 
