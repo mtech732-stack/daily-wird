@@ -41,6 +41,16 @@ enum Phrase {
         "أُضيف \(hizbsNominative(list)) إلى \(track.title)"
     }
 
+    /// الإشعار بعد الإضافة مع النقل (قرار ذوقي): «نُقل ح 10 إلى مراجعة البعيد»،
+    /// أو «أُضيف ح 9 ونُقل ح 10 إلى مراجعة البعيد». و«أُضيف» وحدها حين لا نقل.
+    static func addedToast(added: [Int], moved: [Int], to track: Track) -> String {
+        switch (added.isEmpty, moved.isEmpty) {
+        case (_, true): addedToast(added, to: track)
+        case (true, false): "نُقل \(hizbsNominative(moved)) إلى \(track.title)"
+        case (false, false): "أُضيف \(hizbsNominative(added)) ونُقل \(hizbsNominative(moved)) إلى \(track.title)"
+        }
+    }
+
     /// «في البعيد» · «في القريب» تحت خانة الحزب الذي في مسار آخر (§12.2).
     static func inTrackShort(_ track: Track) -> String {
         switch track {

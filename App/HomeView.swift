@@ -74,8 +74,12 @@ struct HomeView: View {
     /// ثم يؤكّد ما جرى بإشعار عابر (5.1، ذ8).
     private func add(_ hizbs: [Int], to track: Track, moving: Bool) {
         do {
-            let added = try Library.add(hizbs, to: track, in: context, moving: moving)
-            show(added.isEmpty ? "لم يُضف شيء" : Phrase.addedToast(added, to: track))
+            let before = Library.trackOfHizb(from: placements)
+            let changed = try Library.add(hizbs, to: track, in: context, moving: moving)
+            // ما كان في مسار آخر قد نُقل، وما سواه أُضيف جديداً.
+            let moved = changed.filter { before[$0] != nil && before[$0] != track }
+            let added = changed.filter { !moved.contains($0) }
+            show(changed.isEmpty ? "لم يُضف شيء" : Phrase.addedToast(added: added, moved: moved, to: track))
         } catch {
             show("تعذّرت الإضافة")
         }

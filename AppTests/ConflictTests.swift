@@ -111,6 +111,14 @@ final class ConflictTests: XCTestCase {
 
     // MARK: صياغة السؤال (§12.3، م20)
 
+    /// قرار ذوقي: الإشعار يفرّق بين المضاف جديداً والمنقول.
+    func test_5_1_movedToastSaysMoved() {
+        XCTAssertEqual(Phrase.addedToast(added: [], moved: [10], to: .farReview), "نُقل ح 10 إلى مراجعة البعيد")
+        XCTAssertEqual(Phrase.addedToast(added: [9], moved: [10], to: .farReview), "أُضيف ح 9 ونُقل ح 10 إلى مراجعة البعيد")
+        XCTAssertEqual(Phrase.addedToast(added: [9], moved: [], to: .farReview), "أُضيف ح 9 إلى مراجعة البعيد")
+        XCTAssertEqual(Phrase.addedToast(added: [], moved: [10, 11], to: .nearReview), "نُقل حزبان إلى مراجعة القريب")
+    }
+
     func test_5_1_conflictPhrasing() {
         XCTAssertEqual(Phrase.conflictQuestion([10], in: .nearReview), "الحزب 10 موجود في مراجعة القريب. أتنقله؟")
         XCTAssertEqual(Phrase.conflictQuestion([10, 11], in: .nearReview), "الحزبان 10 و11 موجودان في مراجعة القريب. أتنقلهما؟")

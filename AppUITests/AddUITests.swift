@@ -210,6 +210,7 @@ final class AddUITests: XCTestCase {
         XCTAssertTrue(app.buttons["conflict.move"].waitForExistence(timeout: 5))
         app.buttons["conflict.move"].tap()
         XCTAssertTrue(app.staticTexts["toast"].waitForExistence(timeout: 5))
+        expectLabel(app.staticTexts["toast"], "نُقل ح 10 إلى مراجعة البعيد")
         expectLabel(app.staticTexts["track.farReview.progress"], "0 من 40")
         expectLabel(app.staticTexts["track.nearReview.progress"], "0 من 4")
         shot(app, "15-moved-by-add")
