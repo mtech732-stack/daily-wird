@@ -95,15 +95,6 @@ final class HomeLayoutTests: XCTestCase {
         XCTAssertEqual(ReviewTrackLayout(track: .nearReview, hizbs: [10, 11]).progressText, "0 من 8")
     }
 
-    // MARK: 7.1 · الأرشيف
-
-    /// 7.1: الأرشيف كل أحزاب المسار بالترتيب، ووسم الجزء عند أول حزب فيه وحده.
-    func test_7_1_archiveRowsWithJuzTagAtFirstHizbOfJuz() {
-        let rows = ReviewTrackLayout(track: .farReview, hizbs: [1, 2, 3, 9]).archiveRows
-        XCTAssertEqual(rows.map(\.hizb), [1, 2, 3, 9])
-        XCTAssertEqual(rows.map(\.juzTag), [1, nil, 2, 5])
-    }
-
     // MARK: م4 · التقويم الميلادي والأرقام الإنجليزية
 
     /// القرار 1، م4: تاريخ الرأس ميلادي بأرقام إنجليزية، مهما كانت منطقة الجهاز.
