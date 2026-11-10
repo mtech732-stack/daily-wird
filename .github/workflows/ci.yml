@@ -66,7 +66,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.app == 'true'
     runs-on: macos-26
-    timeout-minutes: 70 # أربع جولات واجهة نحو 12 دقيقة لكل منها بعد ش2 (تجاوز 45 في #57)
+    timeout-minutes: 60 # أربع جولات واجهة: كانت 41 دقيقة قبل ش2 (main 11:44)، فـ 45 لا تتّسع لأي اختبار جديد
     permissions:
       contents: write # لرفع لقطات طلب الدمج إلى فرع previews وحده (القرار 11)
     steps:

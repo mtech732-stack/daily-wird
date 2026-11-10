@@ -4,8 +4,15 @@ import Foundation
 /// يجوز أن تبدأ من وقت مثبّت بالوسيط `-now "2026-11-06T23:59:50"` (بتوقيت الجهاز)، ثم تمضي
 /// مع الوقت الحقيقي، فيُختبر منتصف الليل والتطبيق مفتوح (5.3، القرار 2) دون انتظار يوم.
 enum WirdClock {
-    /// الفرق بين ساعة الاختبار والوقت الحقيقي. صفر خارج الاختبارات.
-    static let offset: TimeInterval = offset(from: ProcessInfo.processInfo.arguments)
+    /// الفرق بين ساعة الاختبار والوقت الحقيقي. صفر خارج الاختبارات، ولا يغيّره إلا `jumpPastMidnight` فيها.
+    nonisolated(unsafe) static var offset: TimeInterval = offset(from: ProcessInfo.processInfo.arguments)
+
+    /// اختبارات الواجهة وحدها: تقفز الساعة إلى ما بعد منتصف الليل التالي بثانيتين، فيُختبر
+    /// تحديث الشاشة والتطبيق مفتوح دون انتظار وقت حقيقي.
+    static func jumpPastMidnight() {
+        let target = Shading.nextMidnight(after: now()).addingTimeInterval(2)
+        offset += target.timeIntervalSince(now())
+    }
 
     static func now() -> Date { Date().addingTimeInterval(offset) }
 

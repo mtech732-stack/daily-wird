@@ -9,9 +9,9 @@ final class ShadingUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    private func launch(seed: String, readings: String? = nil, now: String? = nil) -> XCUIApplication {
+    private func launch(seed: String, readings: String? = nil, now: String? = nil, testClock: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-ui-testing", "-seed", seed]
+        app.launchArguments = ["-ui-testing", "-seed", seed] + (testClock ? ["-test-clock"] : [])
             + (readings.map { ["-readings", $0] } ?? [])
             + (now.map { ["-now", $0] } ?? [])
         app.launch()
@@ -83,12 +83,13 @@ final class ShadingUITests: XCTestCase {
     /// 5.3، القرار 2: اليوم يبدأ عند منتصف الليل والتطبيق مفتوح: تختفي علامة «اليوم» دون فتح جديد،
     /// وتصير الضغطة تظليلاً جديداً (سيناريو المعاين 3).
     func test_5_3_todayMarkClearsAtMidnight() {
-        let app = launch(seed: "farReview:1", readings: "1:0@23:58", now: "2026-11-06T23:59:30")
+        let app = launch(seed: "farReview:1", readings: "1:0@21:00", now: "2026-11-06T22:00:00", testClock: true)
         let q1 = app.buttons["quarter.farReview.1"]
         XCTAssertTrue(q1.waitForExistence(timeout: 20))
         expectValue(q1, "تلوته اليوم")
-        // بعد منتصف الليل (30 ث من بدء الساعة) تتحدّث الشاشة وحدها.
-        expectValue(q1, "لم يُتلَ", timeout: 120)
+        // تقفز ساعة الاختبار بعد منتصف الليل، فتتحدّث الشاشة وحدها دون فتح جديد.
+        app.buttons["test.midnight"].tap()
+        expectValue(q1, "لم يُتلَ")
         shot(app, "24-after-midnight")
         q1.tap()
         expectValue(q1, "تلوته اليوم")

@@ -43,7 +43,7 @@ struct HomeView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 8) {
-                        HomeHeader()
+                        HomeHeader(now: now)
                             .padding(.bottom, 6)
                         ForEach(Track.allCases, id: \.self) { track in
                             card(for: track, narrow: narrow, proxy: proxy)
@@ -83,6 +83,23 @@ struct HomeView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
             now = WirdClock.now()
+        }
+        .overlay(alignment: .bottom) {
+            // اختبار منتصف الليل وحده (`-test-clock`): زرّ لا يُرى يقفز بالساعة بعد منتصف الليل،
+            // ثم يُرسل ما يرسله الجهاز عند تغيّر اليوم، فلا ينتظر الاختبار وقتاً حقيقياً.
+            if Self.hasTestClock {
+                Color.clear
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        WirdClock.jumpPastMidnight()
+                        NotificationCenter.default.post(name: UIApplication.significantTimeChangeNotification, object: nil)
+                    }
+                    .accessibilityElement()
+                    .accessibilityLabel(Text(verbatim: "test clock"))
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityIdentifier("test.midnight")
+            }
         }
         .overlay(alignment: .bottom) {
             if let toast {
@@ -188,6 +205,9 @@ struct HomeView: View {
 
     /// مدّة الإشعار 2.5 ث (§12.6). وفي اختبارات الواجهة يبقى حتى يُقرأ ويُصوَّر، فالمحاكي البطيء
     /// قد يتجاوز 2.5 ث بين ظهوره وقراءته، فيفشل الاختبار دون خطأ في التطبيق.
+    static let hasTestClock = ProcessInfo.processInfo.arguments.contains("-ui-testing")
+        && ProcessInfo.processInfo.arguments.contains("-test-clock")
+
     static let toastSeconds: Double = ProcessInfo.processInfo.arguments.contains("-ui-testing") ? 30 : 2.5
 
     private func show(_ text: String) {
@@ -271,6 +291,9 @@ struct Removal: Equatable {
 
 /// رأس هادئ (7.1، §6): اسم التطبيق وتاريخ اليوم على سطر واحد، وزرّ الإعدادات.
 struct HomeHeader: View {
+    /// «الآن» من الشاشة، فيتحدّث التاريخ مع منتصف الليل كما تتحدّث الأرباع.
+    var now: Date = WirdClock.now()
+
     var body: some View {
         HStack(alignment: .center) {
             TimelineView(.periodic(from: .now, by: 60)) { _ in
