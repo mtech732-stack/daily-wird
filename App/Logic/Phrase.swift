@@ -51,6 +51,60 @@ enum Phrase {
         }
     }
 
+    // MARK: النقل والإزالة (§12.5، م20)
+
+    /// «نُقل ح 10 إلى مراجعة البعيد» · «نُقل 3 أحزاب إلى …»
+    static func movedToast(_ list: [Int], to track: Track) -> String {
+        "نُقل \(hizbsNominative(list)) إلى \(track.title)"
+    }
+
+    /// «أُزيل ح 11 · سجلّه محفوظ» · «أُزيل حزبان · سجلّهما محفوظ»
+    static func removedToast(_ list: [Int]) -> String {
+        "أُزيل \(hizbsNominative(list)) · سجلّ\(pronoun(list.count)) محفوظ"
+    }
+
+    /// عنوان ورقة الإدارة: «نقل من مراجعة القريب» · «إزالة من مراجعة القريب».
+    static func manageTitle(removing: Bool, from track: Track) -> String {
+        (removing ? "إزالة من " : "نقل من ") + track.title
+    }
+
+    /// زرّ ورقة الإدارة: «انقل الحزب 9 إلى مراجعة القريب» · «أزل حزبين»، وبلا اختيار «اختر حزباً».
+    static func manageButton(_ list: [Int], removing: Bool, to target: Track) -> String {
+        if list.isEmpty { return "اختر جزءاً أو حزباً" }
+        return removing ? "أزل \(hizbsAccusative(list))" : "انقل \(hizbsAccusative(list)) إلى \(target.title)"
+    }
+
+    /// سؤال تأكيد الإزالة: «أتزيل الحزب 11 من مراجعة القريب؟» · «أتزيل الحزبين 10 و11 من …؟» · «أتزيل 3 أحزاب من …؟»
+    static func removeQuestion(_ list: [Int], from track: Track) -> String {
+        let what: String
+        switch list.count {
+        case 1: what = "الحزب \(Digits.en(list[0]))"
+        case 2: what = "الحزبين \(Digits.en(list[0])) و\(Digits.en(list[1]))"
+        default: what = hizbsAccusative(list)
+        }
+        return "أتزيل \(what) من \(track.title)؟"
+    }
+
+    /// «يبقى سجلّ تلاوته محفوظاً، فإن أعدته ظهر عمره كما كان.»
+    static func removeNote(_ count: Int) -> String {
+        let p = pronoun(count)
+        return "يبقى سجلّ تلاوت\(p) محفوظاً، فإن أعدت\(p) ظهر عمر\(p) كما كان."
+    }
+
+    /// «أزله» · «أزلهما» · «أزلها»
+    static func removeAnswer(_ count: Int) -> String { "أزل\(pronoun(count))" }
+
+    /// بند النقل في قائمة الحزب: «نقل إلى مراجعة البعيد». نصّ جاهز لا مفتاح ترجمة،
+    /// لأن الإقحام في مفتاح الترجمة يحيط الاسم بعلامتي عزل خفيّتين (⁨…⁩) يقرؤهما قارئ الشاشة والاختبار.
+    static func hizbMenuMove(to track: Track) -> String {
+        "نقل إلى " + track.title
+    }
+
+    /// رأس قائمة الحزب: «ح 10 · النساء · الجزء 5».
+    static func hizbMenuHeader(_ hizb: Int) -> String {
+        "\(Digits.hizbLabel(hizb)) · \(Quran.suraName(Quran.firstSura(ofHizb: hizb))) · الجزء \(Digits.en(Quran.juz(ofHizb: hizb)))"
+    }
+
     /// «في البعيد» · «في القريب» تحت خانة الحزب الذي في مسار آخر (§12.2).
     static func inTrackShort(_ track: Track) -> String {
         switch track {

@@ -14,6 +14,13 @@ struct HomeView: View {
     @State private var toast: String?
     @State private var toastTask: Task<Void, Never>?
 
+    /// ورقة الإدارة: نقل أو إزالة من مسار (§12.5).
+    @State private var manage: ManageRequest?
+    /// تأكيد إزالة حزب من قائمته (5.1: بتأكيد صريح).
+    @State private var removal: Removal?
+    /// قائمة الحزب المفتوحة بالضغط المطوّل (§12.5).
+    @State private var hizbMenu: HizbMenuRequest?
+
     /// المسار المفتوح أرشيفه. لا يُحفظ، فيفتح التطبيق دائماً مطويّاً (7.1).
     @State private var openTrack: Track?
     /// موضع شريط «طيّ» في أسفل البطاقة المفتوحة، لإلصاقه بأسفل الشاشة إن نزل تحتها (م23).
@@ -62,11 +69,83 @@ struct HomeView: View {
                     .transition(.opacity)
             }
         }
+        .overlay {
+            // قائمة الحزب بالضغط المطوّل (§12.5).
+            if let request = hizbMenu {
+                HizbMenuOverlay(request: request) { action in
+                    hizbMenu = nil
+                    switch action {
+                    case .move: move([request.hizb], from: request.track)
+                    case .remove: removal = Removal(track: request.track, hizbs: [request.hizb])
+                    case nil: break
+                    }
+                }
+                .transition(.opacity)
+            }
+        }
+        .animation(.easeOut(duration: 0.15), value: hizbMenu)
         .animation(.easeOut(duration: 0.2), value: toast)
         .sheet(item: $addTrack) { track in
             AddSheet(track: track, trackOf: Library.trackOfHizb(from: placements)) { hizbs, target, moving in
                 add(hizbs, to: target, moving: moving)
             }
+        }
+        .sheet(item: $manage) { request in
+            ManageSheet(request: request, hizbs: Library.activeHizbs(in: request.track, from: placements)) { hizbs in
+                if request.mode == .remove {
+                    remove(hizbs, from: request.track)
+                } else {
+                    move(hizbs, from: request.track)
+                }
+            }
+        }
+        .overlay {
+            // تأكيد الإزالة من قائمة الحزب (§12.5).
+            if let removal {
+                ChoiceDialog(
+                    title: Phrase.removeQuestion(removal.hizbs, from: removal.track),
+                    note: Phrase.removeNote(removal.hizbs.count),
+                    primary: Phrase.removeAnswer(removal.hizbs.count), primaryID: "remove.confirm",
+                    quiet: "إلغاء", quietID: "remove.cancel",
+                    titleID: "remove.question"
+                ) { confirmed in
+                    self.removal = nil
+                    if confirmed { remove(removal.hizbs, from: removal.track) }
+                }
+            }
+        }
+    }
+
+    /// ينقل إلى المسار الآخر فوراً بلا سؤال، لأن النقل لا يمحو شيئاً (ذ6)، ثم يؤكّده بإشعار.
+    private func move(_ hizbs: [Int], from track: Track) {
+        let target = Library.otherReviewTrack(track)
+        do {
+            let moved = try Library.move(hizbs, from: track, to: target, in: context)
+            foldIfEmptied(track, removing: moved)
+            if !moved.isEmpty { show(Phrase.movedToast(moved, to: target)) }
+        } catch {
+            show("تعذّر النقل")
+        }
+    }
+
+    /// يزيل بعد التأكيد، ويبقى سجلّ التلاوة محفوظاً (5.1)، ثم يؤكّده بإشعار.
+    private func remove(_ hizbs: [Int], from track: Track) {
+        do {
+            let removed = try Library.remove(hizbs, from: track, in: context)
+            foldIfEmptied(track, removing: removed)
+            if !removed.isEmpty { show(Phrase.removedToast(removed)) }
+        } catch {
+            show("تعذّرت الإزالة")
+        }
+    }
+
+    /// إن فرغ المسار عادت بطاقته فارغة، وطُوي أرشيفه إن كان مفتوحاً (§12.5).
+    private func foldIfEmptied(_ track: Track, removing list: [Int]) {
+        guard openTrack == track else { return }
+        let left = Set(Library.activeHizbs(in: track, from: placements)).subtracting(list)
+        if left.isEmpty {
+            openTrack = nil
+            foldBar = FoldBarPosition()
         }
     }
 
@@ -107,10 +186,15 @@ struct HomeView: View {
             if layout.isEmpty {
                 EmptyTrackCard(track: track) { addTrack = track }
             } else {
-                ReviewTrackCard(layout: layout, isOpen: openTrack == track, narrow: narrow) {
+                let menu = HizbMenu(track: track) { hizb, frame in
+                    hizbMenu = HizbMenuRequest(track: track, hizb: hizb, labelFrame: frame)
+                }
+                ReviewTrackCard(layout: layout, isOpen: openTrack == track, narrow: narrow, hizbMenu: menu) {
                     toggle(track, proxy: proxy)
                 } onAdd: {
                     addTrack = track
+                } onManage: { mode in
+                    manage = ManageRequest(track: track, mode: mode)
                 } onFoldBarMove: { maxY in
                     foldBar.barMaxY = maxY
                 }
@@ -133,6 +217,12 @@ struct HomeView: View {
             proxy.scrollTo("card.\(track.rawValue)", anchor: .top)
         }
     }
+}
+
+/// حزب أو أكثر ينتظر تأكيد إزالته من مساره.
+struct Removal: Equatable {
+    let track: Track
+    let hizbs: [Int]
 }
 
 /// رأس هادئ (7.1، §6): اسم التطبيق وتاريخ اليوم على سطر واحد، وزرّ الإعدادات.

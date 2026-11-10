@@ -47,7 +47,8 @@ jobs:
           set -euo pipefail
           if [ "$EVENT" != "pull_request" ]; then echo "app=true" >> "$GITHUB_OUTPUT"; exit 0; fi
           # --no-renames: نقل ملف من App/ إلى docs/ يُظهر الاسمين، فلا يُعفى من الاختبارات (المدقّق).
-          files=$(git diff --name-only --no-renames "$BASE...$HEAD")
+          # core.quotePath=false: الأسماء العربية تُطبع كما هي، لا بين تنصيص وبرموز ثُمانية لا تطابق docs/ ولا .md (م33).
+          files=$(git -c core.quotePath=false diff --name-only --no-renames "$BASE...$HEAD")
           echo "$files"
           # يكفي ملف واحد خارج المستندات ليُعدّ الطلب ماسّاً للتطبيق.
           if printf '%s\n' "$files" | grep -qvE '^(docs/|design/)|\.md$'; then app=true; else app=false; fi

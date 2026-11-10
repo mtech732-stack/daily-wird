@@ -76,4 +76,43 @@ enum Library {
         if closed > 0 { try context.save() }
         return closed
     }
+
+    // MARK: النقل والإزالة (5.1، 5.2، §12.5)
+
+    /// المسار الآخر من مسارَي المراجعة. وفي ش1 «المسار الآخر» واحد؛ والجديد في ش4.
+    static func otherReviewTrack(_ track: Track) -> Track {
+        track == .farReview ? .nearReview : .farReview
+    }
+
+    /// ينقل من مسار إلى آخر ما هو فيه الآن من الأحزاب المختارة، يدوياً بيد المالك (5.2):
+    /// يُغلق صفّه المفتوح (لا يُحذف) ويُفتح صفّ في الوجهة. وسجلّ تظليلاته باقٍ لأنه بالربع.
+    /// ويعيد ما نُقل.
+    @discardableResult
+    static func move(_ selection: [Int], from source: Track, to target: Track, in context: ModelContext,
+                     now: Date = .now) throws -> [Int] {
+        precondition(source.isReview && target.isReview && source != target, "النقل بين مسارَي المراجعة في ش1")
+        let placements = try context.fetch(FetchDescriptor<HizbPlacement>())
+        let current = trackOfHizb(from: placements)
+        let list = Array(Set(selection)).sorted().filter { current[$0] == source }
+        let set = Set(list)
+        for p in placements where p.removedAt == nil && set.contains(p.hizb) { p.removedAt = now }
+        for hizb in list { context.insert(HizbPlacement(hizb: hizb, track: target, addedAt: now)) }
+        try context.save()
+        return list
+    }
+
+    /// يزيل من مسار ما هو فيه الآن من الأحزاب المختارة، بعد تأكيد المالك (5.1):
+    /// يُغلق صفّه ولا يُحذف، ولا يُمسّ سجلّ تظليلاته، فإن أُعيد ظهر عمره كما كان.
+    /// ويعيد ما أُزيل.
+    @discardableResult
+    static func remove(_ selection: [Int], from track: Track, in context: ModelContext,
+                       now: Date = .now) throws -> [Int] {
+        let placements = try context.fetch(FetchDescriptor<HizbPlacement>())
+        let current = trackOfHizb(from: placements)
+        let list = Array(Set(selection)).sorted().filter { current[$0] == track }
+        let set = Set(list)
+        for p in placements where p.removedAt == nil && set.contains(p.hizb) { p.removedAt = now }
+        try context.save()
+        return list
+    }
 }

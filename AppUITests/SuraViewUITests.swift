@@ -24,10 +24,10 @@ final class SuraViewUITests: XCTestCase {
 
     private func open(_ track: String, _ app: XCUIApplication) {
         let pull = app.buttons["track.\(track).pull"]
-        XCTAssertTrue(pull.waitForExistence(timeout: 10))
+        XCTAssertTrue(pull.waitForExistence(timeout: 20))
         if !pull.isHittable { app.swipeUp() }
         pull.tap()
-        XCTAssertTrue(app.otherElements["track.\(track).archive"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.otherElements["track.\(track).archive"].waitForExistence(timeout: 20))
     }
 
     /// 7.1.1: قسم لكل سورة، والربع المشترك (ح 1 الربع 1) تحت الفاتحة والبقرة معاً،

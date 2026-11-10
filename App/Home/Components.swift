@@ -38,6 +38,8 @@ struct HizbLabel: View {
     let hizb: Int
     let isBookmark: Bool
     var width: CGFloat = Theme.Size.hizbLabelWidth
+    /// قائمة الحزب بالضغط المطوّل (§12.5)، حيث يكون الحزب في مسار.
+    var menu: HizbMenu?
 
     var body: some View {
         HStack(spacing: 4) {
@@ -57,6 +59,178 @@ struct HizbLabel: View {
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text(verbatim: "الحزب \(Digits.en(hizb))" + (isBookmark ? "، موضع التوقّف" : "")))
+        .modifier(HizbMenuModifier(hizb: hizb, menu: menu))
+    }
+}
+
+/// قائمة الحزب في مساره (§12.5): الضغط المطوّل على «ح [رقم]» يفتحها، ومعه موضع «ح» على الشاشة
+/// لترفع الشاشة الصفّ وتضع القائمة تحته.
+struct HizbMenu {
+    let track: Track
+    let open: (_ hizb: Int, _ labelFrame: CGRect) -> Void
+}
+
+/// موضع «ح» على الشاشة، يُحفظ بلا إعادة رسم مع كل تمرير، ويُقرأ عند الضغط المطوّل وحده.
+final class FrameBox: @unchecked Sendable {
+    var rect: CGRect = .zero
+}
+
+/// الضغط المطوّل (0.45 ث) على «ح [رقم]» يفتح قائمة الحزب المخصّصة (§12.5، م22). وليست قائمة
+/// النظام `contextMenu`، لأنها تفرض لون رأسها فلا يبلغ تباينه 4.5:1 (م32، القاعدة 8.3)،
+/// ولأن §12.5 ترفع الصفّ كلّه لا «ح» وحده.
+private struct HizbMenuModifier: ViewModifier {
+    let hizb: Int
+    let menu: HizbMenu?
+    @State private var frame = FrameBox()
+
+    func body(content: Content) -> some View {
+        if let menu {
+            content
+                .onGeometryChange(for: CGRect.self) { proxy in
+                    proxy.frame(in: .global)
+                } action: { rect in
+                    frame.rect = rect
+                }
+                .onLongPressGesture(minimumDuration: 0.45) {
+                    menu.open(hizb, frame.rect)
+                }
+                .accessibilityAction(named: Text(verbatim: "خيارات الحزب")) {
+                    menu.open(hizb, frame.rect)
+                }
+                .accessibilityIdentifier("hizb.\(menu.track.rawValue).\(hizb)")
+        } else {
+            content
+        }
+    }
+}
+
+/// القائمة المفتوحة: أي حزب في أي مسار، وموضع «ح» على الشاشة.
+struct HizbMenuRequest: Equatable {
+    let track: Track
+    let hizb: Int
+    let labelFrame: CGRect
+}
+
+enum HizbMenuAction {
+    case move, remove
+}
+
+/// قائمة الحزب كما في §12.5: تعتيم `scrim` يبقى الصفّ فوقه مرفوعاً (زاوية 14، يمتدّ 6 جانباً)،
+/// وتحته بـ 8 قائمة عرضها 252 (فوقه إن لم تتّسع)، حافّتها اليمنى عند حافّة الصفّ:
+/// رأس 12.5 `muted` «ح 10 · النساء · الجزء 5»، ثم «نقل إلى [المسار الآخر]»، ثم فاصل 6 `ghost`،
+/// ثم «إزالة من المسار». الإزالة مفصولة بالفراغ وبرمزها لا باللون (ذ7).
+/// الضغط خارج القائمة يغلقها بلا فعل.
+struct HizbMenuOverlay: View {
+    let request: HizbMenuRequest
+    let done: (HizbMenuAction?) -> Void
+
+    @State private var menuHeight: CGFloat = 150
+
+    var body: some View {
+        GeometryReader { geo in
+            let origin = geo.frame(in: .global).origin
+            let size = geo.size
+            let label = request.labelFrame.offsetBy(dx: -origin.x, dy: -origin.y)
+            // «ح» أول الصفّ من اليمين، والبطاقة في وسط الشاشة، فيسار الصفّ مقابل يمينه.
+            let right = label.maxX + 6
+            let left = size.width - label.maxX - 6
+            let lift = CGRect(x: left, y: label.midY - Theme.Size.rowHeight / 2,
+                              width: max(right - left, 0), height: Theme.Size.rowHeight)
+            let below = lift.maxY + 8 + menuHeight <= size.height - geo.safeAreaInsets.bottom - 8
+            let menuX = min(max(right - 252, 8), size.width - 252 - 8)
+            let menuY = below ? lift.maxY + 8 : lift.minY - 8 - menuHeight
+
+            ZStack(alignment: .topLeading) {
+                Path { p in
+                    p.addRect(CGRect(origin: .zero, size: size))
+                    p.addRoundedRect(in: lift, cornerSize: CGSize(width: 14, height: 14), style: .continuous)
+                }
+                .fill(Theme.scrim, style: FillStyle(eoFill: true))
+
+                RoundedRectangle(cornerRadius: Theme.Radius.button, style: .continuous)
+                    .strokeBorder(Theme.line, lineWidth: 1)
+                    .frame(width: lift.width, height: lift.height)
+                    .offset(x: lift.minX, y: lift.minY)
+
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture { done(nil) }
+                    .accessibilityHidden(true)
+
+                card
+                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { menuHeight = $0 }
+                    .offset(x: menuX, y: menuY)
+            }
+            .frame(width: size.width, height: size.height, alignment: .topLeading)
+        }
+        .ignoresSafeArea()
+        // المواضع محسوبة من اليسار، فتُرسم الطبقة باتّجاه ثابت، والقائمة نفسها من اليمين.
+        .environment(\.layoutDirection, .leftToRight)
+    }
+
+    private var card: some View {
+        let other = Library.otherReviewTrack(request.track)
+        return VStack(alignment: .leading, spacing: 0) {
+            Text(verbatim: Phrase.hizbMenuHeader(request.hizb))
+                .font(Theme.font(.regular, size: 12.5, relativeTo: .caption))
+                .foregroundStyle(Theme.muted)
+                .lineLimit(1)
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .padding(.bottom, 8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityIdentifier("hizbmenu.header")
+                .accessibilityAddTraits(.isHeader)
+            Rectangle().fill(Theme.line).frame(height: 1)
+            item(Phrase.hizbMenuMove(to: other), icon: "arrow.left.arrow.right", id: "hizbmenu.move") { done(.move) }
+            Rectangle().fill(Theme.ghost).frame(height: 6)
+                .accessibilityHidden(true)
+            item("إزالة من المسار", icon: "trash", id: "hizbmenu.remove") { done(.remove) }
+        }
+        .frame(width: 252)
+        .background(Theme.card)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.button, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.Radius.button, style: .continuous)
+                .strokeBorder(Theme.line, lineWidth: 1)
+        )
+        .shadow(color: Color(red: 0x0A / 255, green: 0x16 / 255, blue: 0x24 / 255).opacity(0.22), radius: 16, y: 12)
+        .environment(\.layoutDirection, .rightToLeft)
+        .accessibilityElement(children: .contain)
+        .accessibilityAddTraits(.isModal)
+        .accessibilityAction(.escape) { done(nil) }
+        .accessibilityIdentifier("hizbmenu")
+    }
+
+    private func item(_ text: String, icon: String, id: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Text(verbatim: text)
+                    .font(Theme.font(.regular, size: 16, relativeTo: .body))
+                    .foregroundStyle(Theme.ink)
+                    .lineLimit(1)
+                Spacer(minLength: 0)
+                Image(systemName: icon)
+                    .font(.system(size: 17, weight: .regular))
+                    .frame(width: 20, height: 20)
+                    .foregroundStyle(Theme.ink)
+                    .accessibilityHidden(true)
+            }
+            .padding(.horizontal, 16)
+            .frame(height: 48)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(MenuRowStyle())
+        .accessibilityLabel(Text(verbatim: text))
+        .accessibilityIdentifier(id)
+    }
+}
+
+/// بند القائمة: يُظلَّل بـ `ghost` أثناء الضغط.
+private struct MenuRowStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(configuration.isPressed ? Theme.ghost : Color.clear)
     }
 }
 
