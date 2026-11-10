@@ -95,11 +95,17 @@ final class AddTests: XCTestCase {
         XCTAssertFalse(selection.sortedSelection.contains(1))
     }
 
-    /// 7.2: دائرة الجزء تختار ما يُختار من حزبيه، وتمتلئ حين يُختار كلّه، وتُلغيه بضغطة ثانية.
+    /// 7.2: دائرة الجزء تختار ما يُختار من حزبيه (وفيه ما في مسار آخر، فيُسأل عنه عند «أضف»)،
+    /// وتمتلئ حين يُختار كلّه، وتُلغيه بضغطة ثانية. وما في هذا المسار لا يُختار.
     func test_7_2_juzCircleSelectsWhatIsPickable() {
-        var selection = AddSelection(track: .farReview, trackOf: [10: .nearReview])
+        var selection = AddSelection(track: .farReview, trackOf: [10: .nearReview, 11: .farReview])
+        selection.toggleJuz(6)
+        XCTAssertEqual(selection.sortedSelection, [12])
+        selection.toggleJuz(6)
         selection.toggleJuz(5)
-        XCTAssertEqual(selection.sortedSelection, [9])
+        XCTAssertEqual(selection.sortedSelection, [9, 10])
+        XCTAssertEqual(selection.conflicts, [10])
+        XCTAssertEqual(selection.conflictTrack, .nearReview)
         XCTAssertTrue(selection.isJuzSelected(5))
         selection.toggleJuz(5)
         XCTAssertEqual(selection.sortedSelection, [])

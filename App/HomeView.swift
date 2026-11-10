@@ -53,6 +53,8 @@ struct HomeView: View {
             }
         }
         .background(Theme.background.ignoresSafeArea())
+        // م18: ما جاءت به المزامنة من صفّين مفتوحين للحزب يُسوّى بإغلاق الأقدم، ولا يُحذف شيء.
+        .task { try? Library.reconcile(in: context) }
         .overlay(alignment: .bottom) {
             if let toast {
                 ToastView(text: toast)
@@ -62,18 +64,18 @@ struct HomeView: View {
         }
         .animation(.easeOut(duration: 0.2), value: toast)
         .sheet(item: $addTrack) { track in
-            AddSheet(track: track, trackOf: Library.trackOfHizb(from: placements)) { hizbs, target in
-                add(hizbs, to: target)
+            AddSheet(track: track, trackOf: Library.trackOfHizb(from: placements)) { hizbs, target, moving in
+                add(hizbs, to: target, moving: moving)
             }
         }
     }
 
-    /// يضيف المختار إلى المسار، ثم يؤكّد ما جرى بإشعار عابر (5.1، ذ8).
-    private func add(_ hizbs: [Int], to track: Track) {
+    /// يضيف المختار إلى المسار (وينقل ما في مسار آخر إن أجاب المالك بالنقل)،
+    /// ثم يؤكّد ما جرى بإشعار عابر (5.1، ذ8).
+    private func add(_ hizbs: [Int], to track: Track, moving: Bool) {
         do {
-            let added = try Library.add(hizbs, to: track, in: context)
-            guard !added.isEmpty else { return }
-            show(Phrase.addedToast(added, to: track))
+            let added = try Library.add(hizbs, to: track, in: context, moving: moving)
+            show(added.isEmpty ? "لم يُضف شيء" : Phrase.addedToast(added, to: track))
         } catch {
             show("تعذّرت الإضافة")
         }
