@@ -219,9 +219,20 @@ final class ShadingUITests: XCTestCase {
 
     private func openDetails(_ tile: XCUIElement, _ app: XCUIApplication, title: String,
                              file: StaticString = #filePath, line: UInt = #line) {
-        tile.press(forDuration: 0.7)
+        // كما في قائمة الحزب (ManageUITests): المحاكي البطيء قد لا يعدّ ضغطة 0.7 ث مطوّلة، فثانية كاملة،
+        // ومرة ثانية إن لم تُفتح، ثم تشخيص في السجلّ.
         let header = app.descendants(matching: .any)["details.title"]
-        XCTAssertTrue(header.waitForExistence(timeout: 20), "فُتحت التفاصيل", file: file, line: line)
+        tile.press(forDuration: 1.0)
+        if !header.waitForExistence(timeout: 10) {
+            print("تشخيص: لم تُفتح التفاصيل بعد الضغط المطوّل على \(tile.identifier) (القيمة \(tile.value ?? "")), يُعاد مرة")
+            if tile.exists { tile.press(forDuration: 1.5) }
+        }
+        if !header.waitForExistence(timeout: 15) {
+            for row in app.debugDescription.split(separator: "\n") where row.contains("identifier:") || row.contains("Sheet") {
+                print("تشخيص: \(row)")
+            }
+        }
+        XCTAssertTrue(header.exists, "فُتحت التفاصيل", file: file, line: line)
         XCTAssertEqual(header.label, title, file: file, line: line)
     }
 
@@ -296,11 +307,15 @@ final class ShadingUITests: XCTestCase {
         XCTAssertEqual(q5.value as? String, "لم يُتلَ", "السحب لا يظلّل")
         XCTAssertFalse(app.descendants(matching: .any)["details.title"].exists, "السحب لا يفتح التفاصيل")
 
-        let q9 = app.buttons["quarter.farReview.9"]
-        let mid = q9.frame.minY
-        q9.swipeDown()
-        XCTAssertGreaterThan(q9.frame.minY, mid + 100, "ومرّت إلى الأسفل")
-        XCTAssertEqual(q9.value as? String, "لم يُتلَ")
+        // ربع ظاهر الآن في وسط الشاشة، يبدأ منه السحب إلى الأسفل.
+        let screen = app.windows.firstMatch.frame
+        let visible = (1...36).lazy.map { app.buttons["quarter.farReview.\($0)"] }
+            .first { $0.exists && $0.frame.minY > screen.minY + 150 && $0.frame.maxY < screen.maxY - 150 }
+        guard let start = visible else { return XCTFail("لا ربع ظاهر في وسط الشاشة") }
+        let mid = start.frame.minY
+        start.swipeDown()
+        XCTAssertGreaterThan(start.frame.minY, mid + 100, "ومرّت إلى الأسفل")
+        XCTAssertEqual(start.value as? String, "لم يُتلَ")
         XCTAssertFalse(app.descendants(matching: .any)["details.title"].exists)
     }
 }
