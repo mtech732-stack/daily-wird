@@ -309,7 +309,8 @@ final class ShadingUITests: XCTestCase {
 
         // ربع ظاهر الآن في وسط الشاشة، يبدأ منه السحب إلى الأسفل.
         let screen = app.windows.firstMatch.frame
-        let visible = (1...36).lazy.map { app.buttons["quarter.farReview.\($0)"] }
+        // الربع المشترك يظهر في موضعين، فيُؤخذ أول ظهور له.
+        let visible = (1...36).lazy.map { app.buttons.matching(identifier: "quarter.farReview.\($0)").firstMatch }
             .first { $0.exists && $0.frame.minY > screen.minY + 150 && $0.frame.maxY < screen.maxY - 150 }
         guard let start = visible else { return XCTFail("لا ربع ظاهر في وسط الشاشة") }
         let mid = start.frame.minY
