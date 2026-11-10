@@ -42,6 +42,20 @@ final class ShadingUITests: XCTestCase {
         XCTAssertTrue(app.otherElements["track.\(track).archive"].waitForExistence(timeout: 20))
     }
 
+    private func lastEntry(_ track: String, _ app: XCUIApplication) -> XCUIElement {
+        app.descendants(matching: .any)["track.\(track).lastEntry"]
+    }
+
+    /// ينتظر نصّ سطر «آخر إدخال».
+    private func expectLastEntry(_ track: String, _ text: String, _ app: XCUIApplication,
+                                 file: StaticString = #filePath, line: UInt = #line) {
+        let element = lastEntry(track, app)
+        let match = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == %@", text), object: element)
+        if XCTWaiter().wait(for: [match], timeout: 20) != .completed {
+            XCTAssertEqual(element.exists ? element.label : "(لا سطر)", text, file: file, line: line)
+        }
+    }
+
     /// 5.3: ضغطة على ربع لم يُتلَ تظلّله وعليه علامة «اليوم»، والضغطة الثانية في اليوم نفسه
     /// لا تظلّله مرة أخرى. ولا تقدّم دورة ولا علامة موضع توقّف في ش2 (ذ10، ذ16) (سيناريو المعاين 1).
     func test_5_3_tapShadesWithTodayMark() {
@@ -110,6 +124,7 @@ final class ShadingUITests: XCTestCase {
         app.buttons["test.midnight"].tap()
         // تظليل الأمس عمره يوم: ممتلئ بلا علامة «اليوم» (5.4).
         expectValue(q1, "خلال 7 أيام")
+        XCTAssertTrue(lastEntry("farReview", app).label.hasPrefix("آخر إدخال أمس"), "السطر «أمس» بعد منتصف الليل")
         shot(app, "24-after-midnight")
         q1.tap()
         expectValue(q1, "تلوته اليوم")
@@ -138,5 +153,39 @@ final class ShadingUITests: XCTestCase {
         expectValue(q6, "تلوته اليوم")
         q6.tap()
         expectValue(q6, "أكثر من 22 يوماً")
+    }
+
+    /// 7.1، 7.1.2، §13.4: فوق كل بطاقة مراجعة سطر «آخر إدخال» بالمدّة ثم اليوم والتاريخ والوقت،
+    /// وهو أحدث تظليل في المسار. وقبل أول إدخال لا سطر (ذ12) ومكانه محجوز، فلا تنزل البطاقة مع أول ضغطة (ذ17).
+    /// والتراجع يعيده إلى ما قبله، وإن لم يبقَ إدخال زال (سيناريوا المعاين 1 و2).
+    func test_13_4_lastEntryLine() {
+        let app = launch(seed: "farReview:1-9;nearReview:10-11", readings: "1:3@05:34,2:10@06:00",
+                         now: "2026-11-09T07:00:00")
+        let near = app.buttons["quarter.nearReview.37"]
+        XCTAssertTrue(near.waitForExistence(timeout: 20))
+        expectLastEntry("farReview", "آخر إدخال قبل 3 أيام، الجمعة 6 نوفمبر · 5:34 ص", app)
+        XCTAssertFalse(lastEntry("nearReview", app).exists, "لا سطر قبل أول إدخال (ذ12)")
+        let top = near.frame.minY
+
+        near.tap()
+        expectValue(near, "تلوته اليوم")
+        let entry = lastEntry("nearReview", app)
+        XCTAssertTrue(entry.waitForExistence(timeout: 20))
+        XCTAssertTrue(entry.label.hasPrefix("آخر إدخال اليوم، الاثنين 9 نوفمبر · "), entry.label)
+        XCTAssertEqual(near.frame.minY, top, accuracy: 0.5, "مكان السطر محجوز، فلم تنزل البطاقة (ذ17)")
+        shot(app, "27-last-entry")
+
+        near.tap()
+        expectValue(near, "لم يُتلَ")
+        let gone = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: entry)
+        XCTAssertEqual(XCTWaiter().wait(for: [gone], timeout: 20), .completed, "التراجع أزال السطر، فلم يبقَ إدخال")
+
+        // وفي البعيد يعود السطر إلى ما قبل التراجع.
+        let q1 = app.buttons["quarter.farReview.1"]
+        q1.tap()
+        expectValue(q1, "تلوته اليوم")
+        q1.tap()
+        expectValue(q1, "خلال 7 أيام")
+        expectLastEntry("farReview", "آخر إدخال قبل 3 أيام، الجمعة 6 نوفمبر · 5:34 ص", app)
     }
 }
