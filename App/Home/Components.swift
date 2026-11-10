@@ -66,6 +66,10 @@ struct QuarterTile: View {
     let track: Track
     let quarter: Int
     let isBookmark: Bool
+    /// ربع مشترك بين سورتين: الزاوية العليا اليمنى مقطوعة بمثلّث 15 بلون ما تحته (§5، 7.1.1).
+    var isShared: Bool = false
+    /// لون ما تحت المربّع، للزاوية المقطوعة: `card` في البطاقة المطويّة، و`paper` في قسم السورة.
+    var under: Color = Theme.card
 
     var body: some View {
         let ink = Theme.tileInk(track)
@@ -78,6 +82,11 @@ struct QuarterTile: View {
         }
         .frame(width: Theme.Size.tile, height: Theme.Size.tile)
         .overlay {
+            if isShared {
+                CutCorner().fill(under).accessibilityHidden(true)
+            }
+        }
+        .overlay {
             if isBookmark {
                 RoundedRectangle(cornerRadius: Theme.Radius.tile + 4.5, style: .continuous)
                     .stroke(Theme.ink, lineWidth: 3)
@@ -87,9 +96,23 @@ struct QuarterTile: View {
         .accessibilityElement()
         .accessibilityLabel(Text(verbatim:
             "الحزب \(Digits.en(Quran.quarter(quarter).hizb)) الربع \(Digits.en(Quran.position(ofQuarter: quarter)))"
-            + (isBookmark ? "، موضع التوقّف" : "")))
+            + (isBookmark ? "، موضع التوقّف" : "")
+            + (isShared ? "، بين سورتين" : "")))
         .accessibilityValue(Text(verbatim: "لم يُتلَ"))
         .accessibilityIdentifier("quarter.\(track.rawValue).\(quarter)")
+    }
+}
+
+/// مثلّث الزاوية العليا اليمنى (بالإحداثيات الفعلية، لا يتبع اتجاه الكتابة): ضلعاه 15،
+/// ويمتدّ نقطة خارج المربّع ليغطّي حدّه.
+struct CutCorner: Shape {
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: rect.maxX - 15, y: rect.minY - 1))
+        p.addLine(to: CGPoint(x: rect.maxX + 1, y: rect.minY - 1))
+        p.addLine(to: CGPoint(x: rect.maxX + 1, y: rect.minY + 15))
+        p.closeSubpath()
+        return p
     }
 }
 

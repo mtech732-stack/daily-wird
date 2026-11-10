@@ -79,12 +79,16 @@ struct HomeView: View {
         }
     }
 
+    /// مدّة الإشعار 2.5 ث (§12.6). وفي اختبارات الواجهة يبقى حتى يُقرأ ويُصوَّر، فالمحاكي البطيء
+    /// قد يتجاوز 2.5 ث بين ظهوره وقراءته، فيفشل الاختبار دون خطأ في التطبيق.
+    static let toastSeconds: Double = ProcessInfo.processInfo.arguments.contains("-ui-testing") ? 30 : 2.5
+
     private func show(_ text: String) {
         toast = text
         AccessibilityNotification.Announcement(text).post()
         toastTask?.cancel()
         toastTask = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(2.5))
+            try? await Task.sleep(for: .seconds(Self.toastSeconds))
             guard !Task.isCancelled else { return }
             toast = nil
         }
