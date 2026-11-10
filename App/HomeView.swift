@@ -5,7 +5,14 @@ import SwiftUI
 /// كل بطاقة مطويّة على موضع توقّفها، والأرشيف يُفتح من شريط الإسدال.
 /// لا يظهر في ش1: سطر «آخر إدخال» ومفاتيح الرموز (ش2)، والعدّاد (ش5) (design/system.md §12).
 struct HomeView: View {
+    @Environment(\.modelContext) private var context
     @Query private var placements: [HizbPlacement]
+
+    /// المسار الذي فُتحت عليه ورقة الإضافة (7.2).
+    @State private var addTrack: Track?
+    /// الإشعار العابر (§12.6).
+    @State private var toast: String?
+    @State private var toastTask: Task<Void, Never>?
 
     /// المسار المفتوح أرشيفه. لا يُحفظ، فيفتح التطبيق دائماً مطويّاً (7.1).
     @State private var openTrack: Track?
@@ -32,6 +39,8 @@ struct HomeView: View {
                     .padding(.bottom, 24)
                 }
                 .scrollIndicators(.hidden)
+                // لا يمرّ المحتوى تحت شريط الحالة عند التمرير.
+                .clipped()
                 .coordinateSpace(.named(FoldBarPosition.space))
                 .overlay(alignment: .bottom) {
                     // الشريط في أسفل البطاقة، ولا يلتصق بأسفل الشاشة إلا حين يكون تحتها
@@ -44,6 +53,41 @@ struct HomeView: View {
             }
         }
         .background(Theme.background.ignoresSafeArea())
+        .overlay(alignment: .bottom) {
+            if let toast {
+                ToastView(text: toast)
+                    .padding(.bottom, 42)
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeOut(duration: 0.2), value: toast)
+        .sheet(item: $addTrack) { track in
+            AddSheet(track: track, trackOf: Library.trackOfHizb(from: placements)) { hizbs, target in
+                add(hizbs, to: target)
+            }
+        }
+    }
+
+    /// يضيف المختار إلى المسار، ثم يؤكّد ما جرى بإشعار عابر (5.1، ذ8).
+    private func add(_ hizbs: [Int], to track: Track) {
+        do {
+            let added = try Library.add(hizbs, to: track, in: context)
+            guard !added.isEmpty else { return }
+            show(Phrase.addedToast(added, to: track))
+        } catch {
+            show("تعذّرت الإضافة")
+        }
+    }
+
+    private func show(_ text: String) {
+        toast = text
+        AccessibilityNotification.Announcement(text).post()
+        toastTask?.cancel()
+        toastTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2.5))
+            guard !Task.isCancelled else { return }
+            toast = nil
+        }
     }
 
     @ViewBuilder
@@ -51,10 +95,12 @@ struct HomeView: View {
         if track.isReview {
             let layout = ReviewTrackLayout(track: track, hizbs: Library.activeHizbs(in: track, from: placements))
             if layout.isEmpty {
-                EmptyTrackCard(track: track)
+                EmptyTrackCard(track: track) { addTrack = track }
             } else {
                 ReviewTrackCard(layout: layout, isOpen: openTrack == track, narrow: narrow) {
                     toggle(track, proxy: proxy)
+                } onAdd: {
+                    addTrack = track
                 } onFoldBarMove: { maxY in
                     foldBar.barMaxY = maxY
                 }
