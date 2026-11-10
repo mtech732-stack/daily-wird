@@ -73,8 +73,10 @@ final class AddUITests: XCTestCase {
 
         let here = app.buttons["add.hizb.1"]
         XCTAssertTrue(here.waitForExistence(timeout: 5))
-        XCTAssertFalse(here.isEnabled)
         XCTAssertTrue(here.label.contains("في هذا المسار"), here.label)
+        // ما في هذا المسار لا يُختار.
+        here.tap()
+        XCTAssertFalse(here.isSelected)
         XCTAssertTrue(app.buttons["add.hizb.10"].label.contains("في القريب"), app.buttons["add.hizb.10"].label)
         XCTAssertTrue(app.buttons["add.hizb.9"].label.contains("النساء"), app.buttons["add.hizb.9"].label)
 

@@ -153,9 +153,11 @@ private struct JuzRow: View {
                         }
                     }
                     .frame(width: 22, height: 22)
+                    // م27: في الجزء الذي لم يبقَ فيه ما يُختار تختفي الدائرة وحدها، ويبقى اسمه هادئاً.
+                    .opacity(can ? 1 : 0)
                     Text(verbatim: "الجزء \(Digits.en(juz))")
                         .font(Theme.font(.semiBold, size: 14, relativeTo: .subheadline))
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(can ? Theme.ink : Theme.muted)
                         .lineLimit(1)
                         .fixedSize()
                 }
@@ -163,10 +165,10 @@ private struct JuzRow: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .opacity(can ? 1 : 0)
-            .disabled(!can)
-            .accessibilityHidden(!can)
-            .accessibilityLabel(Text(verbatim: "الجزء \(Digits.en(juz)) كاملاً"))
+            // لا `.disabled`: يخفّت النصّ دون التباين المطلوب (م25). والضغط لا يفعل شيئاً حين لا يُختار.
+            .allowsHitTesting(can)
+            .accessibilityRemoveTraits(can ? [] : .isButton)
+            .accessibilityLabel(Text(verbatim: can ? "الجزء \(Digits.en(juz)) كاملاً" : "الجزء \(Digits.en(juz))"))
             .accessibilityAddTraits(full ? .isSelected : [])
             .accessibilityIdentifier("add.juz.\(juz)")
 
@@ -212,7 +214,8 @@ private struct HizbChip: View {
             .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .buttonStyle(.plain)
-        .disabled(!pickable)
+        // م25: لا `.disabled`، فهو يخفّت النصّ إلى 2.7:1. ما لا يُختار لا يستجيب للمس، ويبقى نصّه بألوان التصميم.
+        .allowsHitTesting(pickable)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(state == .selected ? .isSelected : [])
         .accessibilityIdentifier("add.hizb.\(hizb)")
