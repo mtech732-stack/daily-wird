@@ -63,7 +63,10 @@ final class AddUITests: XCTestCase {
         XCTAssertTrue(more.waitForExistence(timeout: 10))
         more.tap()
         let item = app.buttons["إضافة"]
-        XCTAssertTrue(item.waitForExistence(timeout: 5))
+        if !item.waitForExistence(timeout: 5) {
+            let tree = app.debugDescription.replacingOccurrences(of: "\n", with: " ¦ ")
+            XCTFail("لم تظهر «إضافة» في «⋯»: \(tree)")
+        }
         item.tap()
 
         let here = app.buttons["add.hizb.1"]
