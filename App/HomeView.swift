@@ -18,6 +18,8 @@ struct HomeView: View {
     @State private var manage: ManageRequest?
     /// تأكيد إزالة حزب من قائمته (5.1: بتأكيد صريح).
     @State private var removal: Removal?
+    /// قائمة الحزب المفتوحة بالضغط المطوّل (§12.5).
+    @State private var hizbMenu: HizbMenuRequest?
 
     /// المسار المفتوح أرشيفه. لا يُحفظ، فيفتح التطبيق دائماً مطويّاً (7.1).
     @State private var openTrack: Track?
@@ -67,6 +69,21 @@ struct HomeView: View {
                     .transition(.opacity)
             }
         }
+        .overlay {
+            // قائمة الحزب بالضغط المطوّل (§12.5).
+            if let request = hizbMenu {
+                HizbMenuOverlay(request: request) { action in
+                    hizbMenu = nil
+                    switch action {
+                    case .move: move([request.hizb], from: request.track)
+                    case .remove: removal = Removal(track: request.track, hizbs: [request.hizb])
+                    case nil: break
+                    }
+                }
+                .transition(.opacity)
+            }
+        }
+        .animation(.easeOut(duration: 0.15), value: hizbMenu)
         .animation(.easeOut(duration: 0.2), value: toast)
         .sheet(item: $addTrack) { track in
             AddSheet(track: track, trackOf: Library.trackOfHizb(from: placements)) { hizbs, target, moving in
@@ -169,10 +186,8 @@ struct HomeView: View {
             if layout.isEmpty {
                 EmptyTrackCard(track: track) { addTrack = track }
             } else {
-                let menu = HizbMenu(track: track) { hizb in
-                    move([hizb], from: track)
-                } onRemove: { hizb in
-                    removal = Removal(track: track, hizbs: [hizb])
+                let menu = HizbMenu(track: track) { hizb, frame in
+                    hizbMenu = HizbMenuRequest(track: track, hizb: hizb, labelFrame: frame)
                 }
                 ReviewTrackCard(layout: layout, isOpen: openTrack == track, narrow: narrow, hizbMenu: menu) {
                     toggle(track, proxy: proxy)

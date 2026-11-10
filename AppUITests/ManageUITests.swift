@@ -56,30 +56,22 @@ final class ManageUITests: XCTestCase {
         button.tap()
     }
 
-    /// بند قائمة بنصّه، من أي نوع كان: قائمة النظام قد تعرض بندها زرّاً أو بنداً أو خلية
-    /// بحسب إصدار iOS، فلا يُقيَّد بالأزرار وحدها (#48).
-    private func menuItem(_ app: XCUIApplication, _ text: String) -> XCUIElement {
-        app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", text)).firstMatch
-    }
-
-    /// يضغط «ح [رقم]» ضغطة مطوّلة حتى تظهر قائمة الحزب (§12.5، م22)، ويعيد بندها المطلوب.
-    /// ينتظر أن يصير «ح» قابلاً للضغط أولاً. ولا يعيد الضغط إلا إن بقي «ح» قابلاً للضغط،
-    /// فإن غطّته القائمة فهي ظاهرة. وإن لم يجد البند فشل بطباعة ما على الشاشة كاملاً.
+    /// يضغط «ح [رقم]» ضغطة مطوّلة حتى تظهر قائمة الحزب المخصّصة (§12.5، م22، م32)، ويعيد بندها
+    /// (`hizbmenu.move` أو `hizbmenu.remove`). ينتظر أن يصير «ح» قابلاً للضغط أولاً، ويعيد الضغط
+    /// مرة إن لم تظهر القائمة، فإن لم تظهر فشل بطباعة ما على الشاشة بأسطر «تشخيص:».
     @discardableResult
     private func pressHizb(_ app: XCUIApplication, _ track: String, _ hizb: Int, item: String,
                            file: StaticString = #filePath, line: UInt = #line) -> XCUIElement {
         let label = app.descendants(matching: .any)["hizb.\(track).\(hizb)"]
         XCTAssertTrue(label.waitForExistence(timeout: 20), "لم يظهر ح \(hizb)", file: file, line: line)
         XCTAssertTrue(wait(label, "isHittable == true"), "لا يُضغط ح \(hizb)", file: file, line: line)
-        let entry = menuItem(app, item)
+        let entry = app.buttons[item]
         label.press(forDuration: 1.0)
         if entry.waitForExistence(timeout: 15) { return entry }
+        print("تشخيص: لم تظهر قائمة ح \(hizb) بعد الضغط المطوّل، يُعاد مرة")
         if label.isHittable {
-            print("تشخيص: لم تظهر قائمة ح \(hizb) بعد الضغط المطوّل، يُعاد مرة")
             label.press(forDuration: 1.0)
             if entry.waitForExistence(timeout: 15) { return entry }
-        } else {
-            print("تشخيص: ح \(hizb) مغطّى بعد الضغط، فالقائمة ظاهرة ولم يُعثر على «\(item)» بعد 15 ث")
         }
         // سجلّ CI لا يُظهر إلا الأسطر التي تبدأ بـ«تشخيص:»، فيُطبع كل سطر بها.
         for row in app.debugDescription.split(separator: "\n") where row.contains("label:") {
@@ -93,8 +85,11 @@ final class ManageUITests: XCTestCase {
     /// ينقله فوراً بلا سؤال (ذ6)، ويؤكّده الإشعار.
     func test_12_5_hizbMenuMovesWithoutAsking() {
         let app = launch()
-        let move = pressHizb(app, "nearReview", 10, item: "نقل إلى مراجعة البعيد")
-        XCTAssertTrue(menuItem(app, "إزالة من المسار").exists)
+        let move = pressHizb(app, "nearReview", 10, item: "hizbmenu.move")
+        // الرأس بلون muted (م32)، والبنود بنصوصها بلا علامات خفيّة.
+        expectLabel(app.staticTexts["hizbmenu.header"], "ح 10 · النساء · الجزء 5")
+        expectLabel(move, "نقل إلى مراجعة البعيد")
+        expectLabel(app.buttons["hizbmenu.remove"], "إزالة من المسار")
         shot(app, "16-hizb-menu")
         move.tap()
 
@@ -155,12 +150,23 @@ final class ManageUITests: XCTestCase {
     /// 5.1: الإزالة من قائمة الحزب تسأل أولاً، و«إلغاء» لا يزيل شيئاً.
     func test_5_1_removeFromHizbMenuCanBeCancelled() {
         let app = launch()
-        pressHizb(app, "farReview", 1, item: "إزالة من المسار").tap()
+        pressHizb(app, "farReview", 1, item: "hizbmenu.remove").tap()
         let question = app.staticTexts["remove.question"]
         XCTAssertTrue(question.waitForExistence(timeout: 20))
         expectLabel(question, "أتزيل الحزب 1 من مراجعة البعيد؟")
         app.buttons["remove.cancel"].tap()
         XCTAssertTrue(wait(question, "exists == false"))
         expectLabel(app.staticTexts["track.farReview.progress"], "0 من 36")
+    }
+
+    /// §12.5: الضغط خارج قائمة الحزب يغلقها بلا نقل ولا إزالة.
+    func test_12_5_hizbMenuClosesOnOutsideTap() {
+        let app = launch()
+        let move = pressHizb(app, "farReview", 1, item: "hizbmenu.move")
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.92)).tap()
+        XCTAssertTrue(wait(move, "exists == false"), "لم تُغلق القائمة")
+        expectLabel(app.staticTexts["track.farReview.progress"], "0 من 36")
+        expectLabel(app.staticTexts["track.nearReview.progress"], "0 من 8")
+        XCTAssertFalse(app.staticTexts["toast"].exists, "لا فعل بالضغط خارجها")
     }
 }
