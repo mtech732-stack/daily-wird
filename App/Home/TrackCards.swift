@@ -155,7 +155,7 @@ struct FoldedRowView: View {
             HizbLabel(hizb: row.hizb, isBookmark: true, width: narrow ? Theme.Size.hizbLabelWidthNarrow : Theme.Size.hizbLabelWidth)
             HStack(spacing: gap) {
                 ForEach(row.quarters, id: \.self) { q in
-                    QuarterTile(track: track, quarter: q, isBookmark: q == bookmark)
+                    QuarterTile(track: track, quarter: q, isBookmark: q == bookmark, isShared: row.shared.contains(q))
                 }
             }
             Spacer(minLength: 0)
@@ -193,32 +193,123 @@ struct FoldedRowView: View {
     }
 }
 
-/// أرشيف المسار كاملاً داخل البطاقة (7.1): صفّ لكل حزب، ووسم الجزء عند أول حزب فيه.
-/// وترتيبه بأقسام السور (7.1.1) في المرحلة التالية.
+/// أرشيف المسار كاملاً داخل البطاقة، مرتّباً بالسور (7.1، 7.1.1): قسم لكل سورة،
+/// وتحته صفوف أحزابها بخاناتها الأربع في أماكنها الثابتة، وما ليس في السورة فراغ في مكانه.
 struct ArchiveView: View {
     let layout: ReviewTrackLayout
 
     var body: some View {
         let bookmark = layout.bookmarkQuarter
-        VStack(alignment: .leading, spacing: 0) {
-            ForEach(layout.archiveRows) { row in
-                HStack(spacing: 8) {
-                    HizbLabel(hizb: row.hizb, isBookmark: row.quarters.contains(bookmark ?? -1))
-                    HStack(spacing: 8) {
-                        ForEach(row.quarters, id: \.self) { q in
-                            QuarterTile(track: layout.track, quarter: q, isBookmark: q == bookmark)
-                        }
-                    }
-                    Spacer(minLength: 0)
-                    if let juz = row.juzTag { JuzTag(juz: juz) }
-                }
-                .frame(height: Theme.Size.rowHeight)
-                .padding(.horizontal, 6)
-                .id("row.\(layout.track.rawValue).\(row.hizb)")
+        VStack(alignment: .leading, spacing: 12) {
+            ForEach(layout.sections) { section in
+                SuraSectionView(track: layout.track, section: section, bookmark: bookmark)
             }
         }
+        .padding(.top, 4)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("track.\(layout.track.rawValue).archive")
+    }
+}
+
+/// قسم السورة (§6): العنوان 17/600 وتحته مسطرتان ذهبيتان (م-أ)، ومدى الأحزاب على يساره،
+/// ثم صفوف الأحزاب. وفي الأرشيف المفتوح على أرضية `paper` بزاوية 18.
+struct SuraSectionView: View {
+    let track: Track
+    let section: SuraSection
+    let bookmark: Int?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                Text(verbatim: section.title)
+                    .font(Theme.font(.semiBold, size: 17, relativeTo: .headline))
+                    .foregroundStyle(Theme.ink)
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityAddTraits(.isHeader)
+                Text(verbatim: section.hizbRange)
+                    .font(Theme.font(.regular, size: 12.5, relativeTo: .caption))
+                    .foregroundStyle(Theme.muted)
+                    .lineLimit(1)
+                    .fixedSize()
+            }
+            .padding(.bottom, 7)
+            .overlay(alignment: .bottom) { GiltRules() }
+            .padding(.top, 2)
+            .padding(.bottom, 6)
+
+            ForEach(section.rows) { row in
+                rowView(row)
+            }
+        }
+        .padding(.top, 8)
+        .padding(.horizontal, 6)
+        .padding(.bottom, 10)
+        .background(RoundedRectangle(cornerRadius: Theme.Radius.sura, style: .continuous).fill(Theme.paper))
+        .overlay(RoundedRectangle(cornerRadius: Theme.Radius.sura, style: .continuous).strokeBorder(Theme.line, lineWidth: 1))
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("section.\(track.rawValue).\(section.suras[0])")
+    }
+
+    @ViewBuilder
+    private func rowView(_ row: SectionRow) -> some View {
+        if let juz = row.juzTag {
+            // إن لم يتّسع الصفّ لوسم الجزء نزل الوسم إلى سطر رفيع فوقه، ولا تتحرّك الخانات (ت7).
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) {
+                    tiles(row)
+                    Spacer(minLength: 8)
+                    JuzTag(juz: juz)
+                }
+                .frame(height: Theme.Size.rowHeight)
+                VStack(alignment: .trailing, spacing: 0) {
+                    JuzTag(juz: juz).padding(.top, 4)
+                    HStack(spacing: 8) {
+                        tiles(row)
+                        Spacer(minLength: 0)
+                    }
+                    .frame(height: Theme.Size.rowHeight)
+                }
+            }
+            .id("row.\(track.rawValue).\(section.suras[0]).\(row.hizb)")
+        } else {
+            HStack(spacing: 8) {
+                tiles(row)
+                Spacer(minLength: 0)
+            }
+            .frame(height: Theme.Size.rowHeight)
+            .id("row.\(track.rawValue).\(section.suras[0]).\(row.hizb)")
+        }
+    }
+
+    @ViewBuilder
+    private func tiles(_ row: SectionRow) -> some View {
+        HizbLabel(hizb: row.hizb, isBookmark: row.hasBookmark)
+        HStack(spacing: 8) {
+            ForEach(0..<4, id: \.self) { i in
+                if let q = row.slots[i] {
+                    QuarterTile(track: track, quarter: q, isBookmark: q == bookmark,
+                                isShared: section.shared.contains(q), under: Theme.paper)
+                } else {
+                    QuarterGap()
+                }
+            }
+        }
+    }
+}
+
+/// مسطرتان ذهبيتان تحت اسم السورة: 2 ثم 1 بينهما 2، بشفافية 75% (الزخرفة م-أ، §10). زينة بلا معنى.
+struct GiltRules: View {
+    var body: some View {
+        VStack(spacing: 2) {
+            Rectangle().frame(height: 2)
+            Rectangle().frame(height: 1)
+        }
+        .foregroundStyle(Theme.gilt)
+        .opacity(0.75)
+        .frame(height: 5, alignment: .top)
+        .accessibilityHidden(true)
     }
 }
 

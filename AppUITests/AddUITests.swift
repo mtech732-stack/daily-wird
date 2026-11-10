@@ -15,6 +15,37 @@ final class AddUITests: XCTestCase {
         return app
     }
 
+    /// يضغط دائرة جزء أو خانة حزب ويتحقّق أنها اختيرت. ويقرأ عدّاد الضغطات الذي يعرضه التطبيق
+    /// في اختبارات الواجهة (`add.taps`) ليفرّق بين حالتين:
+    /// - وصلت الضغطة ولم يُختر العنصر: خطأ في التطبيق، فيفشل الاختبار.
+    /// - لم تصل الضغطة إلى التطبيق أصلاً (حدث في CI على محاكٍ بارد مثقل): تُعاد مرة واحدة ويُسجَّل ذلك.
+    private func tapUntilSelected(_ element: XCUIElement, in app: XCUIApplication,
+                                  file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertTrue(element.waitForExistence(timeout: 5), "لم يظهر \(element)", file: file, line: line)
+        let hittable = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isHittable == true"), object: element)
+        if XCTWaiter().wait(for: [hittable], timeout: 5) != .completed { app.swipeUp() }
+        for attempt in 1...2 {
+            let before = receivedTaps(app)
+            XCTAssertGreaterThanOrEqual(before, 0, "عدّاد الضغطات add.taps غير ظاهر", file: file, line: line)
+            element.tap()
+            let selected = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isSelected == true"), object: element)
+            if XCTWaiter().wait(for: [selected], timeout: 5) == .completed { return }
+            let after = receivedTaps(app)
+            if after > before {
+                XCTFail("وصلت الضغطة إلى التطبيق (\(before) → \(after)) ولم يُختر: \(element)", file: file, line: line)
+                return
+            }
+            if attempt == 1 {
+                XCTContext.runActivity(named: "الضغطة لم تصل إلى التطبيق (\(before)); تُعاد مرة: \(element)") { _ in }
+            }
+        }
+        XCTFail("لم تصل الضغطة إلى التطبيق مرتين: \(element)", file: file, line: line)
+    }
+
+    private func receivedTaps(_ app: XCUIApplication) -> Int {
+        Int(app.otherElements["add.taps"].value as? String ?? "") ?? -1
+    }
+
     private func shot(_ app: XCUIApplication, _ name: String) {
         let shot = XCTAttachment(screenshot: app.screenshot())
         shot.name = name
@@ -36,8 +67,10 @@ final class AddUITests: XCTestCase {
         XCTAssertTrue(app.buttons["add.track.farReview"].isSelected)
         shot(app, "06-add-sheet")
 
-        for juz in 1...4 { app.buttons["add.juz.\(juz)"].tap() }
-        app.buttons["add.hizb.9"].tap()
+        // كل ضغطة تنتظر أن يصير العنصر قابلاً للضغط، ثم تتحقّق أنه اختير. فشلت مرة بـ «7 أحزاب»
+        // لأن ضغطة على دائرة جزء وقعت والورقة ما زالت تتحرّك فلم تصل.
+        for juz in 1...4 { tapUntilSelected(app.buttons["add.juz.\(juz)"], in: app) }
+        tapUntilSelected(app.buttons["add.hizb.9"], in: app)
         XCTAssertTrue(go.isEnabled)
         XCTAssertEqual(go.label, "أضف 9 أحزاب إلى مراجعة البعيد")
         XCTAssertTrue(app.buttons["add.juz.1"].isSelected)
