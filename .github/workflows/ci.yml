@@ -177,6 +177,7 @@ jobs:
           if [ "$EVENT" = "pull_request" ] && [[ ",$LABELS," != *",full-check,"* ]]; then full=false; fi
           if [ "$EVENT" = "workflow_dispatch" ] && [ "$INPUT_FULL" = "false" ]; then full=false; fi
           echo "الفحص الكامل: $full"
+          echo "FULL=$full" >> "$GITHUB_ENV"
           if [ "$full" = true ]; then
             # الجولة الأولى تشغّل كل الاختبارات (الوحدة والواجهة)، والبقية الواجهة وحدها للّقطات.
             warm "$UDID_LARGE"

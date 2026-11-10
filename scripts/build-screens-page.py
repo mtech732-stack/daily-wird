@@ -34,7 +34,8 @@ for key in shots:
         rows.append(f'<h3>{dev_label}</h3><div class="grid">{"".join(figs)}</div>')
     sections.append(f'<section><h2>{html.escape(title)}</h2>{"".join(rows)}</section>')
 
-if missing or not shots:
+# في فحص المرحلة الصغير نهاراً وحده (القرار 24، FULL=false) لا تُعدّ النسخ الأخرى ناقصة.
+if not shots or (missing and os.environ.get("FULL", "true") != "false"):
     sys.exit("لقطات ناقصة: " + ", ".join(missing or ["لا شيء"]))
 
 body = "".join(sections)
