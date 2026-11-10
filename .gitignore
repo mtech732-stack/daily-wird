@@ -3,3 +3,7 @@ Support/Info.plist
 build/
 *.xcresult
 .DS_Store
+# مولَّدة (م24)
+__pycache__/
+*.pyc
+site/

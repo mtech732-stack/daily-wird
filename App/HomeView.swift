@@ -9,6 +9,8 @@ struct HomeView: View {
 
     /// المسار المفتوح أرشيفه. لا يُحفظ، فيفتح التطبيق دائماً مطويّاً (7.1).
     @State private var openTrack: Track?
+    /// موضع شريط «طيّ» في أسفل البطاقة المفتوحة، لإلصاقه بأسفل الشاشة إن نزل تحتها (م23).
+    @State private var foldBar = FoldBarPosition()
 
     var body: some View {
         GeometryReader { geo in
@@ -30,8 +32,11 @@ struct HomeView: View {
                     .padding(.bottom, 24)
                 }
                 .scrollIndicators(.hidden)
-                .safeAreaInset(edge: .bottom, spacing: 0) {
-                    if let open = openTrack {
+                .coordinateSpace(.named(FoldBarPosition.space))
+                .overlay(alignment: .bottom) {
+                    // الشريط في أسفل البطاقة، ولا يلتصق بأسفل الشاشة إلا حين يكون تحتها
+                    // والبطاقة ظاهرة، كالتصاق CSS sticky في التصميم (7.1، م23).
+                    if let open = openTrack, foldBar.isBelow(viewportHeight: geo.size.height) {
                         StickyFoldBar(track: open) { toggle(open, proxy: proxy) }
                             .padding(.horizontal, margin)
                     }
@@ -50,6 +55,8 @@ struct HomeView: View {
             } else {
                 ReviewTrackCard(layout: layout, isOpen: openTrack == track, narrow: narrow) {
                     toggle(track, proxy: proxy)
+                } onFoldBarMove: { maxY in
+                    foldBar.barMaxY = maxY
                 }
             }
         } else {
@@ -60,6 +67,7 @@ struct HomeView: View {
 
     /// لا يُفتح إلا مسار واحد في وقت واحد؛ فتح مسار يطوي غيره (7.1).
     private func toggle(_ track: Track, proxy: ScrollViewProxy) {
+        foldBar = FoldBarPosition()
         if openTrack == track {
             openTrack = nil
             proxy.scrollTo("card.\(track.rawValue)", anchor: .top)

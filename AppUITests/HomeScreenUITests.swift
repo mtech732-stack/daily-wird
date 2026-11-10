@@ -112,6 +112,9 @@ final class HomeScreenUITests: XCTestCase {
         nearPull.tap()
         XCTAssertTrue(app.otherElements["track.nearReview.archive"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.otherElements["track.farReview.archive"].exists)
+        // م23: الأرشيف القصير شريطه «طيّ» في أسفل بطاقته، فلا شريط ملتصق بأسفل الشاشة.
+        XCTAssertTrue(app.buttons["track.nearReview.pull"].isHittable)
+        XCTAssertFalse(app.buttons["track.nearReview.pull.sticky"].exists)
         shot(app, "05-archive-near")
 
         // «طيّ» يعيده مطويّاً.

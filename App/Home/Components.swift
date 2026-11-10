@@ -138,6 +138,7 @@ struct SecondaryButtonStyle: ButtonStyle {
 struct PullBar: View {
     let track: Track
     let isOpen: Bool
+    var identifier: String?
     let action: () -> Void
 
     var body: some View {
@@ -161,6 +162,6 @@ struct PullBar: View {
         }
         .buttonStyle(.plain)
         .padding(.top, -8)
-        .accessibilityIdentifier("track.\(track.rawValue).pull")
+        .accessibilityIdentifier(identifier ?? "track.\(track.rawValue).pull")
     }
 }
