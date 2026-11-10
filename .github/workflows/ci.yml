@@ -1,5 +1,7 @@
 # البناء والاختبار واللقطات (القسم 10.3).
-# - كل طلب دمج: يبني للمحاكي، ويشغّل اختبارات الوحدة والواجهة، ويلتقط اللقطات ويرفعها ملفاً مرفقاً.
+# - كل طلب دمج: يبني للمحاكي، ويشغّل اختبارات الوحدة والواجهة على الهاتف الصغير نهاراً وحده،
+#   ويلتقط لقطاته (القرار 24). والفحص الكامل (المقاسان نهاراً وليلاً) بوسم full-check على الطلب،
+#   أو يدوياً من Actions، مرة في آخر كل شريحة قبل العرض على المالك.
 # - كل دمج في main: الشيء نفسه، ثم ينشر صفحة اللقطات على GitHub Pages.
 # - وفي طلب الدمج تُرفع لقطاته إلى فرع previews (مجلّد pr-[رقم]) ليراها المالك قبل الدمج (القرار 11).
 # بيئة مثبّتة صراحة (ملاحظة المعاين م2): صورة macos-26، وXcode 26.6، ومحاكيات iOS 26.5 بأسمائها.
@@ -8,9 +10,16 @@ name: ci
 
 on:
   pull_request:
+    # «labeled»: وسم full-check على الطلب يشغّل الفحص الكامل (القرار 24).
+    types: [opened, synchronize, reopened, labeled]
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      full:
+        description: "الفحص الكامل: المقاسان نهاراً وليلاً (القرار 24)"
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -114,7 +123,11 @@ jobs:
             }
           tail -n 20 build/build.log
 
-      - name: الاختبارات واللقطات (مقاسان × نهاري وليلي)
+      - name: الاختبارات واللقطات (الصغير نهاراً، أو الأربعة في الفحص الكامل · القرار 24)
+        env:
+          EVENT: ${{ github.event_name }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+          INPUT_FULL: ${{ inputs.full }}
         run: |
           set -euo pipefail
           mkdir -p site/screens
@@ -158,14 +171,26 @@ jobs:
               CODE_SIGNING_ALLOWED=NO > "build/warm-$udid.log" 2>&1 || echo "تهيئة: لم ينجح الاختبار التمهيدي (لا يُحتسب)"
             echo "تهيئة $udid انتهت"
           }
-          # الجولة الأولى تشغّل كل الاختبارات (الوحدة والواجهة)، والبقية الواجهة وحدها للّقطات.
-          warm "$UDID_LARGE"
-          run large "$UDID_LARGE" light
-          run large "$UDID_LARGE" dark  DailyWirdUITests
-          xcrun simctl shutdown "$UDID_LARGE" || true
-          warm "$UDID_SMALL"
-          run small "$UDID_SMALL" light DailyWirdUITests
-          run small "$UDID_SMALL" dark  DailyWirdUITests
+          # القرار 24: طلب الدمج يُفحص على الهاتف الصغير نهاراً وحده (أكثر الخلل يظهر فيه)،
+          # والفحص الكامل بالأربعة في main، وبوسم full-check، ويدوياً (افتراضيه كامل).
+          full=true
+          if [ "$EVENT" = "pull_request" ] && [[ ",$LABELS," != *",full-check,"* ]]; then full=false; fi
+          if [ "$EVENT" = "workflow_dispatch" ] && [ "$INPUT_FULL" = "false" ]; then full=false; fi
+          echo "الفحص الكامل: $full"
+          echo "FULL=$full" >> "$GITHUB_ENV"
+          if [ "$full" = true ]; then
+            # الجولة الأولى تشغّل كل الاختبارات (الوحدة والواجهة)، والبقية الواجهة وحدها للّقطات.
+            warm "$UDID_LARGE"
+            run large "$UDID_LARGE" light
+            run large "$UDID_LARGE" dark  DailyWirdUITests
+            xcrun simctl shutdown "$UDID_LARGE" || true
+            warm "$UDID_SMALL"
+            run small "$UDID_SMALL" light DailyWirdUITests
+            run small "$UDID_SMALL" dark  DailyWirdUITests
+          else
+            warm "$UDID_SMALL"
+            run small "$UDID_SMALL" light
+          fi
 
       - name: النسخ الرمادية وصفحة اللقطات
         run: |

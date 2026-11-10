@@ -32,12 +32,14 @@ lines = [
 for key in keys:
     lines += [f"## {SCREENS.get(key, key)}", ""]
     for dev, dev_label in DEVICES:
-        cells = []
+        cells, labels = [], []
         for look, suffix, label in VARIANTS:
             name = f"{key}__{dev}__{look}{suffix}.png"
             if (out / name).exists():
                 cells.append(f'<a href="{name}"><img src="{name}" width="160" alt="{label}"></a>')
+                labels.append(label)
         if cells:
-            lines += [f"**{dev_label}** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)", "", " ".join(cells), ""]
+            # في فحص المرحلة الصغير نهاراً وحده (القرار 24)، فتُذكر النسخ الموجودة وحدها.
+            lines += [f"**{dev_label}** ({' · '.join(labels)})", "", " ".join(cells), ""]
 (out / "README.md").write_text("\n".join(lines), encoding="utf-8")
 print(f"معاينة #{pr}: {len(keys)} شاشة")
