@@ -22,4 +22,30 @@ enum WirdDate {
         formatter.dateFormat = "EEEE d MMMM"
         return formatter.string(from: date)
     }
+
+    /// تاريخ «آخر إدخال» و«آخر تلاوة» (§13.4): «الجمعة 6 نوفمبر»، و«الخميس 6 أغسطس 2025» إن خالفت سنته سنة اليوم.
+    static func long(_ date: Date, now: Date, timeZone: TimeZone = .current) -> String {
+        let cal = calendar(timeZone: timeZone)
+        let formatter = formatter(timeZone: timeZone)
+        formatter.dateFormat = cal.component(.year, from: date) == cal.component(.year, from: now)
+            ? "EEEE d MMMM" : "EEEE d MMMM y"
+        return formatter.string(from: date)
+    }
+
+    /// الوقت بنظام 12 ساعة: «5:34 ص» و«9:40 م».
+    static func time(_ date: Date, timeZone: TimeZone = .current) -> String {
+        let formatter = formatter(timeZone: timeZone)
+        formatter.amSymbol = "ص"
+        formatter.pmSymbol = "م"
+        formatter.dateFormat = "h:mm a"
+        return formatter.string(from: date)
+    }
+
+    private static func formatter(timeZone: TimeZone) -> DateFormatter {
+        let formatter = DateFormatter()
+        formatter.calendar = calendar(timeZone: timeZone)
+        formatter.locale = locale
+        formatter.timeZone = timeZone
+        return formatter
+    }
 }

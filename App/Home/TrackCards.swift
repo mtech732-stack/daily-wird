@@ -372,3 +372,68 @@ struct StickyFoldBar: View {
             )
     }
 }
+
+/// سطر «آخر إدخال» فوق بطاقة المسار، خارجها (7.1، §13.4): ساعة 13، ثم المدّة 12.5/600 `ink`،
+/// ثم «·» واليوم والتاريخ والوقت 12.5 `muted`. والمدّة لا تُختصر، والتاريخ وحده يُختصر بنقاط إن ضاق،
+/// ومع خطّ كبير يلتفّ التاريخ إلى سطر ثانٍ تحت المدّة.
+/// وقبل أول إدخال لا يُكتب (ذ12)، ومكانه محجوز بارتفاعه فلا تنزل البطاقة تحت الإصبع (ذ17).
+struct LastEntryLine: View {
+    let track: Track
+    /// أحدث تظليل في المسار، أو `nil` قبل أول إدخال.
+    let date: Date?
+    let now: Date
+
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    var body: some View {
+        let title = date.map { LastEntry.title($0, now: now) } ?? "آخر إدخال"
+        let stamp = date.map { LastEntry.stamp($0, now: now) } ?? " "
+        Group {
+            if typeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 2) {
+                    heading(title)
+                    Text(verbatim: stamp)
+                        .foregroundStyle(Theme.muted)
+                }
+            } else {
+                HStack(spacing: 5) {
+                    heading(title)
+                    Text(verbatim: "· \(stamp)")
+                        .foregroundStyle(Theme.muted)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
+            }
+        }
+        .font(Theme.font(.regular, size: 12.5, relativeTo: .caption))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 8)
+        // ذ17: السطر نفسه مخفيّ بارتفاعه، لا محذوف.
+        .hiddenIf(date == nil)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: date == nil ? "" : "\(title)، \(stamp)"))
+        .accessibilityHidden(date == nil)
+        .accessibilityIdentifier("track.\(track.rawValue).lastEntry")
+    }
+
+    private func heading(_ title: String) -> some View {
+        HStack(spacing: 5) {
+            Image(systemName: "clock")
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.muted)
+                .accessibilityHidden(true)
+            Text(verbatim: title)
+                .font(Theme.font(.semiBold, size: 12.5, relativeTo: .caption))
+                .foregroundStyle(Theme.ink)
+                .lineLimit(1)
+                .fixedSize()
+        }
+    }
+}
+
+private extension View {
+    /// `.hidden()` بشرط: يبقى مكان العنصر محجوزاً ولا يُرى.
+    @ViewBuilder func hiddenIf(_ hidden: Bool) -> some View {
+        if hidden { self.hidden() } else { self }
+    }
+}

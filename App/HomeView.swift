@@ -6,7 +6,7 @@ import UIKit
 /// الشاشة الرئيسية «الورد اليومي» (7.1) كما تُبنى في ش1: المسارات الثلاثة بترتيب المالك،
 /// كل بطاقة مطويّة على موضع توقّفها، والأرشيف يُفتح من شريط الإسدال.
 /// وفي ش2: الضغطة على الربع تظلّله بتاريخه ووقته وعليه علامة «اليوم» (5.3، §13.1).
-/// ولا يظهر بعدُ: سطر «آخر إدخال» ومفاتيح الرموز (مراحلهما في ش2)، والعدّاد (ش5).
+/// ولا يظهر بعدُ: مفاتيح الرموز (مرحلتها في ش2)، والعدّاد (ش5).
 struct HomeView: View {
     @Environment(\.modelContext) private var context
     @Query private var placements: [HizbPlacement]
@@ -231,15 +231,18 @@ struct HomeView: View {
                 let menu = HizbMenu(track: track) { hizb, frame in
                     hizbMenu = HizbMenuRequest(track: track, hizb: hizb, labelFrame: frame)
                 }
-                ReviewTrackCard(layout: layout, isOpen: openTrack == track, narrow: narrow, hizbMenu: menu,
-                                shading: shading) {
-                    toggle(track, proxy: proxy)
-                } onAdd: {
-                    addTrack = track
-                } onManage: { mode in
-                    manage = ManageRequest(track: track, mode: mode)
-                } onFoldBarMove: { maxY in
-                    foldBar.barMaxY = maxY
+                VStack(alignment: .leading, spacing: 4) {
+                    LastEntryLine(track: track, date: LastEntry.latest(in: layout.quarters, readings: readings), now: now)
+                    ReviewTrackCard(layout: layout, isOpen: openTrack == track, narrow: narrow, hizbMenu: menu,
+                                    shading: shading) {
+                        toggle(track, proxy: proxy)
+                    } onAdd: {
+                        addTrack = track
+                    } onManage: { mode in
+                        manage = ManageRequest(track: track, mode: mode)
+                    } onFoldBarMove: { maxY in
+                        foldBar.barMaxY = maxY
+                    }
                 }
             }
         } else {
