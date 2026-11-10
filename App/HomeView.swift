@@ -250,7 +250,7 @@ struct HomeView: View {
 
     /// حالة التظليل في الشاشة كلها: الربع واحد في السجلّ، فيظهر مظلّلاً حيث ظهر (7.1.1).
     private var shading: ShadingState {
-        ShadingState(today: Shading.readToday(readings, now: now)) { quarter, track in
+        ShadingState(today: Shading.readToday(readings, now: now), levels: Age.levels(readings, now: now)) { quarter, track in
             shade(quarter, in: track)
         }
     }

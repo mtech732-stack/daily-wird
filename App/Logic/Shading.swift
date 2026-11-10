@@ -57,8 +57,11 @@ enum Shading {
 struct ShadingState {
     /// الأرباع المظلّلة اليوم.
     var today: Set<Int> = []
+    /// درجة عمر كل ربع له تظليل (5.4)؛ وما ليس هنا «لم يُتلَ».
+    var levels: [Int: AgeLevel] = [:]
     /// ضغطة على ربع في مسار.
     var tap: @MainActor (_ quarter: Int, _ track: Track) -> Void = { _, _ in }
 
     func isToday(_ quarter: Int) -> Bool { today.contains(quarter) }
+    func level(_ quarter: Int) -> AgeLevel { levels[quarter] ?? .empty }
 }

@@ -253,8 +253,8 @@ struct QuarterTile: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var isToday: Bool { shading?.isToday(quarter) ?? false }
-    /// ممتلئ (الدرجة 1). في هذه المرحلة: ما تُلي اليوم.
-    private var isFull: Bool { isToday }
+    /// درجة العمر (5.4، القرار 14).
+    private var level: AgeLevel { shading?.level(quarter) ?? .empty }
 
     var body: some View {
         Button {
@@ -270,7 +270,7 @@ struct QuarterTile: View {
             "الحزب \(Digits.en(Quran.quarter(quarter).hizb))، الربع \(Digits.en(Quran.position(ofQuarter: quarter)))"
             + (isShared ? "، ربع مشترك" : "")
             + (isBookmark && Slice.showsBookmark ? "، موضع التوقّف" : "")))
-        .accessibilityValue(Text(verbatim: isToday ? "تلوته اليوم" : "لم يُتلَ"))
+        .accessibilityValue(Text(verbatim: isToday ? "تلوته اليوم" : level.meaning))
         .accessibilityHint(Text(verbatim: "ضغطة: تلوته أو تراجع"))
         .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier("quarter.\(track.rawValue).\(quarter)")
@@ -279,19 +279,10 @@ struct QuarterTile: View {
     private var face: some View {
         let color = Theme.trackColor(track)
         let ink = Theme.tileInk(track)
-        return ZStack {
-            RoundedRectangle(cornerRadius: Theme.Radius.tile, style: .continuous)
-                .fill(color)
-                .opacity(isFull ? 1 : 0)
-            RoundedRectangle(cornerRadius: Theme.Radius.tile, style: .continuous)
-                .strokeBorder(ink.opacity(0.7), lineWidth: 1.5)
-                .opacity(isFull ? 0 : 1)
-            Text(verbatim: Digits.en(Quran.position(ofQuarter: quarter)))
-                .font(Theme.fixedFont(.medium, size: 13))
-                .foregroundStyle(isFull ? Theme.onTrack(track) : ink)
-        }
+        return AgeFace(level: level, color: color, ink: ink, on: Theme.onTrack(track), under: under,
+                       number: Digits.en(Quran.position(ofQuarter: quarter)))
         // التعبئة تتغيّر بتلاشٍ 0.15 ث، وفوراً مع «تقليل الحركة» (§13.1).
-        .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: isFull)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: level)
         .frame(width: Theme.Size.tile, height: Theme.Size.tile)
         .overlay {
             if isShared {
@@ -323,6 +314,86 @@ struct QuarterTile: View {
         // واتجاه الشاشة من اليمين يعكس رسم الأشكال، فكانت الزاوية تُقطع من اليسار، والعلامة تقع
         // عليها وصحّها مقلوب. فيُرسم وجه المربّع باتّجاه ثابت؛ ولا نصّ فيه إلا رقم الربع.
         .environment(\.layoutDirection, .leftToRight)
+    }
+}
+
+/// وجه المربّع بدرجة عمره (§5، القرار 14). الفروق بالامتلاء والشكل لا باللون وحده (8.3):
+/// 1 ممتلئ · 2 نصفه الأسفل وحدّ 2 · 3 ربعه الأسفل (11) وحدّ 2 · 4 تخطيط مائل 135° وحدّ 1.5 70%،
+/// ورقمه على رقعة بلون ما تحته · 5 فارغ بحدّ 1.5 70%.
+struct AgeFace: View {
+    let level: AgeLevel
+    /// لون المسار `c`.
+    let color: Color
+    /// لون رقمه وحدّه `ci`.
+    let ink: Color
+    /// لون الرقم على الممتلئ `on…`.
+    let on: Color
+    /// لون ما تحت المربّع، لرقعة الرقم في المخطّط.
+    let under: Color
+    let number: String
+
+    private var shape: RoundedRectangle { RoundedRectangle(cornerRadius: Theme.Radius.tile, style: .continuous) }
+
+    var body: some View {
+        ZStack {
+            switch level {
+            case .full:
+                shape.fill(color)
+            case .half, .quarter:
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0)
+                    Rectangle().fill(color).frame(height: level == .half ? 22 : 11)
+                }
+                .clipShape(shape)
+                shape.strokeBorder(color, lineWidth: 2)
+            case .faded:
+                Stripes().stroke(color.opacity(0.7), lineWidth: 2.5)
+                    .clipShape(shape)
+                shape.strokeBorder(ink.opacity(0.7), lineWidth: 1.5)
+            case .empty:
+                shape.strokeBorder(ink.opacity(0.7), lineWidth: 1.5)
+            }
+            numberView
+        }
+        .frame(width: Theme.Size.tile, height: Theme.Size.tile)
+    }
+
+    @ViewBuilder
+    private var numberView: some View {
+        switch level {
+        case .full:
+            Text(verbatim: number).font(Theme.fixedFont(.medium, size: 13)).foregroundStyle(on)
+        case .half:
+            Text(verbatim: number).font(Theme.fixedFont(.medium, size: 11)).foregroundStyle(ink).offset(y: -9)
+        case .quarter:
+            Text(verbatim: number).font(Theme.fixedFont(.medium, size: 13)).foregroundStyle(ink).offset(y: -5)
+        case .faded:
+            Text(verbatim: number).font(Theme.fixedFont(.medium, size: 13)).foregroundStyle(ink)
+                .padding(.horizontal, 4)
+                .frame(height: 18)
+                .background(RoundedRectangle(cornerRadius: 5, style: .continuous).fill(under))
+        case .empty:
+            Text(verbatim: number).font(Theme.fixedFont(.medium, size: 13)).foregroundStyle(ink)
+        }
+    }
+}
+
+/// تخطيط مائل كما في التصميم (`repeating-linear-gradient(135deg, c 0 2.5px, transparent 2.5px 7px)`):
+/// خطوط عرضها 2.5 كل 7 على امتداد القطر من الأعلى يساراً، فتجري من أسفل اليسار إلى أعلى اليمين.
+struct Stripes: Shape {
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        let r2 = 2.0.squareRoot()
+        let span = rect.width + rect.height
+        var k = 0.0
+        while (7 * k + 1.25) * r2 <= span + 7 {
+            // الخطّ x + y = c، ومركز الشريط عند 1.25 من بدايته على امتداد القطر.
+            let c = (7 * k + 1.25) * r2
+            p.move(to: CGPoint(x: rect.minX + c, y: rect.minY))
+            p.addLine(to: CGPoint(x: rect.minX, y: rect.minY + c))
+            k += 1
+        }
+        return p
     }
 }
 
