@@ -8,7 +8,9 @@ from pathlib import Path
 
 root, sha, run_url = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
 
-SCREENS = {"01-home": "الشاشة الوحيدة: اسم التطبيق"}
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from screen_titles import SCREENS  # noqa: E402
+
 DEVICES = [("large", "iPhone 17 Pro Max · الأكبر"), ("small", "iPhone 17e · الأصغر")]
 VARIANTS = [("light", "نهاري", ""), ("dark", "ليلي", ""), ("light", "نهاري · رمادي", "-gray"), ("dark", "ليلي · رمادي", "-gray")]
 
@@ -64,6 +66,7 @@ a {{ color:inherit; }}
 <header>
 <h1>لقطات الورد اليومي</h1>
 <p>تُحدَّث تلقائياً بعد كل دمج. اضغط أي لقطة لتكبيرها.</p>
+<p>صفحات التصميم المرجعية: <a href="../design/">design</a></p>
 <p>آخر تحديث: {now} · الإيداع <a href="https://github.com/mtech732-stack/daily-wird/commit/{sha}">{sha[:7]}</a> · <a href="{html.escape(run_url)}">التشغيل</a></p>
 </header>
 {body}

@@ -19,6 +19,9 @@ targets:
     platform: iOS
     sources:
       - path: App
+      # جدول الحدود القرآني (6.1، 4.4): ملف مُعدّ البيانات يُضمَّن في التطبيق كما هو.
+      - path: data/quran-boundaries.json
+        buildPhase: resources
     info:
       path: Support/Info.plist
       properties:
