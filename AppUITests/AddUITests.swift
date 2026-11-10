@@ -61,6 +61,8 @@ final class AddUITests: XCTestCase {
         let app = launch(seed: "farReview:1-8;nearReview:10-11")
         let more = app.buttons["track.farReview.more"]
         XCTAssertTrue(more.waitForExistence(timeout: 10))
+        // ينتظر استقرار الشاشة بعد الفتح قبل الضغط (فشل مرة لأن الضغطة سبقت ظهور البطاقة كاملة).
+        XCTAssertTrue(app.otherElements["track.farReview.folded"].waitForExistence(timeout: 10))
         more.tap()
         let item = app.buttons["إضافة"]
         if !item.waitForExistence(timeout: 5) {

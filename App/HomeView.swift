@@ -39,6 +39,8 @@ struct HomeView: View {
                     .padding(.bottom, 24)
                 }
                 .scrollIndicators(.hidden)
+                // لا يمرّ المحتوى تحت شريط الحالة عند التمرير.
+                .clipped()
                 .coordinateSpace(.named(FoldBarPosition.space))
                 .overlay(alignment: .bottom) {
                     // الشريط في أسفل البطاقة، ولا يلتصق بأسفل الشاشة إلا حين يكون تحتها
