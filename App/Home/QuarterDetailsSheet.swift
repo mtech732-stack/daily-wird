@@ -31,7 +31,8 @@ struct QuarterDetailsSheet: View {
                 .padding(.bottom, 10)
             row("المدى", divider: true) { value(QuarterDetails.range(request.quarter)) }
             row("السور", divider: true) { value(QuarterDetails.suras(request.quarter)) }
-            row("الأوجه", divider: true) { value(QuarterDetails.pages(request.quarter)) }
+            // سلسلة أرقام بلا حرف عربي يبدؤها: علامة اتجاه من اليمين، فيُقرأ أولها من اليمين كما في التصميم.
+            row("الأوجه", divider: true) { value("\u{200F}" + QuarterDetails.pages(request.quarter)) }
             row("آخر تلاوة", divider: true) { lastReading }
             row("مرات التلاوة", divider: true) { value("\(history.count)") }
             row("آخر التواريخ", divider: false, center: true) { dates }
@@ -41,8 +42,10 @@ struct QuarterDetailsSheet: View {
                     dismiss()
                 } label: {
                     HStack(spacing: 8) {
+                        // السهم الراجع كما في التصميم (§13.5)، لا يُعكس مع اتجاه الكتابة.
                         Image(systemName: "arrow.uturn.backward")
                             .font(.system(size: 18))
+                            .environment(\.layoutDirection, .leftToRight)
                             .accessibilityHidden(true)
                         Text(verbatim: "تراجع عن تظليل اليوم")
                     }
@@ -57,7 +60,7 @@ struct QuarterDetailsSheet: View {
         .padding(.top, 10)
         .padding(.bottom, 30)
         .fixedSize(horizontal: false, vertical: true)
-        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height = $0 + 20 }
+        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height = $0 }
         .frame(maxHeight: .infinity, alignment: .top)
         .environment(\.layoutDirection, .rightToLeft)
         .presentationDetents([.height(height)])
