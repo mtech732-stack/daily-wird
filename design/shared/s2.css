@@ -1,0 +1,57 @@
+/* ش2 · التظليل والعمر · design/system.md §13 */
+
+/* الحالة المطويّة بلا عدّاد (ش5): فراغ مرن، والإشارة في أسفل الشاشة */
+.s2f .spacer{flex:1 1 auto;min-height:0}
+.s2f .hint{margin-top:12px}
+.s2f .hint.tight{display:none}
+/* تقدّم الدورة «22 من 36» يُبنى مع الدورة في ش3 (س6) */
+.nometa .meta2{display:none}
+/* وعلامة موضع التوقّف كذلك حتى ش3 (ذ16): لا إطار على الربع ولا علامة كتاب بجانب الحزب. ومفتاحها في المفاتيح باقٍ */
+.nobm .track .q.bm{outline:none}
+.nobm .track .bmk{display:none}
+
+/* تظليل الربع: تعبئة تتلاشى 0.15 ث، وعلامة «اليوم» تظهر بتكبير خفيف 0.18 ث */
+.q{transition:transform .12s,background .15s,box-shadow .15s}
+.q.today:after,.q.today:before{animation:pop .18s ease-out}
+@keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1}}
+.q.today:before{animation-name:popc}
+@keyframes popc{from{opacity:0}to{opacity:1}}
+
+/* ذ17: سطر «آخر إدخال» محجوز فارغاً قبل أول إدخال */
+.stamp.blank{visibility:hidden}
+
+/* مفاتيح الرموز: الدرجات الخمس، كل معنى على سطرين */
+.keys .krow.k5 .key>span{white-space:normal;line-height:1.35}
+
+/* تفاصيل الربع (7.3) */
+.sheet.qd{padding:10px 22px 30px}
+.s375 .sheet.qd{padding-bottom:14px}
+.qhd{display:flex;align-items:center;gap:16px;margin:2px 0 10px}
+.qhd .q{cursor:default}
+.qtt h4{margin:0;font-size:21px;font-weight:600;line-height:1.35}
+.qtt>span{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:2px}
+.qtt .tag{margin-right:8px}
+.qd .kv{align-items:flex-start;padding:10px 0}
+.qd .kv>span{flex:none;min-width:86px}
+.qd .kv b{font-weight:500;text-align:left;line-height:1.5}
+.qd .kv b.two{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.qd .kv b.two em{font-style:normal;font-weight:600}
+.qd .kv b.two small{font-size:13px;color:var(--muted);font-weight:400}
+.qd .kv b.none{color:var(--muted);font-weight:400}
+.qd .kv.dates{border-bottom:none;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.chip{font-size:13px;padding:4px 10px;border-radius:999px;background:var(--ghost);color:var(--ink);line-height:1.4;white-space:nowrap}
+.qd .kv .chip{color:var(--ink)} /* م36: يغلب لون `.kv span` الهادئ */
+.chip.now{background:transparent;box-shadow:inset 0 0 0 1.5px var(--ink);font-weight:600}
+.btn.undo{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px}
+
+/* صفحة الشرح: شريط الأيام تحت الهاتف التفاعلي */
+.days{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 6px;font-size:14px}
+.days button{font:inherit;font-size:14px;padding:8px 14px;border-radius:12px;border:1px solid var(--pg-line,#ccc);background:transparent;color:inherit;cursor:pointer}
+.days output{color:var(--pg-muted,#666)}
+/* مسار الربع عبر الأيام */
+.life{display:flex;flex-wrap:wrap;gap:14px 10px;margin:8px 0 4px;direction:rtl}
+.life .st{display:flex;flex-direction:column;align-items:center;gap:6px;width:84px;text-align:center;font-size:12.5px;line-height:1.35}
+.life .st small{color:var(--pg-muted,#666);font-size:11.5px}
+.life .q{cursor:default}
+.life .ar{align-self:center;color:var(--pg-muted,#888);margin-top:-30px}

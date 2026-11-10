@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ش2 · التظليل والعمر</title>
+<link rel="stylesheet" href="shared/ds.css">
+<link rel="stylesheet" href="shared/s1.css">
+<link rel="stylesheet" href="shared/s2.css">
+<link rel="stylesheet" href="shared/page.css">
+<style>
+h2.grp{font-size:20px;font-weight:600;margin:34px 0 4px}
+p.grp{margin:0 0 16px;color:var(--pg-muted);font-size:14.5px;max-width:80ch}
+.durs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px 18px;font-size:14px;max-width:820px;margin:6px 0 18px}
+.durs div{display:flex;justify-content:space-between;border-bottom:1px solid var(--pg-line);padding:4px 0}
+.durs span{color:var(--pg-muted)}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <h1>ش2 · التظليل والعمر: التصميم</h1>
+    <p>الشاشة الرئيسية كما تُبنى في الشريحة 2: ضغطة على الربع تسجّل أنك تلوته اليوم، وضغطة ثانية تتراجع. ويظهر عمر كل ربع بخمس درجات تتغيّر وحدها مع الأيام (القرار 14)، وفوق كل بطاقة سطر «آخر إدخال»، وتحت الشاشة مفاتيح الرموز بسحبة، وضغطة مطوّلة على أي ربع تفتح تفاصيله. لا عدّاد هنا (ش5)، ولا علامة لموضع التوقّف ولا تقدّم للدورة (ش3)، فكل بطاقة مطويّة على أول حزب فيها. الحدود حقيقية من الجدول المعتمد، والقياسات في <code>system.md</code> §13.</p>
+    <nav class="links"><a href="index.html">نظام التصميم</a><a href="main.html">الشاشة الرئيسية</a><a href="juz-amma.html">جزء عمّ</a><a href="s1.html">ش1 · المحفوظ</a><a href="s2.html" aria-current="page">ش2 · التظليل والعمر</a><a href="mockups.html">النماذج المعتمدة</a></nav>
+  </header>
+  <div class="bar">
+    <button id="bGray">فحص الرمادي</button>
+    <button id="bDark">ليلاً</button>
+    <button id="bOrn">بلا زخرفة (للمقارنة)</button>
+  </div>
+
+  <h2 class="grp">جرّبها بنفسك</h2>
+  <p class="grp">اضغط أي ربع لتظليله، واضغطه ثانية للتراجع. واضغط مطوّلاً (أو بالزرّ الأيمن على الحاسوب) لتفاصيله. ثم قدّم الأيام بالأزرار تحت الهاتف لترى الدرجات تتغيّر وحدها، وعلامة «اليوم» تختفي في اليوم التالي. واسحب الشاشة للأعلى لمفاتيح الرموز.</p>
+  <div class="gal" id="g0"></div>
+  <div class="days"><button id="d1">يوم جديد</button><button id="d7">بعد أسبوع</button><button id="d30">بعد شهر</button><button id="d0">من البداية</button><output id="dOut"></output></div>
+
+  <h2 class="grp">1 · التظليل وعلامة «اليوم» والتراجع (5.3)</h2>
+  <p class="grp">ضغطة واحدة، ولا يختار المالك درجة أبداً. والربع المشترك ربع واحد: تظليله في أحد موضعيه يظلّله في الآخر.</p>
+  <div class="gal" id="g1"></div>
+
+  <h2 class="grp">2 · درجات العمر الخمس مع فحص الرمادي (5.4 · القرار 14)</h2>
+  <p class="grp">رحلة ربع واحد مع الأيام إن لم يُتلَ من جديد. والحدّ شامل: اليوم السابع ما زال ممتلئاً.</p>
+  <div class="life" id="life"></div>
+  <div class="gal" id="g2"></div>
+
+  <h2 class="grp">3 · سطر «آخر إدخال» بصيغة المدّة (7.1.2)</h2>
+  <p class="grp">المدّة أولاً بخطّ بارز، ثم اليوم والتاريخ والوقت بخطّ هادئ. وهو آخر تظليل في المسار كله. وهذه الصيغ كلها:</p>
+  <div class="durs" id="durs"></div>
+  <div class="gal" id="g3"></div>
+
+  <h2 class="grp">4 · مفاتيح الرموز بالسحب (7.1.3)</h2>
+  <div class="gal" id="g4"></div>
+
+  <h2 class="grp">5 · تفاصيل الربع بالضغط المطوّل (7.3)</h2>
+  <div class="gal" id="g5"></div>
+
+  <h2 class="grp">6 · ليلاً، وأصغر شاشة وأكبرها، وأطول محتوى</h2>
+  <div class="gal" id="g6"></div>
+</div>
+<script src="shared/quran.js"></script>
+<script src="shared/ds.js"></script>
+<script src="shared/s2.js"></script>
+<script>
+const {phone,fitAll,N}=WIRD,{make,tap,still,interactive,rel,lvl,LV}=S2;
+const G=id=>document.getElementById(id);
+const fig=(g,o)=>{const s=phone(G(g),o);s.classList.add('wl');s.dataset.id=o.id||'';if(o.dark)s.classList.add('wd');return s;};
+/* محفوظ المالك كما في النماذج: البعيد ح 1–9، والقريب ح 10–11. والأعمار بالأيام منذ آخر تلاوة (null = لم يُتلَ) */
+const AGE={1:12,2:3,3:0,4:41,5:12,6:12,7:12,8:12,9:3,10:3,11:3,12:3,13:3,14:3,15:3,16:3,17:3,18:3,19:3,20:0,21:0,22:0,
+  23:41,24:41,25:41,26:41,27:41,28:41,29:41,30:41,31:20,32:20,33:20,34:20,35:null,36:null,
+  37:3,38:3,39:9,40:18,41:15,42:15,43:30,44:null};
+const mine=(o={})=>make(Object.assign({far:[1,2,3,4,5,6,7,8,9],near:[10,11],agesOf:r=>r in AGE?AGE[r]:null},o));
+const toRow=(t,h,off=120)=>s=>{const sc=s.querySelector('.scroll'),l=s.querySelector(`.track[data-track="${t}"] .lbl[data-h="${h}"]`);if(l)sc.scrollTop=l.getBoundingClientRect().top-sc.getBoundingClientRect().top+sc.scrollTop-off;};
+const toKeys=s=>{const sc=s.querySelector('.scroll');sc.scrollTop=1e6;};
+
+/* 0 · الهاتف التفاعلي */
+const S0=mine();
+const ph=interactive(fig('g0',{title:'هاتف تفاعلي',cap:'لا يُحفظ شيء؛ «من البداية» يعيده كما كان.'}),S0,{onRender:S=>G('dOut').textContent=S.shift?`مضى ${N(S.shift)} يوماً منذ البداية`:'اليوم: الاثنين 9 نوفمبر'});
+G('d1').onclick=()=>ph.advance(1);G('d7').onclick=()=>ph.advance(7);G('d30').onclick=()=>ph.advance(30);
+G('d0').onclick=()=>{const S=mine();Object.assign(ph.S,S);ph.render();};
+
+/* 1 · التظليل والتراجع */
+still(fig('g1',{id:'s2-tap-before',title:'1 · قبل الضغط',cap:'البعيد مطويّ على أول حزب فيه (ح 1)، بلا علامة موضع التوقّف حتى ش3. الربع 1 تلوته قبل 12 يوماً (نصفه ممتلئ)، والربع 2 قبل 3 أيام، والربع 3 اليوم، والربع 4 قبل 41 يوماً (مخطّط).'}),mine());
+{const S=mine();tap(S,4);still(fig('g1',{id:'s2-tap-after',title:'2 · بعد ضغطة على الربع 4',cap:'امتلأ الربع 4 وظهرت عليه علامة «اليوم»: دائرة فيها صحّ في زاويته. وسطر «آخر إدخال» صار بوقت الضغطة 5:12.'}),S);}
+{const S=mine();tap(S,4);tap(S,4);still(fig('g1',{id:'s2-tap-undo',title:'3 · ضغطة ثانية: تراجع',cap:'حُذف تظليل اليوم وحده، فعاد الربع 4 مخطّطاً كما كان، وعاد سطر «آخر إدخال» إلى ما قبله. فالخطأ في الضغط لا يفسد السجلّ. ولا يُظلَّل الربع مرتين في اليوم.'}),S);}
+still(fig('g1',{id:'s2-shared',title:'4 · الربع المشترك مظلّلاً',cap:'الربع 4 من ح 5 بين البقرة وآل عمران، ظُلّل اليوم: يظهر ممتلئاً بعلامة «اليوم» في الموضعين، لأنه ربع واحد في السجلّ.'}),mine({open:'far'}),{},toRow('far',5,250));
+
+/* 2 · درجات العمر */
+{const steps=[[0,'اليوم','تلوته اليوم'],[3,'بعد 3 أيام',LV[1]],[7,'اليوم 7',LV[1]],[8,'اليوم 8',LV[2]],[15,'اليوم 15',LV[2]],[16,'اليوم 16',LV[3]],[22,'اليوم 22',LV[3]],[23,'اليوم 23',LV[4]]];
+  G('life').innerHTML=steps.map(([d,a,b],i)=>`<div class="st wl"><div class="q t-far L${lvl(d)}${d===0?' today':''}" style="--cb:var(--pg)"><span class="n">2</span></div><b>${a}</b><small>${b}</small></div>`).join('')+
+  `<div class="st wl"><div class="q t-far L5"><span class="n">2</span></div><b>بلا تلاوة</b><small>${LV[5]}</small></div>`;}
+still(fig('g2',{id:'s2-ages-fold',title:'5 · مطويّة: الدرجات في صفّين',cap:'البعيد (ح 1) والقريب (ح 10). كل درجة تُقرأ بالامتلاء والشكل لا باللون وحده: ممتلئ · نصف · ربع · مخطّط · فارغ.'}),mine());
+still(fig('g2',{id:'s2-ages-archive',title:'6 · أرشيف البعيد: الدرجات الخمس',cap:'من الربع 3 في ح 6 إلى الربع 2 في ح 8 مرّ عليها 41 يوماً (مخطّطة)، وبعدها أربعة أرباع فيها 20 يوماً (ربع ممتلئ)، والربعان الأخيران من ح 9 لم يُتلَيا (فارغان). العرض فقط، ولا ترتيب ولا ترشيح بحسب العمر.'}),mine({open:'far'}),{},toRow('far',6,90));
+still(fig('g2',{id:'s2-ages-near',title:'7 · أرشيف القريب',cap:'ح 10–11: خلال 7 · خلال 15 (9 أيام و15 يوماً) · خلال 22 (18 يوماً) · أكثر (30 يوماً) · لم يُتلَ.'}),mine({open:'near'}),{},toRow('near',10,60));
+
+/* 3 · آخر إدخال */
+G('durs').innerHTML=[0,1,2,3,6,7,13,14,20,21,29,30,59,60,89,90,180,330,365].map(d=>`<div><span>${N(d)} ${d===1?'يوم':d===2?'يومان':d<=10&&d>=3?'أيام':'يوماً'}</span><b>${rel(d)}</b></div>`).join('');
+still(fig('g3',{id:'s2-stamp',title:'8 · فوق كل بطاقة',cap:'البعيد: آخر إدخال اليوم. والقريب: قبل 3 أيام. ويتحدّث السطر مع كل ضغطة وكل تراجع. والتاريخ وحده يُختصر بنقاط إن ضاق السطر، والمدّة لا تُختصر أبداً.'}),mine());
+{const S=mine({agesOf:r=>r<=36?null:AGE[r]});still(fig('g3',{id:'s2-stamp-none',title:'9 · قبل أول إدخال',cap:'البعيد أُضيف ولم يُظلَّل منه شيء بعدُ: لا نصّ فوقه حتى أول ضغطة، فلا «آخر إدخال» يُخبر عن لا شيء. لكن مكان السطر محجوز، فلا تنزل البطاقة تحت الإصبع مع أول ضغطة.'}),S);}
+{const S=mine({agesOf:r=>r<=36?(r<=4?95:r<=20?140:400):AGE[r]});still(fig('g3',{id:'s2-stamp-old',title:'10 · بعد غياب طويل',cap:'«قبل 3 أشهر» ثم التاريخ. وإن كان في سنة سابقة كُتبت السنة.'}),S);}
+
+/* 4 · مفاتيح الرموز */
+still(fig('g4',{id:'s2-hint',title:'11 · الإشارة في أسفل الشاشة',cap:'عند الفتح لا تُرى المفاتيح؛ الإشارة وحدها في أسفل الشاشة. ومكان العدّاد فراغ حتى يُبنى في ش5.'}),mine());
+still(fig('g4',{id:'s2-keys',title:'12 · بعد السحب للأعلى',cap:'ثلاث مجموعات، وتحت كل رمز معناه. العمر بخمس درجات بمددها. والعلامات على مربّع محايد لا يشبه أي درجة. والمحفوظ الجديد يُبنى في ش4، ومفتاحه هنا من الآن.'}),mine(),{},toKeys);
+still(fig('g4',{id:'s2-375-keys',size:'s375',title:'13 · المفاتيح على 375×667',cap:'تتّسع الدرجات الخمس في صفّ واحد، والمعنى على سطرين.'}),mine(),{},toKeys);
+
+/* 5 · تفاصيل الربع */
+const D=(S,r,t,shared)=>({ov:'qd',r,t,shared});
+still(fig('g5',{id:'s2-details-shared',title:'14 · ربع مشترك تلوته اليوم',cap:'ح 5 الربع 4 كما في النموذج المعتمد 4: المدى من آية إلى آية، والسورتان، والأوجه، وآخر تلاوة بصيغة المدّة مع التاريخ، وعدد المرات، وآخر خمسة تواريخ. ولأنه ظُلّل اليوم ففي أسفلها «تراجع عن تظليل اليوم».'}),mine({open:'far'}),D(0,20,'far',true),toRow('far',5,250));
+still(fig('g5',{id:'s2-details-old',title:'15 · ربع مرّ عليه أكثر من 22 يوماً',cap:'ح 6 الربع 4: تلوته قبل 41 يوماً (مخطّط). المدى في سورة واحدة فتُكتب مرة. ولا زرّ تراجع، لأن التراجع لتظليل اليوم وحده.'}),mine(),D(0,24,'far',false));
+still(fig('g5',{id:'s2-details-never',title:'16 · ربع لم يُتلَ',cap:'«لم يُتلَ بعد»، والمرات 0، و«لا تواريخ بعد». الورقة بالطول نفسه، فلا تقفز.'}),mine({open:'near'}),D(0,44,'near',false),toRow('near',11,200));
+
+/* 6 · المقاسات والليل وأطول محتوى */
+still(fig('g6',{id:'s2-dark-fold',dark:true,title:'17 · ليلاً',cap:'الدرجات الخمس وعلامة «اليوم» بألوان الليل.'}),mine());
+still(fig('g6',{id:'s2-dark-details',dark:true,title:'18 · التفاصيل ليلاً',cap:''}),mine({open:'far'}),D(0,20,'far',true),toRow('far',5,250));
+still(fig('g6',{id:'s2-375-fold',size:'s375',title:'19 · 375×667',cap:'آيفون SE: البطاقات والإشارة بلا تمرير.'}),mine());
+still(fig('g6',{id:'s2-375-details',size:'s375',title:'20 · التفاصيل على 375×667',cap:'الورقة كلها ظاهرة، وتحتها جزء من الشاشة.'}),mine(),D(0,20,'far',true));
+still(fig('g6',{id:'s2-440-fold',size:'s440',title:'21 · 440×956',cap:'Pro Max.'}),mine());
+{const all=[...Array(60)].map((_,i)=>i+1);
+ still(fig('g6',{id:'s2-stress-60',title:'22 · البعيد بستين حزباً',cap:'كل الدرجات منثورة على المصحف كله. والقياس نفسه، والتمرير وحده يطول.'}),make({far:all,open:'far',agesOf:r=>[0,4,11,19,35,null,2,70][(r*5+Math.floor(r/9))%8]}),{},toRow('far',37,100));}
+
+setTimeout(fitAll,60);fitAll();
+G('bGray').onclick=e=>{document.querySelectorAll('.phone,.life').forEach(p=>p.classList.toggle('gray'));e.target.classList.toggle('on');};
+G('bDark').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>p.classList.toggle('wd'));e.target.classList.toggle('on');};
+G('bOrn').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>p.classList.toggle('plain'));e.target.classList.toggle('on');};
+if(location.hash.includes('gray'))G('bGray').click();
+if(location.hash.includes('dark'))G('bDark').click();
+</script>
+</body>
+</html>
