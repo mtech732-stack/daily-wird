@@ -57,6 +57,15 @@ enum Theme {
         }
     }
 
+    /// لون الرقم على المربّع الممتلئ (§5: `on…`).
+    static func onTrack(_ track: Track) -> Color {
+        switch track {
+        case .farReview: onFar
+        case .nearReview: onNear
+        case .newMemorization: onNew
+        }
+    }
+
     /// لون رقم المربّع وحدّه في غير الممتلئ (§5).
     static func tileInk(_ track: Track) -> Color {
         switch track {

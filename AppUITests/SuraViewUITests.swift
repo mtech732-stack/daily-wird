@@ -37,15 +37,19 @@ final class SuraViewUITests: XCTestCase {
         open("farReview", app)
         XCTAssertTrue(app.otherElements["section.farReview.1"].exists)
         XCTAssertTrue(app.otherElements["section.farReview.2"].exists)
-        XCTAssertEqual(app.otherElements.matching(identifier: "quarter.farReview.1").count, 2, "الربع المشترك في الموضعين")
-        XCTAssertEqual(app.otherElements.matching(identifier: "quarter.farReview.2").count, 1)
+        XCTAssertEqual(app.buttons.matching(identifier: "quarter.farReview.1").count, 2, "الربع المشترك في الموضعين")
+        XCTAssertEqual(app.buttons.matching(identifier: "quarter.farReview.2").count, 1)
         shot(app, "10-suras-top")
 
         // ح 5 مقسوم بين البقرة وآل عمران بربع مشترك، وح 8 بين آل عمران والنساء.
         let imran = app.otherElements["section.farReview.3"]
         for _ in 0..<4 where !imran.isHittable { app.swipeUp() }
         XCTAssertTrue(imran.exists)
-        XCTAssertEqual(app.otherElements.matching(identifier: "quarter.farReview.20").count, 2)
+        XCTAssertEqual(app.buttons.matching(identifier: "quarter.farReview.20").count, 2)
+        // م29: اللقطة تنزل حتى يظهر قسم «النساء» في البعيد: ح 8 بربعيه 3 و4 وحدهما، ثم ح 9.
+        let nisa = app.otherElements["section.farReview.4"]
+        for _ in 0..<6 where !(nisa.exists && nisa.isHittable) { app.swipeUp() }
+        XCTAssertTrue(nisa.isHittable, "قسم النساء ظاهر")
         shot(app, "11-suras-split")
     }
 
@@ -55,8 +59,8 @@ final class SuraViewUITests: XCTestCase {
         open("nearReview", app)
         XCTAssertTrue(app.otherElements["section.nearReview.4"].exists)
         XCTAssertTrue(app.otherElements["section.nearReview.5"].exists)
-        XCTAssertTrue(app.otherElements["quarter.nearReview.37"].exists)
-        XCTAssertFalse(app.otherElements["quarter.nearReview.33"].exists)
+        XCTAssertTrue(app.buttons["quarter.nearReview.37"].exists)
+        XCTAssertFalse(app.buttons["quarter.nearReview.33"].exists)
         shot(app, "12-suras-two-tracks")
     }
 

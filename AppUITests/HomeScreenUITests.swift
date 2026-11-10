@@ -73,15 +73,17 @@ final class HomeScreenUITests: XCTestCase {
     func test_7_1_cardsFoldOnBookmark() {
         let app = launch(seed: Self.sampleSeed)
 
-        let farProgress = app.staticTexts["track.farReview.progress"]
-        XCTAssertTrue(farProgress.waitForExistence(timeout: 20))
-        XCTAssertEqual(farProgress.label, "0 من 36")
-        XCTAssertEqual(app.staticTexts["track.nearReview.progress"].label, "0 من 8")
+        // تقدّم الدورة مخفيّ في ش2 حتى يُبنى مع الدورة في ش3 (ذ10).
+        let farCount = app.otherElements["track.farReview.quarterCount"]
+        XCTAssertTrue(farCount.waitForExistence(timeout: 20))
+        XCTAssertEqual(farCount.label, "36")
+        XCTAssertEqual(app.otherElements["track.nearReview.quarterCount"].label, "8")
+        XCTAssertFalse(app.staticTexts["track.farReview.progress"].exists)
 
         // البعيد مطويّ على ح 1 (الأرباع 1–4)، والقريب على ح 10 (الأرباع 37–40).
-        for q in 1...4 { XCTAssertTrue(app.otherElements["quarter.farReview.\(q)"].exists, "الربع \(q)") }
-        XCTAssertFalse(app.otherElements["quarter.farReview.5"].exists)
-        for q in 37...40 { XCTAssertTrue(app.otherElements["quarter.nearReview.\(q)"].exists, "الربع \(q)") }
+        for q in 1...4 { XCTAssertTrue(app.buttons["quarter.farReview.\(q)"].exists, "الربع \(q)") }
+        XCTAssertFalse(app.buttons["quarter.farReview.5"].exists)
+        for q in 37...40 { XCTAssertTrue(app.buttons["quarter.nearReview.\(q)"].exists, "الربع \(q)") }
         XCTAssertTrue(app.buttons["track.farReview.pull"].exists)
         XCTAssertTrue(app.buttons["track.nearReview.pull"].exists)
         XCTAssertTrue(app.otherElements["track.new.empty"].exists)
@@ -101,7 +103,7 @@ final class HomeScreenUITests: XCTestCase {
         let farArchive = app.otherElements["track.farReview.archive"]
         XCTAssertTrue(farArchive.waitForExistence(timeout: 20))
         // الأرشيف فيه الأحزاب كلها، لا حزب موضع التوقّف وحده.
-        XCTAssertTrue(app.otherElements["quarter.farReview.5"].exists)
+        XCTAssertTrue(app.buttons["quarter.farReview.5"].exists)
         XCTAssertEqual(app.buttons["track.farReview.pull"].label, "طيّ")
         shot(app, "04-archive-far")
 

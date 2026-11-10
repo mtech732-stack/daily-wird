@@ -8,6 +8,10 @@ struct TrackHeader: View {
     var onAdd: () -> Void = {}
     /// «نقل» و«إزالة» تفتحان ورقة الإدارة (§12.4). ولا تظهران في مسار فارغ (م21).
     var onManage: ((ManageMode) -> Void)?
+    /// عدد أرباع المسار، لاختبارات الواجهة وحدها ما دام تقدّم الدورة مخفيّاً (ذ10).
+    var quarterCount: Int?
+
+    private static let isUITesting = ProcessInfo.processInfo.arguments.contains("-ui-testing")
 
     var body: some View {
         HStack(spacing: 10) {
@@ -22,6 +26,15 @@ struct TrackHeader: View {
                     .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
                     .foregroundStyle(Theme.muted)
                     .accessibilityIdentifier("track.\(track.rawValue).progress")
+            }
+            if Self.isUITesting, let quarterCount {
+                // لا يُرى ولا يُلمس: تقرؤه اختبارات الواجهة لتتحقّق من الإضافة والنقل والإزالة.
+                Color.clear
+                    .frame(width: 1, height: 1)
+                    .accessibilityElement()
+                    .accessibilityLabel(Text(verbatim: Digits.en(quarterCount)))
+                    .accessibilityIdentifier("track.\(track.rawValue).quarterCount")
+                    .allowsHitTesting(false)
             }
             if showsMenu {
                 // قائمة المسار (7.1.1، §12.4). في مسار فارغ «إضافة» وحدها (م21).
@@ -116,13 +129,16 @@ struct ReviewTrackCard: View {
     var onManage: (ManageMode) -> Void = { _ in }
     /// موضع أسفل شريط «طيّ» في الشاشة المرئية، حين يكون الأرشيف مفتوحاً (م23).
     var onFoldBarMove: (CGFloat) -> Void = { _ in }
+    /// التظليل: حالة الأرباع وضغطتها (5.3).
+    var shading: ShadingState?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            TrackHeader(track: layout.track, progress: layout.progressText, showsMenu: true, onAdd: onAdd, onManage: onManage)
+            TrackHeader(track: layout.track, progress: Slice.showsCycleProgress ? layout.progressText : nil,
+                        showsMenu: true, onAdd: onAdd, onManage: onManage, quarterCount: layout.quarters.count)
                 .padding(.horizontal, isOpen ? 8 : 0)
             if isOpen {
-                ArchiveView(layout: layout, menu: hizbMenu)
+                ArchiveView(layout: layout, menu: hizbMenu, shading: shading)
                     .padding(.top, 4)
                 // «طيّ» في أسفل البطاقة؛ ويلتصق بأسفل الشاشة عند التمرير (م23).
                 PullBar(track: layout.track, isOpen: true, action: onToggle)
@@ -135,7 +151,8 @@ struct ReviewTrackCard: View {
                     }
             } else {
                 if let row = layout.foldedRow {
-                    FoldedRowView(track: layout.track, row: row, bookmark: layout.bookmarkQuarter, narrow: narrow, menu: hizbMenu)
+                    FoldedRowView(track: layout.track, row: row, bookmark: layout.bookmarkQuarter, narrow: narrow,
+                                  menu: hizbMenu, shading: shading)
                 }
                 // عنوان البطاقة لا يفتح شيئاً؛ الشريط وحده يُسدلها (7.1).
                 PullBar(track: layout.track, isOpen: false, action: onToggle)
@@ -159,6 +176,7 @@ struct FoldedRowView: View {
     let bookmark: Int?
     let narrow: Bool
     var menu: HizbMenu?
+    var shading: ShadingState?
 
     var body: some View {
         let gap: CGFloat = narrow ? 6 : 8
@@ -166,7 +184,8 @@ struct FoldedRowView: View {
             HizbLabel(hizb: row.hizb, isBookmark: true, width: narrow ? Theme.Size.hizbLabelWidthNarrow : Theme.Size.hizbLabelWidth, menu: menu)
             HStack(spacing: gap) {
                 ForEach(row.quarters, id: \.self) { q in
-                    QuarterTile(track: track, quarter: q, isBookmark: q == bookmark, isShared: row.shared.contains(q))
+                    QuarterTile(track: track, quarter: q, isBookmark: q == bookmark, isShared: row.shared.contains(q),
+                                shading: shading)
                 }
             }
             Spacer(minLength: 0)
@@ -209,12 +228,13 @@ struct FoldedRowView: View {
 struct ArchiveView: View {
     let layout: ReviewTrackLayout
     var menu: HizbMenu?
+    var shading: ShadingState?
 
     var body: some View {
         let bookmark = layout.bookmarkQuarter
         VStack(alignment: .leading, spacing: 12) {
             ForEach(layout.sections) { section in
-                SuraSectionView(track: layout.track, section: section, bookmark: bookmark, menu: menu)
+                SuraSectionView(track: layout.track, section: section, bookmark: bookmark, menu: menu, shading: shading)
             }
         }
         .padding(.top, 4)
@@ -230,6 +250,7 @@ struct SuraSectionView: View {
     let section: SuraSection
     let bookmark: Int?
     var menu: HizbMenu?
+    var shading: ShadingState?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -303,7 +324,7 @@ struct SuraSectionView: View {
             ForEach(0..<4, id: \.self) { i in
                 if let q = row.slots[i] {
                     QuarterTile(track: track, quarter: q, isBookmark: q == bookmark,
-                                isShared: section.shared.contains(q), under: Theme.paper)
+                                isShared: section.shared.contains(q), under: Theme.paper, shading: shading)
                 } else {
                     QuarterGap()
                 }
