@@ -217,10 +217,12 @@ private struct JuzRow: View {
 }
 
 /// خانة الحزب: «ح [رقم]» وتحته السورة التي يبدأ بها (ذ3)، وحالاتها الأربع بالشكل (ذ4).
-private struct HizbChip: View {
+/// تُستعمل في ورقة الإضافة وورقة الإدارة (§12.5)، وتختلف بادئة معرّفها.
+struct HizbChip: View {
     let hizb: Int
     let state: HizbChipState
     let pickable: Bool
+    var idPrefix = "add"
     let action: () -> Void
 
     var body: some View {
@@ -252,7 +254,7 @@ private struct HizbChip: View {
         .allowsHitTesting(pickable)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(state == .selected ? .isSelected : [])
-        .accessibilityIdentifier("add.hizb.\(hizb)")
+        .accessibilityIdentifier("\(idPrefix).hizb.\(hizb)")
     }
 
     @ViewBuilder private var subtitle: some View {

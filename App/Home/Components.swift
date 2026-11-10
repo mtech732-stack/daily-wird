@@ -38,6 +38,8 @@ struct HizbLabel: View {
     let hizb: Int
     let isBookmark: Bool
     var width: CGFloat = Theme.Size.hizbLabelWidth
+    /// قائمة الحزب بالضغط المطوّل (§12.5)، حيث يكون الحزب في مسار.
+    var menu: HizbMenu?
 
     var body: some View {
         HStack(spacing: 4) {
@@ -57,6 +59,43 @@ struct HizbLabel: View {
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text(verbatim: "الحزب \(Digits.en(hizb))" + (isBookmark ? "، موضع التوقّف" : "")))
+        .modifier(HizbMenuModifier(hizb: hizb, menu: menu))
+    }
+}
+
+/// ما تفعله قائمة الحزب في مساره (§12.5): نقل إلى المسار الآخر، أو إزالة منه.
+struct HizbMenu {
+    let track: Track
+    let onMove: (Int) -> Void
+    let onRemove: (Int) -> Void
+}
+
+/// قائمة الحزب بالضغط المطوّل على «ح [رقم]» (§12.5، م22): رأسها «ح 10 · النساء · الجزء 5»،
+/// ثم «نقل إلى [المسار الآخر]»، ثم بعد فاصل «إزالة من المسار». الإزالة مفصولة بالفراغ وبرمزها
+/// لا باللون (ذ7)، فلا تُعلَّم `destructive` كي لا يجعلها النظام حمراء.
+private struct HizbMenuModifier: ViewModifier {
+    let hizb: Int
+    let menu: HizbMenu?
+
+    func body(content: Content) -> some View {
+        if let menu {
+            content
+                .contextMenu {
+                    Section(Phrase.hizbMenuHeader(hizb)) {
+                        Button { menu.onMove(hizb) } label: {
+                            Label("نقل إلى \(Library.otherReviewTrack(menu.track).title)", systemImage: "arrow.left.arrow.right")
+                        }
+                    }
+                    Section {
+                        Button { menu.onRemove(hizb) } label: {
+                            Label("إزالة من المسار", systemImage: "trash")
+                        }
+                    }
+                }
+                .accessibilityIdentifier("hizb.\(menu.track.rawValue).\(hizb)")
+        } else {
+            content
+        }
     }
 }
 

@@ -6,6 +6,8 @@ struct TrackHeader: View {
     var progress: String?
     var showsMenu: Bool
     var onAdd: () -> Void = {}
+    /// «نقل» و«إزالة» تفتحان ورقة الإدارة (§12.4). ولا تظهران في مسار فارغ (م21).
+    var onManage: ((ManageMode) -> Void)?
 
     var body: some View {
         HStack(spacing: 10) {
@@ -25,6 +27,10 @@ struct TrackHeader: View {
                 // قائمة المسار (7.1.1، §12.4). في مسار فارغ «إضافة» وحدها (م21).
                 Menu {
                     Button(action: onAdd) { Label("إضافة", systemImage: "plus.circle") }
+                    if let onManage {
+                        Button { onManage(.move) } label: { Label("نقل", systemImage: "arrow.left.arrow.right") }
+                        Button { onManage(.remove) } label: { Label("إزالة", systemImage: "trash") }
+                    }
                 } label: {
                     Image(systemName: "ellipsis")
                         .font(.system(size: 17, weight: .semibold))
@@ -102,17 +108,21 @@ struct ReviewTrackCard: View {
     let isOpen: Bool
     /// ضيق الصفّ المطويّ (أقل من 330): السورة 13 والمسافات 6 (§6).
     let narrow: Bool
+    /// قائمة الحزب بالضغط المطوّل (§12.5).
+    var hizbMenu: HizbMenu?
     let onToggle: () -> Void
     var onAdd: () -> Void = {}
+    /// «نقل» و«إزالة» من «⋯» (§12.4).
+    var onManage: (ManageMode) -> Void = { _ in }
     /// موضع أسفل شريط «طيّ» في الشاشة المرئية، حين يكون الأرشيف مفتوحاً (م23).
     var onFoldBarMove: (CGFloat) -> Void = { _ in }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            TrackHeader(track: layout.track, progress: layout.progressText, showsMenu: true, onAdd: onAdd)
+            TrackHeader(track: layout.track, progress: layout.progressText, showsMenu: true, onAdd: onAdd, onManage: onManage)
                 .padding(.horizontal, isOpen ? 8 : 0)
             if isOpen {
-                ArchiveView(layout: layout)
+                ArchiveView(layout: layout, menu: hizbMenu)
                     .padding(.top, 4)
                 // «طيّ» في أسفل البطاقة؛ ويلتصق بأسفل الشاشة عند التمرير (م23).
                 PullBar(track: layout.track, isOpen: true, action: onToggle)
@@ -125,7 +135,7 @@ struct ReviewTrackCard: View {
                     }
             } else {
                 if let row = layout.foldedRow {
-                    FoldedRowView(track: layout.track, row: row, bookmark: layout.bookmarkQuarter, narrow: narrow)
+                    FoldedRowView(track: layout.track, row: row, bookmark: layout.bookmarkQuarter, narrow: narrow, menu: hizbMenu)
                 }
                 // عنوان البطاقة لا يفتح شيئاً؛ الشريط وحده يُسدلها (7.1).
                 PullBar(track: layout.track, isOpen: false, action: onToggle)
@@ -148,11 +158,12 @@ struct FoldedRowView: View {
     let row: FoldedRow
     let bookmark: Int?
     let narrow: Bool
+    var menu: HizbMenu?
 
     var body: some View {
         let gap: CGFloat = narrow ? 6 : 8
         HStack(spacing: gap) {
-            HizbLabel(hizb: row.hizb, isBookmark: true, width: narrow ? Theme.Size.hizbLabelWidthNarrow : Theme.Size.hizbLabelWidth)
+            HizbLabel(hizb: row.hizb, isBookmark: true, width: narrow ? Theme.Size.hizbLabelWidthNarrow : Theme.Size.hizbLabelWidth, menu: menu)
             HStack(spacing: gap) {
                 ForEach(row.quarters, id: \.self) { q in
                     QuarterTile(track: track, quarter: q, isBookmark: q == bookmark, isShared: row.shared.contains(q))
@@ -197,12 +208,13 @@ struct FoldedRowView: View {
 /// وتحته صفوف أحزابها بخاناتها الأربع في أماكنها الثابتة، وما ليس في السورة فراغ في مكانه.
 struct ArchiveView: View {
     let layout: ReviewTrackLayout
+    var menu: HizbMenu?
 
     var body: some View {
         let bookmark = layout.bookmarkQuarter
         VStack(alignment: .leading, spacing: 12) {
             ForEach(layout.sections) { section in
-                SuraSectionView(track: layout.track, section: section, bookmark: bookmark)
+                SuraSectionView(track: layout.track, section: section, bookmark: bookmark, menu: menu)
             }
         }
         .padding(.top, 4)
@@ -217,6 +229,7 @@ struct SuraSectionView: View {
     let track: Track
     let section: SuraSection
     let bookmark: Int?
+    var menu: HizbMenu?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -285,7 +298,7 @@ struct SuraSectionView: View {
 
     @ViewBuilder
     private func tiles(_ row: SectionRow) -> some View {
-        HizbLabel(hizb: row.hizb, isBookmark: row.hasBookmark)
+        HizbLabel(hizb: row.hizb, isBookmark: row.hasBookmark, menu: menu)
         HStack(spacing: 8) {
             ForEach(0..<4, id: \.self) { i in
                 if let q = row.slots[i] {
