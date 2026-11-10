@@ -15,6 +15,20 @@ final class AddUITests: XCTestCase {
         return app
     }
 
+    /// يضغط العنصر بعد أن يظهر ويصير قابلاً للضغط (ويمرّر إليه إن لزم)، ثم ينتظر أن يُختار.
+    private func tapUntilSelected(_ element: XCUIElement, in app: XCUIApplication,
+                                  file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertTrue(element.waitForExistence(timeout: 5), "لم يظهر \(element)", file: file, line: line)
+        let hittable = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isHittable == true"), object: element)
+        if XCTWaiter().wait(for: [hittable], timeout: 3) != .completed {
+            app.swipeUp()
+        }
+        element.tap()
+        let selected = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isSelected == true"), object: element)
+        XCTAssertEqual(XCTWaiter().wait(for: [selected], timeout: 3), .completed,
+                       "لم يُختر بعد الضغط: \(element)", file: file, line: line)
+    }
+
     private func shot(_ app: XCUIApplication, _ name: String) {
         let shot = XCTAttachment(screenshot: app.screenshot())
         shot.name = name
@@ -36,8 +50,10 @@ final class AddUITests: XCTestCase {
         XCTAssertTrue(app.buttons["add.track.farReview"].isSelected)
         shot(app, "06-add-sheet")
 
-        for juz in 1...4 { app.buttons["add.juz.\(juz)"].tap() }
-        app.buttons["add.hizb.9"].tap()
+        // كل ضغطة تنتظر أن يصير العنصر قابلاً للضغط، ثم تتحقّق أنه اختير. فشلت مرة بـ «7 أحزاب»
+        // لأن ضغطة على دائرة جزء وقعت والورقة ما زالت تتحرّك فلم تصل.
+        for juz in 1...4 { tapUntilSelected(app.buttons["add.juz.\(juz)"], in: app) }
+        tapUntilSelected(app.buttons["add.hizb.9"], in: app)
         XCTAssertTrue(go.isEnabled)
         XCTAssertEqual(go.label, "أضف 9 أحزاب إلى مراجعة البعيد")
         XCTAssertTrue(app.buttons["add.juz.1"].isSelected)
