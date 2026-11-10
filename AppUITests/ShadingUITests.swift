@@ -211,4 +211,66 @@ final class ShadingUITests: XCTestCase {
         }
         shot(app, "28-keys")
     }
+
+    /// يقرأ سطر التفاصيل الذي يبدأ بعنوانه («مرات التلاوة»…).
+    private func detailsRow(_ title: String, _ app: XCUIApplication) -> XCUIElement {
+        app.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH %@", title)).firstMatch
+    }
+
+    private func openDetails(_ tile: XCUIElement, _ app: XCUIApplication, title: String,
+                             file: StaticString = #filePath, line: UInt = #line) {
+        tile.press(forDuration: 0.7)
+        let header = app.descendants(matching: .any)["details.title"]
+        XCTAssertTrue(header.waitForExistence(timeout: 20), "فُتحت التفاصيل", file: file, line: line)
+        XCTAssertEqual(header.label, title, file: file, line: line)
+    }
+
+    private func closeDetails(_ app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        // الضغط خارج الورقة يغلقها (§13.5).
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.08)).tap()
+        let header = app.descendants(matching: .any)["details.title"]
+        let gone = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: header)
+        XCTAssertEqual(XCTWaiter().wait(for: [gone], timeout: 20), .completed, "أُغلقت التفاصيل", file: file, line: line)
+    }
+
+    /// 7.3، §13.5: الضغطة المطوّلة تفتح التفاصيل ولا تظلّل شيئاً (سيناريو المعاين 6)؛ وفيها المدى والسور والأوجه
+    /// وآخر تلاوة ومرات التلاوة وآخر التواريخ. وبعد تظليل اليوم: كبسولة «اليوم» أولاً، والعدد زاد واحداً،
+    /// وزرّ «تراجع عن تظليل اليوم» يتراجع ويغلق الورقة (سيناريوا المعاين 2 و5 في الصفحة).
+    func test_7_3_detailsByLongPress() {
+        let app = launch(seed: "farReview:1-9", readings: "1:3@05:34,1:20,1:40", now: "2026-11-09T07:00:00")
+        let q2 = app.buttons["quarter.farReview.2"]
+        XCTAssertTrue(q2.waitForExistence(timeout: 20))
+
+        openDetails(q2, app, title: "الحزب 1 · الربع 2")
+        XCTAssertTrue(detailsRow("مرات التلاوة", app).label.contains("0"))
+        XCTAssertTrue(detailsRow("آخر تلاوة", app).label.contains("لم يُتلَ بعد"))
+        XCTAssertTrue(detailsRow("آخر التواريخ", app).label.contains("لا تواريخ بعد"))
+        closeDetails(app)
+        XCTAssertEqual(q2.value as? String, "لم يُتلَ", "الضغطة المطوّلة لا تظلّل")
+
+        let q1 = app.buttons["quarter.farReview.1"]
+        openDetails(q1, app, title: "الحزب 1 · الربع 1")
+        XCTAssertTrue(detailsRow("المدى", app).label.contains("من الفاتحة 1 إلى البقرة 25"))
+        XCTAssertTrue(detailsRow("السور", app).label.contains("الفاتحة · البقرة"))
+        XCTAssertTrue(detailsRow("الأوجه", app).label.contains("1 · 2 · 3 · 4 · 5"))
+        XCTAssertTrue(detailsRow("آخر تلاوة", app).label.contains("قبل 3 أيام"))
+        XCTAssertTrue(detailsRow("مرات التلاوة", app).label.contains("3"))
+        XCTAssertFalse(app.buttons["details.undo"].exists, "لا تراجع لربع لم يُظلَّل اليوم")
+        shot(app, "29-details")
+        closeDetails(app)
+
+        q1.tap()
+        expectValue(q1, "تلوته اليوم")
+        openDetails(q1, app, title: "الحزب 1 · الربع 1")
+        XCTAssertTrue(detailsRow("مرات التلاوة", app).label.contains("4"))
+        XCTAssertTrue(detailsRow("آخر التواريخ", app).label.contains("اليوم"))
+        XCTAssertTrue(detailsRow("آخر تلاوة", app).label.contains("اليوم"))
+        shot(app, "30-details-today")
+        let undo = app.buttons["details.undo"]
+        XCTAssertTrue(undo.exists)
+        undo.tap()
+        let gone = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: undo)
+        XCTAssertEqual(XCTWaiter().wait(for: [gone], timeout: 20), .completed, "التراجع أغلق الورقة")
+        expectValue(q1, "خلال 7 أيام")
+    }
 }

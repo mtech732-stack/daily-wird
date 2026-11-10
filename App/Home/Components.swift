@@ -263,6 +263,10 @@ struct QuarterTile: View {
             face
         }
         .buttonStyle(TileButtonStyle(reduceMotion: reduceMotion))
+        // ضغطة مطوّلة 0.45 ث تفتح التفاصيل، ولا تظلّل شيئاً (7.3، §13.5).
+        .onLongPressGesture(minimumDuration: 0.45) {
+            shading?.details(quarter, track, isShared)
+        }
         .disabled(shading == nil)
         .zIndex(isToday ? 1 : 0)
         .accessibilityElement()
@@ -272,6 +276,10 @@ struct QuarterTile: View {
             + (isBookmark && Slice.showsBookmark ? "، موضع التوقّف" : "")))
         .accessibilityValue(Text(verbatim: isToday ? "تلوته اليوم" : level.meaning))
         .accessibilityHint(Text(verbatim: "ضغطة: تلوته أو تراجع"))
+        // التفاصيل إجراء مخصّص، لأن الضغط المطوّل لا يصل إليه كل أحد (§13.7).
+        .accessibilityAction(named: Text(verbatim: "التفاصيل")) {
+            shading?.details(quarter, track, isShared)
+        }
         .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier("quarter.\(track.rawValue).\(quarter)")
     }
