@@ -1,7 +1,7 @@
 import XCTest
 
-/// ش2 · المرحلة 1: التظليل بالتاريخ وعلامة «اليوم» (5.3، §13.1) ولقطاته.
-/// سيناريوهات المعاين في docs/reports/ش2-التصميم.md §5: 1 (التظليل)، 3 (منتصف الليل)، 5 (المشترك).
+/// ش2 · المرحلتان 1 و2: التظليل بالتاريخ وعلامة «اليوم»، والتراجع (5.3، §13.1، §13.2) ولقطاتهما.
+/// سيناريوهات المعاين في docs/reports/ش2-التصميم.md §5: 1 (التظليل)، 2 (التراجع)، 3 (منتصف الليل)، 5 (المشترك).
 @MainActor
 final class ShadingUITests: XCTestCase {
 
@@ -60,7 +60,20 @@ final class ShadingUITests: XCTestCase {
         XCTAssertFalse(app.buttons["quarter.farReview.1"].label.contains("موضع التوقّف"), "لا علامة موضع توقّف (ذ16)")
         shot(app, "22-shaded")
 
-        // لا يُظلَّل الربع مرتين في اليوم.
+    }
+
+    /// 5.3، §13.2: الضغطة الثانية على ربع ظُلّل اليوم تراجع: يعود فارغاً بلا علامة، ولا يمسّ غيره،
+    /// والضغطة بعدها تظلّله من جديد (سيناريو المعاين 2).
+    func test_5_3_secondTapUndoes() {
+        let app = launch(seed: "farReview:1-9;nearReview:10-11", readings: "37:0")
+        let q2 = app.buttons["quarter.farReview.2"]
+        XCTAssertTrue(q2.waitForExistence(timeout: 20))
+        q2.tap()
+        expectValue(q2, "تلوته اليوم")
+        q2.tap()
+        expectValue(q2, "لم يُتلَ")
+        XCTAssertEqual(app.buttons["quarter.nearReview.37"].value as? String, "تلوته اليوم", "التراجع لا يمسّ غيره")
+        shot(app, "25-undone")
         q2.tap()
         expectValue(q2, "تلوته اليوم")
     }
@@ -74,6 +87,12 @@ final class ShadingUITests: XCTestCase {
         XCTAssertEqual(places.count, 2)
         places.element(boundBy: 0).tap()
         expectValue(places.element(boundBy: 0), "تلوته اليوم")
+        expectValue(places.element(boundBy: 1), "تلوته اليوم")
+        // والتراجع من الموضع الآخر يفرغهما معاً.
+        places.element(boundBy: 1).tap()
+        expectValue(places.element(boundBy: 0), "لم يُتلَ")
+        expectValue(places.element(boundBy: 1), "لم يُتلَ")
+        places.element(boundBy: 0).tap()
         expectValue(places.element(boundBy: 1), "تلوته اليوم")
         let imran = app.otherElements["section.farReview.3"]
         for _ in 0..<3 where !imran.isHittable { app.swipeUp() }

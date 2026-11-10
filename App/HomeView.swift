@@ -255,15 +255,14 @@ struct HomeView: View {
         }
     }
 
-    /// ضغطة على الربع = تلوته اليوم (5.3). يُسجَّل بتاريخه ووقته، ولا تظليل ثانٍ في اليوم نفسه.
+    /// ضغطة على الربع = تلوته اليوم، وعلى ربع ظُلّل اليوم = تراجع (5.3، §13.2).
     /// ولا اهتزاز ولا إشعار عابر (ذ11): التغيّر يُرى في المربّع، ويُعلَن لقارئ الشاشة (§13.7).
     private func shade(_ quarter: Int, in track: Track) {
         let at = WirdClock.now()
         now = at
         do {
-            if try Shading.tap(quarter: quarter, track: track, in: context, now: at) == .shaded {
-                AccessibilityNotification.Announcement("تلوته اليوم").post()
-            }
+            let result = try Shading.tap(quarter: quarter, track: track, in: context, now: at)
+            AccessibilityNotification.Announcement(result == .shaded ? "تلوته اليوم" : "تراجعت").post()
         } catch {
             show("تعذّر التسجيل")
         }

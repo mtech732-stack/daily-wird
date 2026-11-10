@@ -3,7 +3,7 @@ import SwiftData
 import XCTest
 @testable import DailyWird
 
-/// ش2 · المرحلة 1: التظليل بالتاريخ وعلامة «اليوم» (5.3، §13.1).
+/// ش2 · المرحلتان 1 و2: التظليل بالتاريخ وعلامة «اليوم»، والتراجع (5.3، §13.1، §13.2).
 @MainActor
 final class ShadingTests: XCTestCase {
 
@@ -33,13 +33,45 @@ final class ShadingTests: XCTestCase {
         XCTAssertEqual(all[0].trackRaw, Track.farReview.rawValue)
     }
 
-    /// 5.3: لا يُظلَّل الربع مرتين في اليوم الواحد.
+    /// 5.3: لا يُظلَّل الربع مرتين في اليوم الواحد: الضغطة الثانية في اليوم نفسه تراجع لا تظليل.
     func test_5_3_noSecondShadingSameDay() throws {
         let ctx = try context()
         try Shading.tap(quarter: 7, track: .nearReview, in: ctx, now: date("2026-11-06T00:00:00"), calendar: cal)
         XCTAssertEqual(try Shading.tap(quarter: 7, track: .nearReview, in: ctx, now: date("2026-11-06T23:59:59"), calendar: cal),
-                       .alreadyReadToday)
-        XCTAssertEqual(try readings(ctx).count, 1)
+                       .undone)
+        XCTAssertEqual(try readings(ctx).count, 0)
+    }
+
+    /// 5.3: التراجع يحذف تظليل اليوم وحده، فيعود الربع إلى عمره السابق، ولا يُمسّ ما قبله.
+    func test_5_3_undoRemovesTodayOnly() throws {
+        let ctx = try context()
+        let before = date("2026-11-03T09:00:00")
+        try Shading.tap(quarter: 5, track: .farReview, in: ctx, now: before, calendar: cal)
+        try Shading.tap(quarter: 6, track: .farReview, in: ctx, now: date("2026-11-06T05:00:00"), calendar: cal)
+        try Shading.tap(quarter: 5, track: .farReview, in: ctx, now: date("2026-11-06T05:34:00"), calendar: cal)
+        XCTAssertEqual(try Shading.tap(quarter: 5, track: .farReview, in: ctx, now: date("2026-11-06T05:35:00"), calendar: cal), .undone)
+        let all = try readings(ctx)
+        XCTAssertEqual(all.filter { $0.quarter == 5 }.map(\.readAt), [before], "تظليل ما قبل اليوم باقٍ")
+        XCTAssertEqual(all.filter { $0.quarter == 6 }.count, 1, "التراجع عن ربع لا يمسّ غيره")
+        XCTAssertEqual(Shading.readToday(all, now: date("2026-11-06T05:36:00"), calendar: cal), [6])
+    }
+
+    /// 5.3: بعد التراجع تظلّله الضغطة من جديد بوقتها الجديد.
+    func test_5_3_tapAfterUndoShadesAgain() throws {
+        let ctx = try context()
+        try Shading.tap(quarter: 9, track: .farReview, in: ctx, now: date("2026-11-06T05:00:00"), calendar: cal)
+        try Shading.tap(quarter: 9, track: .farReview, in: ctx, now: date("2026-11-06T05:01:00"), calendar: cal)
+        let again = date("2026-11-06T05:02:00")
+        XCTAssertEqual(try Shading.tap(quarter: 9, track: .farReview, in: ctx, now: again, calendar: cal), .shaded)
+        XCTAssertEqual(try readings(ctx).map(\.readAt), [again])
+    }
+
+    /// 5.3: تظليل الأمس لا يُتراجع عنه بضغطة اليوم؛ الضغطة بعد منتصف الليل تظليل جديد.
+    func test_5_3_noUndoOfYesterday() throws {
+        let ctx = try context()
+        try Shading.tap(quarter: 3, track: .farReview, in: ctx, now: date("2026-11-06T23:50:00"), calendar: cal)
+        XCTAssertEqual(try Shading.tap(quarter: 3, track: .farReview, in: ctx, now: date("2026-11-07T00:10:00"), calendar: cal), .shaded)
+        XCTAssertEqual(try readings(ctx).count, 2)
     }
 
     /// 5.3، القرار 2: اليوم يبدأ عند منتصف الليل بتوقيت الجهاز: تظليل 11:59 م ليس من «اليوم» بعد 12:00 ص،
@@ -76,10 +108,10 @@ final class ShadingTests: XCTestCase {
         XCTAssertEqual(places.count, 2, "يظهر في الموضعين")
         let now = date("2026-11-10T09:00:00")
         try Shading.tap(quarter: 20, track: .farReview, in: ctx, now: now, calendar: cal)
-        XCTAssertEqual(try Shading.tap(quarter: 20, track: .farReview, in: ctx, now: now, calendar: cal), .alreadyReadToday,
-                       "الضغطة في الموضع الآخر لا تظلّله ثانية")
-        XCTAssertEqual(try readings(ctx).count, 1)
         XCTAssertEqual(Shading.readToday(try readings(ctx), now: now, calendar: cal), [20])
+        XCTAssertEqual(try Shading.tap(quarter: 20, track: .farReview, in: ctx, now: now, calendar: cal), .undone,
+                       "الضغطة في الموضع الآخر تراجع عن الربع نفسه، لا تظليل ثانٍ")
+        XCTAssertEqual(try readings(ctx).count, 0)
     }
 
     /// 5.2، 5.3: التظليل بالربع لا بالمسار: ينتقل الحزب فتبقى علامة «اليوم» على ربعه.
