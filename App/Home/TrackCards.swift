@@ -408,7 +408,8 @@ struct LastEntryLine: View {
         .font(Theme.font(.regular, size: 12.5, relativeTo: .caption))
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 8)
-        .opacity(date == nil ? 0 : 1)
+        // ذ17: السطر نفسه مخفيّ بارتفاعه، لا محذوف.
+        .hiddenIf(date == nil)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(verbatim: date == nil ? "" : "\(title)، \(stamp)"))
         .accessibilityHidden(date == nil)
@@ -427,5 +428,12 @@ struct LastEntryLine: View {
                 .lineLimit(1)
                 .fixedSize()
         }
+    }
+}
+
+private extension View {
+    /// `.hidden()` بشرط: يبقى مكان العنصر محجوزاً ولا يُرى.
+    @ViewBuilder func hiddenIf(_ hidden: Bool) -> some View {
+        if hidden { self.hidden() } else { self }
     }
 }

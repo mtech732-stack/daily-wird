@@ -9,11 +9,13 @@ final class ShadingUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    private func launch(seed: String, readings: String? = nil, now: String? = nil, testClock: Bool = false) -> XCUIApplication {
+    private func launch(seed: String, readings: String? = nil, now: String? = nil, testClock: Bool = false,
+                        locale: String? = nil) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing", "-seed", seed] + (testClock ? ["-test-clock"] : [])
             + (readings.map { ["-readings", $0] } ?? [])
             + (now.map { ["-now", $0] } ?? [])
+            + (locale.map { ["-AppleLocale", $0] } ?? [])
         app.launch()
         return app
     }
@@ -158,9 +160,10 @@ final class ShadingUITests: XCTestCase {
     /// 7.1، 7.1.2، §13.4: فوق كل بطاقة مراجعة سطر «آخر إدخال» بالمدّة ثم اليوم والتاريخ والوقت،
     /// وهو أحدث تظليل في المسار. وقبل أول إدخال لا سطر (ذ12) ومكانه محجوز، فلا تنزل البطاقة مع أول ضغطة (ذ17).
     /// والتراجع يعيده إلى ما قبله، وإن لم يبقَ إدخال زال (سيناريوا المعاين 1 و2).
+    /// والجهاز بمنطقة السعودية وتقويمها الهجري، والتاريخ ميلادي بأرقام إنجليزية (سيناريو المعاين 8، القرار 1).
     func test_13_4_lastEntryLine() {
         let app = launch(seed: "farReview:1-9;nearReview:10-11", readings: "1:3@05:34,2:10@06:00",
-                         now: "2026-11-09T07:00:00")
+                         now: "2026-11-09T07:00:00", locale: "ar_SA@calendar=islamic-umalqura")
         let near = app.buttons["quarter.nearReview.37"]
         XCTAssertTrue(near.waitForExistence(timeout: 20))
         expectLastEntry("farReview", "آخر إدخال قبل 3 أيام، الجمعة 6 نوفمبر · 5:34 ص", app)
