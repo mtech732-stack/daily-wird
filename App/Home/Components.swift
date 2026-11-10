@@ -251,24 +251,30 @@ struct QuarterTile: View {
     var shading: ShadingState?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// المربّع تحت الإصبع: يصغر إلى 0.94 (§13.1).
+    @State private var pressed = false
 
     private var isToday: Bool { shading?.isToday(quarter) ?? false }
     /// درجة العمر (5.4، القرار 14).
     private var level: AgeLevel { shading?.level(quarter) ?? .empty }
 
     var body: some View {
-        Button {
-            shading?.tap(quarter, track)
-        } label: {
-            face
-        }
-        .buttonStyle(TileButtonStyle(reduceMotion: reduceMotion))
-        // ضغطة مطوّلة 0.45 ث تفتح التفاصيل، ولا تظلّل شيئاً (7.3، §13.5).
-        .onLongPressGesture(minimumDuration: 0.45) {
-            shading?.details(quarter, track, isShared)
-        }
-        .disabled(shading == nil)
-        .zIndex(isToday ? 1 : 0)
+        // الضغطة تظلّل أو تتراجع، والضغطة المطوّلة 0.45 ث تفتح التفاصيل ولا تظلّل شيئاً (7.3، §13.5).
+        // لا `Button` هنا: الضغطة المطوّلة المضافة إلى زرّ لم تفتح التفاصيل في اختبار الواجهة (#69)،
+        // والزرّ يُطلق فعله عند الرفع فيظلّل. فإيماءتان على المربّع: تفوز المطوّلة إن طال الضغط، وإلا فالضغطة.
+        face
+            .scaleEffect(pressed && !reduceMotion ? 0.94 : 1)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: pressed)
+            .onTapGesture {
+                shading?.tap(quarter, track)
+            }
+            .onLongPressGesture(minimumDuration: 0.45) {
+                shading?.details(quarter, track, isShared)
+            } onPressingChanged: { pressing in
+                pressed = pressing
+            }
+            .allowsHitTesting(shading != nil)
+            .zIndex(isToday ? 1 : 0)
         .accessibilityElement()
         .accessibilityLabel(Text(verbatim:
             "الحزب \(Digits.en(Quran.quarter(quarter).hizb))، الربع \(Digits.en(Quran.position(ofQuarter: quarter)))"
@@ -276,6 +282,9 @@ struct QuarterTile: View {
             + (isBookmark && Slice.showsBookmark ? "، موضع التوقّف" : "")))
         .accessibilityValue(Text(verbatim: isToday ? "تلوته اليوم" : level.meaning))
         .accessibilityHint(Text(verbatim: "ضغطة: تلوته أو تراجع"))
+        .accessibilityAction {
+            shading?.tap(quarter, track)
+        }
         // التفاصيل إجراء مخصّص، لأن الضغط المطوّل لا يصل إليه كل أحد (§13.7).
         .accessibilityAction(named: Text(verbatim: "التفاصيل")) {
             shading?.details(quarter, track, isShared)
@@ -402,17 +411,6 @@ struct Stripes: Shape {
             k += 1
         }
         return p
-    }
-}
-
-/// الضغط يصغّر المربّع إلى 0.94 مدة 0.12 ث (§5)، ولا حركة مع «تقليل الحركة».
-struct TileButtonStyle: ButtonStyle {
-    var reduceMotion: Bool
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.94 : 1)
-            .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: configuration.isPressed)
     }
 }
 
