@@ -1,6 +1,7 @@
 # البناء والاختبار واللقطات (القسم 10.3).
 # - كل طلب دمج: يبني للمحاكي، ويشغّل اختبارات الوحدة والواجهة، ويلتقط اللقطات ويرفعها ملفاً مرفقاً.
 # - كل دمج في main: الشيء نفسه، ثم ينشر صفحة اللقطات على GitHub Pages.
+# - وفي طلب الدمج تُرفع لقطاته إلى فرع previews (مجلّد pr-[رقم]) ليراها المالك قبل الدمج (القرار 11).
 # بيئة مثبّتة صراحة (ملاحظة المعاين م2): صورة macos-26، وXcode 26.6، ومحاكيات iOS 26.5 بأسمائها.
 # لا توقيع ولا أسرار حتى ش7.
 name: ci
@@ -28,6 +29,8 @@ jobs:
   test:
     runs-on: macos-26
     timeout-minutes: 40
+    permissions:
+      contents: write # لرفع لقطات طلب الدمج إلى فرع previews وحده (القرار 11)
     steps:
       - uses: actions/checkout@v5
 
@@ -39,6 +42,9 @@ jobs:
 
       - name: فحص بنية البيانات لـ CloudKit (4.4)
         run: python3 scripts/check-cloudkit-model.py App/Model/*.swift
+
+      - name: فحص جدول الحدود قبل البناء عليه (6.3، م5)
+        run: python3 data/tools/check_boundaries.py
 
       - name: توليد مشروع Xcode (XcodeGen)
         run: |
@@ -103,6 +109,44 @@ jobs:
             '<meta http-equiv="refresh" content="0; url=screens/"><title>الورد اليومي</title>' \
             '<a href="screens/">صفحة اللقطات</a></html>' > site/index.html
           ls -la site site/screens
+
+      - name: فرع معاينة طلبات الدمج
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/checkout@v5
+        with:
+          ref: previews
+          path: pv
+          fetch-depth: 1
+
+      - name: لقطات طلب الدمج قبل دمجه (القرار 11)
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true # المعاينة عون للمالك، ولا يفشل البناء بسببها
+        env:
+          PR: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/pr-out"
+          python3 scripts/build-pr-preview.py site/screens "$out" "$PR" "$SHA" \
+            "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          cd pv
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          # الفرع إيداع واحد بلا تاريخ يُستبدل كل مرة، فلا يكبر المستودع بالصور.
+          for i in 1 2 3 4 5; do
+            git fetch -q --depth 1 origin previews
+            base=$(git rev-parse FETCH_HEAD)
+            git checkout -q -f -B work "$base"
+            rm -rf "pr-$PR" && cp -R "$out" "pr-$PR"
+            git add -A
+            commit=$(git commit-tree "$(git write-tree)" -m "معاينة طلبات الدمج · #$PR ${SHA:0:7}")
+            if git push -q --force-with-lease="previews:$base" origin "$commit:refs/heads/previews"; then
+              echo "معاينة: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/tree/previews/pr-$PR"
+              exit 0
+            fi
+            sleep $((i * 3))
+          done
+          exit 1
 
       - name: رفع نتائج الاختبار عند الفشل
         if: failure()
