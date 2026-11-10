@@ -32,7 +32,7 @@ const TIMES=['5:08 ص','4:52 ص','5:34 ص','5:21 ص','9:40 م','5:15 ص','4:47 �
 /* يبني سجلّاً معقولاً من عمر كل ربع: آخر تظليل بعمره، وقبله تظليلات متباعدة */
 function make(o){
   const S=W.state(Object.assign({far:[],near:[],newHizb:null,ages:()=>{}},o));
-  S.noStamp=true;S.shift=0;S.hist={};S.hideMeta=o.hideMeta!==false;
+  S.noStamp=true;S.shift=0;S.hist={};S.hideMeta=o.hideMeta!==false;S.hideBm=o.hideBm!==false;
   const ages=o.agesOf||(()=>null);
   [...W.trackQuarters(S,'far'),...W.trackQuarters(S,'near')].forEach(r=>{
     const a=ages(r);if(a==null){S.hist[r]=[];return;}
@@ -71,7 +71,7 @@ function keysHTML(){
 function screen(S,ui={}){
   const fold=!S.open;
   return `<div class="island"></div><div class="status"><span>5:12</span><span>●●● ▮</span></div>
-  <div class="scroll ${S.hideMeta?'nometa':''}">${fold?'<div class="fold s2f">':''}<div class="apphead"><div><h2>الورد اليومي</h2><span class="dt">${dLong(0,S)}</span></div><div class="ic" role="button" aria-label="الإعدادات">${GEAR}</div></div>
+  <div class="scroll ${S.hideMeta?'nometa':''} ${S.hideBm?'nobm':''}">${fold?'<div class="fold s2f">':''}<div class="apphead"><div><h2>الورد اليومي</h2><span class="dt">${dLong(0,S)}</span></div><div class="ic" role="button" aria-label="الإعدادات">${GEAR}</div></div>
   ${card(S,'far')}${card(S,'near')}${card(S,'new')}${fold?'<div class="spacer"></div><div class="hint">اسحب للأعلى لمفاتيح الرموز</div></div>':''}
   ${keysHTML()}</div>${overlay(S,ui)}`;
 }

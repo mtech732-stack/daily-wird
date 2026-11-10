@@ -6,6 +6,9 @@
 .s2f .hint.tight{display:none}
 /* تقدّم الدورة «22 من 36» يُبنى مع الدورة في ش3 (س6) */
 .nometa .meta2{display:none}
+/* وعلامة موضع التوقّف كذلك حتى ش3 (ذ16): لا إطار على الربع ولا علامة كتاب بجانب الحزب. ومفتاحها في المفاتيح باقٍ */
+.nobm .track .q.bm{outline:none}
+.nobm .track .bmk{display:none}
 
 /* تظليل الربع: تعبئة تتلاشى 0.15 ث، وعلامة «اليوم» تظهر بتكبير خفيف 0.18 ث */
 .q{transition:transform .12s,background .15s,box-shadow .15s}
