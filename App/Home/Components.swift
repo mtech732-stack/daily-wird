@@ -271,7 +271,7 @@ struct QuarterTile: View {
             + (isShared ? "، ربع مشترك" : "")
             + (isBookmark && Slice.showsBookmark ? "، موضع التوقّف" : "")))
         .accessibilityValue(Text(verbatim: isToday ? "تلوته اليوم" : "لم يُتلَ"))
-        .accessibilityHint(Text(verbatim: "ضغطة: تلوته"))
+        .accessibilityHint(Text(verbatim: "ضغطة: تلوته أو تراجع"))
         .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier("quarter.\(track.rawValue).\(quarter)")
     }
