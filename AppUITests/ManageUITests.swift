@@ -56,20 +56,31 @@ final class ManageUITests: XCTestCase {
         button.tap()
     }
 
-    /// يضغط «ح [رقم]» ضغطة مطوّلة فتظهر قائمة الحزب (§12.5، م22).
-    private func pressHizb(_ app: XCUIApplication, _ track: String, _ hizb: Int) {
+    /// يضغط «ح [رقم]» ضغطة مطوّلة حتى تظهر قائمة الحزب (§12.5، م22)، ويعيد بندها المطلوب.
+    /// ينتظر أن يصير «ح» قابلاً للضغط أولاً. وإن لم تظهر القائمة أعاد الضغط مرة وطبع «تشخيص:»،
+    /// فإن لم تظهر ثانية فشل بذكر الأزرار الظاهرة.
+    @discardableResult
+    private func pressHizb(_ app: XCUIApplication, _ track: String, _ hizb: Int, item: String,
+                           file: StaticString = #filePath, line: UInt = #line) -> XCUIElement {
         let label = app.descendants(matching: .any)["hizb.\(track).\(hizb)"]
-        XCTAssertTrue(label.waitForExistence(timeout: 20), "لم يظهر ح \(hizb)")
-        label.press(forDuration: 0.8)
+        XCTAssertTrue(label.waitForExistence(timeout: 20), "لم يظهر ح \(hizb)", file: file, line: line)
+        XCTAssertTrue(wait(label, "isHittable == true"), "لا يُضغط ح \(hizb)", file: file, line: line)
+        let button = app.buttons[item]
+        for attempt in 1...2 {
+            label.press(forDuration: 1.0)
+            if button.waitForExistence(timeout: 10) { return button }
+            if attempt == 1 { print("تشخيص: لم تظهر قائمة ح \(hizb) بعد الضغط المطوّل، يُعاد مرة") }
+        }
+        let shown = app.buttons.allElementsBoundByIndex.map(\.label).joined(separator: " ¦ ")
+        XCTFail("لم تظهر قائمة ح \(hizb) وفيها «\(item)». الأزرار الظاهرة: \(shown)", file: file, line: line)
+        return button
     }
 
     /// §12.5، 5.2: الضغط المطوّل على «ح 10» في القريب يعرض قائمته، و«نقل إلى مراجعة البعيد»
     /// ينقله فوراً بلا سؤال (ذ6)، ويؤكّده الإشعار.
     func test_12_5_hizbMenuMovesWithoutAsking() {
         let app = launch()
-        pressHizb(app, "nearReview", 10)
-        let move = app.buttons["نقل إلى مراجعة البعيد"]
-        XCTAssertTrue(move.waitForExistence(timeout: 10), "لم تظهر قائمة الحزب")
+        let move = pressHizb(app, "nearReview", 10, item: "نقل إلى مراجعة البعيد")
         XCTAssertTrue(app.buttons["إزالة من المسار"].exists)
         shot(app, "16-hizb-menu")
         move.tap()
@@ -131,10 +142,7 @@ final class ManageUITests: XCTestCase {
     /// 5.1: الإزالة من قائمة الحزب تسأل أولاً، و«إلغاء» لا يزيل شيئاً.
     func test_5_1_removeFromHizbMenuCanBeCancelled() {
         let app = launch()
-        pressHizb(app, "farReview", 1)
-        let remove = app.buttons["إزالة من المسار"]
-        XCTAssertTrue(remove.waitForExistence(timeout: 10), "لم تظهر قائمة الحزب")
-        remove.tap()
+        pressHizb(app, "farReview", 1, item: "إزالة من المسار").tap()
         let question = app.staticTexts["remove.question"]
         XCTAssertTrue(question.waitForExistence(timeout: 20))
         expectLabel(question, "أتزيل الحزب 1 من مراجعة البعيد؟")
