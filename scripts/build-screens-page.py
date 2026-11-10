@@ -14,6 +14,7 @@ from screen_titles import SCREENS  # noqa: E402
 DEVICES = [("large", "iPhone 17 Pro Max · الأكبر"), ("small", "iPhone 17e · الأصغر")]
 VARIANTS = [("light", "نهاري", ""), ("dark", "ليلي", ""), ("light", "نهاري · رمادي", "-gray"), ("dark", "ليلي · رمادي", "-gray")]
 
+FULL = os.environ.get("FULL", "true") != "false"
 shots = sorted({p.name.split("__")[0] for p in root.glob("*__*__*.png")})
 missing = []
 sections = []
@@ -25,7 +26,9 @@ for key in shots:
         for app, label, suffix in VARIANTS:
             name = f"{key}__{dev}__{app}{suffix}.png"
             if not (root / name).exists():
-                missing.append(name)
+                # في فحص المرحلة (القرار 24، FULL=false) المطلوب الصغير نهاراً ونسخته الرمادية وحدهما.
+                if FULL or (dev == "small" and app == "light"):
+                    missing.append(name)
                 continue
             figs.append(
                 f'<figure><a href="{name}"><img src="{name}" alt="{html.escape(title)} · {label}" loading="lazy"></a>'
@@ -34,8 +37,7 @@ for key in shots:
         rows.append(f'<h3>{dev_label}</h3><div class="grid">{"".join(figs)}</div>')
     sections.append(f'<section><h2>{html.escape(title)}</h2>{"".join(rows)}</section>')
 
-# في فحص المرحلة الصغير نهاراً وحده (القرار 24، FULL=false) لا تُعدّ النسخ الأخرى ناقصة.
-if not shots or (missing and os.environ.get("FULL", "true") != "false"):
+if missing or not shots:
     sys.exit("لقطات ناقصة: " + ", ".join(missing or ["لا شيء"]))
 
 body = "".join(sections)
