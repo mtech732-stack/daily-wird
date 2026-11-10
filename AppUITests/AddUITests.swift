@@ -41,7 +41,9 @@ final class AddUITests: XCTestCase {
                 let selected = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isSelected == true"), object: element)
                 if XCTWaiter().wait(for: [selected], timeout: 1) != .completed {
                     print("تشخيص: تغيّر الاختيار في التطبيق (\(before.raw) → \(after.raw)) وتأخّرت سمة «مختار»: \(element)")
-                    XCTAssertEqual(XCTWaiter().wait(for: [selected], timeout: 20), .completed,
+                    // توقّع جديد: لا يُنتظر التوقّع الواحد مرتين (فشل هكذا في #43).
+                    let late = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isSelected == true"), object: element)
+                    XCTAssertEqual(XCTWaiter().wait(for: [late], timeout: 20), .completed,
                                    "تغيّر الاختيار في التطبيق ولم تظهر سمة «مختار» خلال 20 ث: \(element)", file: file, line: line)
                     print("تشخيص: ظهرت السمة بعد \(Int(Date().timeIntervalSince(start))) ث")
                 }
