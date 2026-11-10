@@ -2,7 +2,7 @@
 """يبني صفحة اللقطات (screens/index.html) من الصور الموجودة في المجلّد.
 الاستعمال: build-screens-page.py <screens-dir> <commit-sha> <run-url>
 """
-import html, sys
+import html, os, sys
 from datetime import datetime, timezone
 from pathlib import Path
 
