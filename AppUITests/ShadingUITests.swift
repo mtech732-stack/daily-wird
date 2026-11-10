@@ -191,4 +191,24 @@ final class ShadingUITests: XCTestCase {
         expectValue(q1, "خلال 7 أيام")
         expectLastEntry("farReview", "آخر إدخال قبل 3 أيام، الجمعة 6 نوفمبر · 5:34 ص", app)
     }
+
+    /// 7.1.3، §13.6: عند الفتح لا تُرى المفاتيح، وفي أسفل الشاشة إشارة «اسحب للأعلى»؛ وبعد السحب تُرى
+    /// الدرجات الخمس بمعانيها بالأيام (ذ15) والعلامات على مربّع محايد ومجموعة المحفوظ الجديد (سيناريو المعاين 7).
+    func test_7_1_3_keysBySwipe() {
+        let app = launch(seed: "farReview:1-2", readings: "1:7,2:8,3:15,4:16,5:22,6:23,8:0")
+        let keys = app.descendants(matching: .any)["keys"]
+        XCTAssertTrue(app.buttons["quarter.farReview.1"].waitForExistence(timeout: 20))
+        XCTAssertTrue(keys.waitForExistence(timeout: 20))
+        let screen = app.windows.firstMatch.frame
+        XCTAssertGreaterThanOrEqual(keys.frame.minY, screen.maxY - 40, "المفاتيح لا تُرى عند الفتح")
+        XCTAssertTrue(app.descendants(matching: .any)["keys.hint"].exists, "إشارة «اسحب للأعلى»")
+
+        app.swipeUp()
+        XCTAssertLessThan(keys.frame.minY, screen.maxY - 200, "ظهرت المفاتيح بالسحب")
+        for meaning in ["خلال 7 أيام", "خلال 15 يوماً", "خلال 22 يوماً", "أكثر من 22", "لم يُتلَ",
+                        "تلوته اليوم", "موضع التوقّف", "بين سورتين", "وجه محفوظ", "لم يُحفظ"] {
+            XCTAssertTrue(keys.descendants(matching: .any)[meaning].exists, meaning)
+        }
+        shot(app, "28-keys")
+    }
 }

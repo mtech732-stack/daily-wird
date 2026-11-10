@@ -6,7 +6,7 @@ import UIKit
 /// الشاشة الرئيسية «الورد اليومي» (7.1) كما تُبنى في ش1: المسارات الثلاثة بترتيب المالك،
 /// كل بطاقة مطويّة على موضع توقّفها، والأرشيف يُفتح من شريط الإسدال.
 /// وفي ش2: الضغطة على الربع تظلّله بتاريخه ووقته وعليه علامة «اليوم» (5.3، §13.1).
-/// ولا يظهر بعدُ: مفاتيح الرموز (مرحلتها في ش2)، والعدّاد (ش5).
+/// ولا يظهر بعدُ: العدّاد (ش5).
 struct HomeView: View {
     @Environment(\.modelContext) private var context
     @Query private var placements: [HizbPlacement]
@@ -32,6 +32,12 @@ struct HomeView: View {
 
     /// المسار المفتوح أرشيفه. لا يُحفظ، فيفتح التطبيق دائماً مطويّاً (7.1).
     @State private var openTrack: Track?
+    /// ارتفاع الرأس والبطاقات، لإظهار إشارة المفاتيح إن بقي لها مكان (§13.6).
+    @State private var cardsHeight: CGFloat = 0
+    private static let topPadding: CGFloat = 4
+    /// المقبض 4 وفراغ 4 والنصّ نحو 18 وحشو 12 فوقه و12 تحته.
+    private static let hintHeight: CGFloat = 50
+
     /// موضع شريط «طيّ» في أسفل البطاقة المفتوحة، لإلصاقه بأسفل الشاشة إن نزل تحتها (م23).
     @State private var foldBar = FoldBarPosition()
 
@@ -42,16 +48,34 @@ struct HomeView: View {
             let narrow = geo.size.width - margin * 2 - 34 < 330
             ScrollViewReader { proxy in
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HomeHeader(now: now)
-                            .padding(.bottom, 6)
-                        ForEach(Track.allCases, id: \.self) { track in
-                            card(for: track, narrow: narrow, proxy: proxy)
-                                .id("card.\(track.rawValue)")
+                    VStack(alignment: .leading, spacing: 0) {
+                        // الحالة المطويّة تملأ الشاشة، وفي أسفلها إشارة «اسحب للأعلى»، فلا تُرى المفاتيح
+                        // إلا بالسحب (§13.6). ومكان العدّاد (ش5) فراغ بلون الأرضية.
+                        VStack(alignment: .leading, spacing: 0) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HomeHeader(now: now)
+                                    .padding(.bottom, 6)
+                                ForEach(Track.allCases, id: \.self) { track in
+                                    card(for: track, narrow: narrow, proxy: proxy)
+                                        .id("card.\(track.rawValue)")
+                                }
+                            }
+                            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { cardsHeight = $0 }
+                            if openTrack == nil {
+                                Spacer(minLength: 0)
+                                // وإن لم يبقَ للإشارة مكان تحت البطاقات خفيت، والمفاتيح بالتمرير (§13.6).
+                                if geo.size.height - Self.topPadding - 6 - cardsHeight >= Self.hintHeight {
+                                    KeysHint()
+                                }
+                            }
                         }
+                        .frame(minHeight: openTrack == nil ? geo.size.height - Self.topPadding - 6 : nil, alignment: .top)
+                        SymbolKeys()
+                            .padding(.top, openTrack == nil ? 6 : 14)
+                            .padding(.bottom, 10)
                     }
                     .padding(.horizontal, margin)
-                    .padding(.top, 4)
+                    .padding(.top, Self.topPadding)
                     .padding(.bottom, 24)
                 }
                 .scrollIndicators(.hidden)
