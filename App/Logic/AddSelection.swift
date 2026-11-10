@@ -27,12 +27,18 @@ struct AddSelection: Equatable {
     var sortedSelection: [Int] { selected.sorted() }
 
     func state(of hizb: Int) -> HizbChipState {
-        if let at = trackOf[hizb] { return at == track ? .here : .other(at) }
-        return selected.contains(hizb) ? .selected : .available
+        if trackOf[hizb] == track { return .here }
+        if selected.contains(hizb) { return .selected }
+        if let at = trackOf[hizb] { return .other(at) }
+        return .available
     }
 
-    /// يُختار الحزب الذي ليس في أي مسار. والحزب الذي في مسار آخر لا يُضاف حتى يُسأل عن نقله (5.1).
-    func isPickable(_ hizb: Int) -> Bool { trackOf[hizb] == nil }
+    /// يُختار كل حزب ليس في هذا المسار. والذي في مسار آخر يُسأل عن نقله عند «أضف» (5.1، ذ5).
+    func isPickable(_ hizb: Int) -> Bool { trackOf[hizb] != track }
+
+    /// المختار من أحزاب مسار آخر، والمسار الذي هي فيه.
+    var conflicts: [Int] { sortedSelection.filter { trackOf[$0] != nil && trackOf[$0] != track } }
+    var conflictTrack: Track? { conflicts.first.flatMap { trackOf[$0] } }
 
     func pickable(inJuz juz: Int) -> [Int] { Quran.hizbs(ofJuz: juz).filter(isPickable) }
 

@@ -61,6 +61,24 @@ final class AddUITests: XCTestCase {
         XCTFail("لم تصل الضغطة إلى التطبيق مرتين: \(element)", file: file, line: line)
     }
 
+    /// ينتظر أن يصير نصّ العنصر كما يُتوقّع. ما تقرؤه أداة الاختبار يتأخّر 2 إلى 4 ث عن التطبيق
+    /// على محاكي CI (#43)، فلا يُقرأ النصّ مباشرة بعد ضغطة.
+    private func expectLabel(_ element: XCUIElement, _ text: String,
+                             file: StaticString = #filePath, line: UInt = #line) {
+        let match = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == %@", text), object: element)
+        if XCTWaiter().wait(for: [match], timeout: 15) != .completed {
+            XCTAssertEqual(element.label, text, file: file, line: line)
+        }
+    }
+
+    /// يضغط الزرّ بعد أن تراه أداة الاختبار مفعّلاً. فـ«أضف» يتفعّل في التطبيق مع الاختيار،
+    /// وتراه الأداة مفعّلاً بعد 2 إلى 4 ث على محاكي CI (#43).
+    private func tapEnabled(_ element: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
+        let enabled = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isEnabled == true AND isHittable == true"), object: element)
+        XCTAssertEqual(XCTWaiter().wait(for: [enabled], timeout: 15), .completed, "لم يتفعّل \(element)", file: file, line: line)
+        element.tap()
+    }
+
     private func appState(_ app: XCUIApplication) -> (taps: Int, selected: String, raw: String) {
         let raw = app.otherElements["add.taps"].value as? String ?? ""
         let parts = raw.split(separator: "|", omittingEmptySubsequences: false)
@@ -93,18 +111,17 @@ final class AddUITests: XCTestCase {
         // لأن ضغطة على دائرة جزء وقعت والورقة ما زالت تتحرّك فلم تصل.
         for juz in 1...4 { tapUntilSelected(app.buttons["add.juz.\(juz)"], in: app) }
         tapUntilSelected(app.buttons["add.hizb.9"], in: app)
-        XCTAssertTrue(go.isEnabled)
-        XCTAssertEqual(go.label, "أضف 9 أحزاب إلى مراجعة البعيد")
+        expectLabel(go, "أضف 9 أحزاب إلى مراجعة البعيد")
         XCTAssertTrue(app.buttons["add.juz.1"].isSelected)
         XCTAssertTrue(app.buttons["add.hizb.9"].isSelected)
         XCTAssertFalse(app.buttons["add.hizb.10"].isSelected)
         shot(app, "07-add-selected")
 
-        go.tap()
+        tapEnabled(go)
         let toast = app.staticTexts["toast"]
-        XCTAssertTrue(toast.waitForExistence(timeout: 5))
-        XCTAssertEqual(toast.label, "أُضيف 9 أحزاب إلى مراجعة البعيد")
-        XCTAssertEqual(app.staticTexts["track.farReview.progress"].label, "0 من 36")
+        XCTAssertTrue(toast.waitForExistence(timeout: 20))
+        expectLabel(toast, "أُضيف 9 أحزاب إلى مراجعة البعيد")
+        expectLabel(app.staticTexts["track.farReview.progress"], "0 من 36")
         XCTAssertTrue(app.otherElements["quarter.farReview.1"].exists)
         XCTAssertTrue(app.otherElements["track.nearReview.empty"].exists)
         shot(app, "08-added")
@@ -135,9 +152,10 @@ final class AddUITests: XCTestCase {
         XCTAssertTrue(app.buttons["add.hizb.10"].label.contains("في القريب"), app.buttons["add.hizb.10"].label)
         XCTAssertTrue(app.buttons["add.hizb.9"].label.contains("النساء"), app.buttons["add.hizb.9"].label)
 
-        app.buttons["add.juz.5"].tap()
+        tapUntilSelected(app.buttons["add.juz.5"], in: app)
         XCTAssertTrue(app.buttons["add.hizb.9"].isSelected)
-        XCTAssertFalse(app.buttons["add.hizb.10"].isSelected)
+        XCTAssertTrue(app.buttons["add.hizb.10"].isSelected, "ما في مسار آخر يُختار، ويُسأل عنه عند «أضف»")
+        XCTAssertFalse(app.buttons["add.hizb.11"].isSelected)
         shot(app, "09-add-states")
     }
 
@@ -150,14 +168,58 @@ final class AddUITests: XCTestCase {
         XCTAssertTrue(app.buttons["add.track.nearReview"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["add.track.nearReview"].isSelected)
 
-        app.buttons["add.juz.3"].tap()
-        XCTAssertEqual(app.buttons["add.go"].label, "أضف حزبين إلى مراجعة القريب")
+        tapUntilSelected(app.buttons["add.juz.3"], in: app)
+        expectLabel(app.buttons["add.go"], "أضف حزبين إلى مراجعة القريب")
         app.buttons["add.track.farReview"].tap()
+        expectLabel(app.buttons["add.go"], "اختر جزءاً أو حزباً")
         XCTAssertFalse(app.buttons["add.go"].isEnabled)
-        XCTAssertEqual(app.buttons["add.go"].label, "اختر جزءاً أو حزباً")
 
         app.buttons["add.cancel"].tap()
         XCTAssertTrue(app.otherElements["track.farReview.empty"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.otherElements["track.nearReview.empty"].exists)
+    }
+
+    /// 5.1، 12.3: الجزء 5 إلى البعيد وح 10 في القريب: يُسأل «الحزب 10 موجود في مراجعة القريب. أتنقله؟».
+    /// «اتركه» يضيف ح 9 وحده، و«انقله» ينقل ح 10 (سيناريو المعاين 3).
+    func test_5_1_conflictAsksBeforeMoving() {
+        let app = launch(seed: "farReview:1-8;nearReview:10-11")
+        let more = app.buttons["track.farReview.more"]
+        XCTAssertTrue(app.otherElements["track.farReview.folded"].waitForExistence(timeout: 10))
+        more.tap()
+        let item = app.buttons["إضافة"]
+        XCTAssertTrue(item.waitForExistence(timeout: 5))
+        item.tap()
+        XCTAssertTrue(app.buttons["add.juz.5"].waitForExistence(timeout: 5))
+        tapUntilSelected(app.buttons["add.juz.5"], in: app)
+        tapEnabled(app.buttons["add.go"])
+
+        let question = app.staticTexts["conflict.question"]
+        XCTAssertTrue(question.waitForExistence(timeout: 20), "لم يظهر سؤال النقل بعد «أضف»: \(appState(app).raw)")
+        XCTAssertEqual(question.label, "الحزب 10 موجود في مراجعة القريب. أتنقله؟")
+        XCTAssertEqual(app.buttons["conflict.move"].label, "انقله إلى مراجعة البعيد")
+        XCTAssertEqual(app.buttons["conflict.keep"].label, "اتركه في مراجعة القريب")
+        shot(app, "14-conflict")
+
+        // «اتركه»: يُضاف ح 9 وحده، ويبقى ح 10 في القريب.
+        app.buttons["conflict.keep"].tap()
+        XCTAssertTrue(app.staticTexts["toast"].waitForExistence(timeout: 5))
+        expectLabel(app.staticTexts["toast"], "أُضيف ح 9 إلى مراجعة البعيد")
+        expectLabel(app.staticTexts["track.farReview.progress"], "0 من 36")
+        expectLabel(app.staticTexts["track.nearReview.progress"], "0 من 8")
+
+        // ثم «انقله»: ح 10 ينتقل إلى البعيد، ولا يبقى في القريب.
+        app.buttons["track.farReview.more"].tap()
+        XCTAssertTrue(app.buttons["إضافة"].waitForExistence(timeout: 5))
+        app.buttons["إضافة"].tap()
+        XCTAssertTrue(app.buttons["add.hizb.10"].waitForExistence(timeout: 5))
+        tapUntilSelected(app.buttons["add.hizb.10"], in: app)
+        tapEnabled(app.buttons["add.go"])
+        XCTAssertTrue(app.buttons["conflict.move"].waitForExistence(timeout: 20))
+        app.buttons["conflict.move"].tap()
+        XCTAssertTrue(app.staticTexts["toast"].waitForExistence(timeout: 5))
+        expectLabel(app.staticTexts["toast"], "نُقل ح 10 إلى مراجعة البعيد")
+        expectLabel(app.staticTexts["track.farReview.progress"], "0 من 40")
+        expectLabel(app.staticTexts["track.nearReview.progress"], "0 من 4")
+        shot(app, "15-moved-by-add")
     }
 }
