@@ -1,0 +1,19 @@
+/* ش3 · موضع التوقّف · design/system.md §14 */
+
+/* سطر اكتمال الدورة مكان «22 من 36» في رأس البطاقة (§14.4): صحّ في دائرة 15، و«اكتملت الدورة» 13/600 `ink`، ثم «· 19 يوماً» 13 `muted` */
+.th .meta2.cdone{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.th .meta2.cdone svg{flex:none;color:var(--ink)}
+.th .meta2.cdone b{font-weight:600;color:var(--ink)}
+.th .meta2.cdone .sh{display:none}
+.th .meta2.cdone.short .lg{display:none}
+.th .meta2.cdone.short .sh{display:inline}
+
+/* انتقال الصفّ المطويّ إلى حزب موضع التوقّف الجديد: تلاشٍ 0.25 ث بعد 0.8 ث (§14.3) */
+.track .cur.swap{animation:swapin .25s ease-out}
+@keyframes swapin{from{opacity:0}to{opacity:1}}
+
+/* «ابدأ دورة جديدة» معطّل ما لم يُظلَّل في الدورة شيء (§14.5) */
+.menu .mi.off{opacity:.38;cursor:default}
+
+/* علامة الكتاب في الحالة الثابتة «قبل الانتقال» */
+.track.pinned .cur .lbl{opacity:1}

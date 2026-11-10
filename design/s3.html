@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ش3 · موضع التوقّف</title>
+<link rel="stylesheet" href="shared/ds.css">
+<link rel="stylesheet" href="shared/s1.css">
+<link rel="stylesheet" href="shared/s2.css">
+<link rel="stylesheet" href="shared/s3.css">
+<link rel="stylesheet" href="shared/page.css">
+<style>
+h2.grp{font-size:20px;font-weight:600;margin:34px 0 4px}
+p.grp{margin:0 0 16px;color:var(--pg-muted);font-size:14.5px;max-width:80ch;line-height:1.75}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <h1>ش3 · موضع التوقّف: التصميم</h1>
+    <p>لكل مسار مراجعة دورة. وموضع التوقّف أول ربع، بترتيب أرقام الأرباع، لم يُظلَّل منذ بداية الدورة: عليه إطار مزدوج، وبجانب حزبه علامة كتاب. والبطاقة المطويّة على حزبه وتنتقل معه، والأرشيف ينزل إليه وحده. فإذا ظُلّل كل ربع في المسار اكتملت الدورة، وبدأت غيرها من أول المسار. وبجانب العنوان تقدّم الدورة «22 من 36». المرجع المكتوب: <code>design/system.md</code> §14.</p>
+    <nav class="links"><a href="index.html">نظام التصميم</a><a href="main.html">الشاشة الرئيسية</a><a href="juz-amma.html">جزء عمّ</a><a href="s1.html">ش1 · المحفوظ</a><a href="s2.html">ش2 · التظليل والعمر</a><a href="s3.html" aria-current="page">ش3 · موضع التوقّف</a><a href="mockups.html">النماذج المعتمدة</a></nav>
+  </header>
+  <div class="bar">
+    <button id="bGray">فحص الرمادي</button>
+    <button id="bDark">ليلاً</button>
+    <button id="bOrn">بلا زخرفة (للمقارنة)</button>
+  </div>
+
+  <h2 class="grp">جرّبها بنفسك</h2>
+  <p class="grp">اضغط الربع الذي عليه الإطار، فينتقل الإطار إلى ما بعده. وإن أتممت حزباً بقي الصفّ لحظة ثم انتقل إلى الحزب التالي. وتخطَّ ربعاً لترى الإطار يبقى عليه. وافتح «عرض كامل المراجعة» لترى الأرشيف ينزل إلى موضع التوقّف. و«⋯» فيها «ابدأ دورة جديدة». والأزرار تحت الهاتف تقدّم الأيام، وتضيف حزباً في منتصف الدورة، وتُتمّ البعيد إلا ربعاً لتجرّب اكتمال الدورة.</p>
+  <div class="gal" id="g0"></div>
+  <div class="days"><button id="d1">يوم جديد</button><button id="d7">بعد أسبوع</button><button id="dAdd">أضف ح 12 إلى القريب</button><button id="dAlmost">البعيد إلا ربعاً</button><button id="d0">من البداية</button><output id="dOut"></output></div>
+
+  <h2 class="grp">1 · تقدّم الدورة وموضع التوقّف (5.5 · 7.1)</h2>
+  <p class="grp">البطاقة مطويّة على صفّ الحزب الذي فيه موضع التوقّف، ويُظلَّل منه مباشرة. وعند فتح الأرشيف ينزل وحده إلى موضع التوقّف، فيقع صفّه في الثلث الأعلى مما يُرى، وفوقه ما قبله.</p>
+  <div class="gal" id="g1"></div>
+
+  <h2 class="grp">2 · موضع التوقّف يتحرّك مع التظليل</h2>
+  <p class="grp">يتقدّم الإطار إلى أول ربع لم يُظلَّل بعدُ في هذه الدورة. فإن تخطّى المالك ربعاً بقي عليه. وإن انتقل إلى حزب آخر انتقل الصفّ المطويّ معه بعد لحظة.</p>
+  <div class="gal" id="g2"></div>
+
+  <h2 class="grp">3 · الربع المشترك موضعاً للتوقّف</h2>
+  <p class="grp">ربع واحد في الدورة، يُعدّ مرة واحدة، والإطار عليه في الموضعين. والأرشيف ينزل إلى أول ظهور له.</p>
+  <div class="gal" id="g3"></div>
+
+  <h2 class="grp">4 · اكتمال الدورة (5.5 · القرار 15)</h2>
+  <p class="grp">حين يُظلَّل آخر ربع لم يُظلَّل في الدورة تبدأ دورة جديدة وحدها، ويعود موضع التوقّف إلى أول المسار. ويحلّ سطر الاكتمال محلّ «0 من 36» في رأس البطاقة حتى أول تظليل في الدورة الجديدة أو حتى نهاية اليوم. والتراجع في اليوم نفسه يعيد الدورة كما كانت.</p>
+  <div class="gal" id="g4"></div>
+
+  <h2 class="grp">5 · «ابدأ دورة جديدة» من قائمة المسار</h2>
+  <div class="gal" id="g5"></div>
+
+  <h2 class="grp">6 · الإضافة في منتصف الدورة</h2>
+  <p class="grp">الحزب المضاف يدخل الدورة الحالية في مكانه بترتيب الأرباع. فإن كان قبل موضع التوقّف انتقل إليه موضع التوقّف.</p>
+  <div class="gal" id="g6"></div>
+
+  <h2 class="grp">7 · ليلاً، وأصغر شاشة وأكبرها، وأطول محتوى</h2>
+  <div class="gal" id="g7"></div>
+</div>
+<script src="shared/quran.js"></script>
+<script src="shared/ds.js"></script>
+<script src="shared/s2.js"></script>
+<script src="shared/s3.js"></script>
+<script>
+const {phone,fitAll,N}=WIRD,{make,tap,restart,add,still,interactive}=S3;
+const G=id=>document.getElementById(id);
+const fig=(g,o)=>{const s=phone(G(g),o);s.classList.add('wl');s.dataset.id=o.id||'';if(o.dark)s.classList.add('wd');return s;};
+/* محفوظ المالك كما في النماذج المعتمدة: البعيد ح 1–9 بدورة بدأت قبل 18 يوماً (22 من 36، والموضع ح 6 الربع 3)،
+   والقريب ح 10–11 بدورة بدأت قبل 5 أيام (2 من 8، والموضع ح 10 الربع 3). والأعمار بالأيام (null = لم يُتلَ) */
+const AGE=r=>r<=8?12:r<=19?3:r<=22?0:r<=30?41:r<=34?20:r<=36?null:r<=38?3:r<=40?9:r<=44?15:null;
+const mine=(o={})=>make(Object.assign({far:[1,2,3,4,5,6,7,8,9],near:[10,11],agesOf:AGE},o));
+/* البعيد إلا ربعه الأخير: كل ما سواه ظُلّل في الدورة */
+const almost=(o={})=>mine(Object.assign({agesOf:r=>r<=36?(r===36?30:r===35?1:r<=8?12:r<=19?3:r<=22?0:r<=30?10:6):AGE(r)},o));
+const toRow=(t,h,off=120)=>s=>{const sc=s.querySelector('.scroll'),l=s.querySelector(`.track[data-track="${t}"] .lbl[data-h="${h}"]`);if(l)sc.scrollTop=l.getBoundingClientRect().top-sc.getBoundingClientRect().top+sc.scrollTop-off;};
+
+/* 0 · الهاتف التفاعلي */
+const ph=interactive(fig('g0',{title:'هاتف تفاعلي',cap:'لا يُحفظ شيء؛ «من البداية» يعيده كما كان.'}),mine(),{onRender:S=>G('dOut').textContent=S.shift?`مضى ${N(S.shift)} يوماً`:'اليوم: الاثنين 9 نوفمبر'});
+const reset=S=>{Object.keys(ph.S).forEach(k=>delete ph.S[k]);Object.assign(ph.S,S);ph.render();};
+G('d1').onclick=()=>ph.advance(1);G('d7').onclick=()=>ph.advance(7);G('dAdd').onclick=()=>ph.add('near',12);
+G('dAlmost').onclick=()=>reset(almost());G('d0').onclick=()=>reset(mine());
+
+/* 1 · التقدّم والموضع */
+still(fig('g1',{id:'s3-fold',title:'1 · عند الفتح',cap:'البعيد «22 من 36»، مطويّ على ح 6 لأن موضع التوقّف ربعه الثالث (الإطار المزدوج وعلامة الكتاب). والقريب «2 من 8» على ح 10 الربع 3.'}),mine());
+still(fig('g1',{id:'s3-archive',title:'2 · فتح أرشيف البعيد',cap:'نزل وحده إلى ح 6، فصفّه في الثلث الأعلى، وفوقه ح 5 وعنوان قسمه. ولا حركة تمرير تُرى: يُفتح على موضعه.'}),mine({open:'far'}));
+still(fig('g1',{id:'s3-archive-near',title:'3 · فتح أرشيف القريب',cap:'موضع التوقّف في ح 10 أول القريب: ينزل حتى يقع صفّه في الثلث الأعلى، وفوقه عنوان قسمه، وما فوقه من البعيد المطويّ.'}),mine({open:'near'}));
+
+/* 2 · الحركة */
+{const S=mine({agesOf:r=>r===24||r===25?0:AGE(r)});
+ still(fig('g2',{id:'s3-skip',title:'4 · ربع متخطّى',cap:'تلا المالك اليوم الربع 4 من ح 6 والربع 1 من ح 7، وتخطّى الربع 3. فبقي موضع التوقّف عليه حتى يتلوه، والتقدّم «24 من 36».'}),S);}
+{const S=mine();tap(S,23,'far');tap(S,24,'far');S.pin={far:6};
+ still(fig('g2',{id:'s3-move-pin',title:'5 · أتمّ ح 6: لحظة قبل الانتقال',cap:'ظلّل الربعين 3 و4. يبقى الصفّ 0.8 ث على ح 6 بعلامتي «اليوم»، ولا إطار فيه لأن موضع التوقّف صار في ح 7. فإن ضغط الربع ثانية في هذه اللحظة تراجع وبقي الصفّ.'}),S,{swap:'far'});}
+{const S=mine();tap(S,23,'far');tap(S,24,'far');
+ still(fig('g2',{id:'s3-move-after',title:'6 · بعد الانتقال',cap:'الصفّ صار ح 7، والإطار على ربعه الأول، والسورة والجزء تبعاه. والتقدّم «24 من 36».'}),S);}
+
+/* 3 · الربع المشترك */
+{const ag=r=>r<=19?3:r===20?41:AGE(r);
+ still(fig('g3',{id:'s3-shared-fold',title:'7 · مطويّة على ربع مشترك',cap:'موضع التوقّف ح 5 الربع 4، بين البقرة وآل عمران: الإطار عليه وزاويته المقطوعة معاً.'}),mine({agesOf:ag}));
+ still(fig('g3',{id:'s3-shared-archive',title:'8 · في الأرشيف: الإطار في الموضعين',cap:'تحت البقرة وتحت آل عمران، وعلامة الكتاب بجانب ح 5 في الموضعين. والنزول إلى أول ظهور (البقرة).'}),mine({agesOf:ag,open:'far'}),{},toRow('far',5,140));}
+
+/* 4 · اكتمال الدورة */
+still(fig('g4',{id:'s3-complete-before',title:'9 · بقي ربع واحد',cap:'«35 من 36»، وموضع التوقّف الربع 4 من ح 9.'}),almost());
+{const S=almost();tap(S,36,'far');
+ still(fig('g4',{id:'s3-complete-after',title:'10 · اكتملت الدورة',cap:'بضغطة على الربع الأخير: بدأت دورة جديدة، وعاد الصفّ إلى ح 1 والإطار على ربعه الأول. وفي رأس البطاقة مكان «0 من 36»: «اكتملت الدورة · 19 يوماً» (بدأت قبل 18 يوماً، فاليوم تاسع عشرها).'}),S);
+ const S2_=almost();tap(S2_,36,'far');S2_.open='far';
+ still(fig('g4',{id:'s3-complete-archive',title:'11 · الأرشيف بعد الاكتمال',cap:'من أوله، لأن موضع التوقّف أول ربع. والأعمار كما هي: الدورة لا تمسّ العمر.'}),S2_);
+ const S3_=almost();tap(S3_,36,'far');tap(S3_,1,'far');
+ still(fig('g4',{id:'s3-complete-first',title:'12 · أول تظليل في الدورة الجديدة',cap:'ظلّل ربع ح 1 الأول، فذهب سطر الاكتمال وعاد التقدّم «1 من 36». ولا يعود السطر بعدها.'}),S3_);
+ const S4_=almost();tap(S4_,36,'far');tap(S4_,36,'far');
+ still(fig('g4',{id:'s3-complete-undo',title:'13 · تراجع عن الضغطة الأخيرة',cap:'من الأرشيف أو من التفاصيل: حُذف تظليل اليوم، فعادت الدورة السابقة كما كانت «35 من 36» وموضع التوقّف على الربع 4 من ح 9.'}),S4_);}
+{const S=make({far:[1,2,3,4,5,6,7,8,9],near:[10],cycle:{near:2},agesOf:r=>r<=36?AGE(r):r<=39?0:r===40?4:null});tap(S,40,'near');
+ still(fig('g4',{id:'s3-complete-small',title:'14 · مسار بحزب واحد اكتمل اليوم',cap:'القريب ح 10 وحده، تُليت أرباعه الأربعة اليوم. فالإطار على الربع 1 وعليه علامة «اليوم» معاً: هو أول الدورة الجديدة، وما تُلي اليوم من الدورة التي اكتملت. وضغطه اليوم تراجع (5.3)، وغداً يُعدّ في الجديدة.'}),S);}
+
+/* 5 · ابدأ دورة جديدة */
+still(fig('g5',{id:'s3-menu',title:'15 · قائمة المسار',cap:'«ابدأ دورة جديدة» آخرها، مفصولة بفاصل عمّا يغيّر المحفوظ، برمز السهم الدائري.'}),mine(),{ov:'tmenu',t:'far'});
+still(fig('g5',{id:'s3-confirm',title:'16 · التأكيد',cap:'لأن ما تقدّم من الدورة لا يعود بالتراجع. والزرّان بالحجم نفسه، ولا أحمر.'}),mine(),{ov:'nc',t:'far'});
+{const S=mine();restart(S,'far');
+ still(fig('g5',{id:'s3-restarted',title:'17 · بعد البدء',cap:'«0 من 36»، والصفّ على ح 1 والإطار على ربعه الأول. وإشعار عابر يؤكّد. ولا سطر اكتمال: الدورة لم تكتمل.'}),S,{toast:'بدأت دورة جديدة في مراجعة البعيد'});
+ const T=mine();restart(T,'far');
+ still(fig('g5',{id:'s3-menu-off',title:'18 · ولا شيء ظُلّل بعدُ',cap:'البند ظاهر معطّلاً (38%)، إذ لا معنى لبدء دورة لم يُتلَ منها شيء.'}),T,{ov:'tmenu',t:'far'});}
+
+/* 6 · الإضافة في منتصف الدورة */
+{const S=mine();add(S,'near',12);
+ still(fig('g6',{id:'s3-add-after',title:'19 · أُضيف حزب بعد موضع التوقّف',cap:'ح 12 إلى القريب: صار التقدّم «2 من 12»، وموضع التوقّف كما كان على ح 10، والحزب الجديد ينتظر في آخر الدورة.'}),S,{toast:'أُضيف ح 12 إلى مراجعة القريب'});}
+{const ag=r=>r>=13&&r<=16?null:AGE(r);const S=mine({far:[1,2,3,5,6,7,8,9],agesOf:ag});add(S,'far',4);
+ still(fig('g6',{id:'s3-add-before',title:'20 · أُضيف حزب قبل موضع التوقّف',cap:'ح 4 (لم يُتلَ) إلى البعيد، وموضع التوقّف كان في ح 6: انتقل إلى أول ح 4، والبطاقة معه. والإشعار يقول ذلك، لأن الصفّ المطويّ تغيّر.'}),S,{toast:'أُضيف ح 4 · وفيه الآن موضع التوقّف'});}
+
+/* 7 · المقاسات والليل وأطول محتوى */
+still(fig('g7',{id:'s3-dark-fold',dark:true,title:'21 · ليلاً',cap:'الإطار بلون النصّ الفاتح.'}),mine());
+{const S=almost();tap(S,36,'far');still(fig('g7',{id:'s3-dark-complete',dark:true,title:'22 · الاكتمال ليلاً',cap:''}),S);}
+still(fig('g7',{id:'s3-375-fold',size:'s375',title:'23 · 375×667',cap:'التقدّم والإطار في المساحة نفسها.'}),mine());
+{const S=almost();tap(S,36,'far');still(fig('g7',{id:'s3-375-complete',size:'s375',title:'24 · الاكتمال على 375×667',cap:'إن ضاق الرأس قُصر السطر إلى «اكتملت · 19 يوماً»، والعنوان يسمّي المسار.'}),S);}
+still(fig('g7',{id:'s3-375-archive',size:'s375',title:'25 · النزول على 375×667',cap:''}),mine({open:'far'}));
+still(fig('g7',{id:'s3-440-fold',size:'s440',title:'26 · 440×956',cap:''}),mine());
+{const all=[...Array(60)].map((_,i)=>i+1);
+ still(fig('g7',{id:'s3-stress-60',title:'27 · البعيد بستين حزباً',cap:'«203 من 240»: موضع التوقّف الربع 4 من ح 36، تخطّاه المالك وتلا كثيراً مما بعده. والنزول إليه مباشرة، والعدد بثلاثة أرقام يتّسع في الرأس.'}),
+   make({far:all,open:'far',cycle:{far:25},agesOf:r=>r<=143?[0,4,11,19,2,7,15,22][r%8]:r===144?40:r<=160?[3,9,30,null][r%4]:[0,4,11,19,35,null,2,70][(r*5+Math.floor(r/9))%8]}));}
+
+setTimeout(fitAll,60);fitAll();
+G('bGray').onclick=e=>{document.querySelectorAll('.phone').forEach(p=>p.classList.toggle('gray'));e.target.classList.toggle('on');};
+G('bDark').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>p.classList.toggle('wd'));e.target.classList.toggle('on');};
+G('bOrn').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>p.classList.toggle('plain'));e.target.classList.toggle('on');};
+if(location.hash.includes('gray'))G('bGray').click();
+if(location.hash.includes('dark'))G('bDark').click();
+</script>
+</body>
+</html>
