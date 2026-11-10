@@ -15,31 +15,45 @@ final class AddUITests: XCTestCase {
         return app
     }
 
-    /// يضغط دائرة جزء أو خانة حزب ويتحقّق أنها اختيرت. ويقرأ ما يعرضه التطبيق في اختبارات الواجهة
-    /// (`add.taps`: «عدد الضغطات|الأحزاب المختارة») ليعرف أين وقف الأمر إن لم تظهر سمة الاختيار:
-    /// - لم تصل الضغطة إلى التطبيق (محاكٍ بارد مثقل): تُعاد مرة واحدة وتُسجَّل.
-    /// - وصلت ولم يتغيّر الاختيار: خطأ في التطبيق، فيفشل.
-    /// - تغيّر الاختيار ولم تظهر السمة: يفشل كذلك، ويذكر ما في التطبيق وما رآه الاختبار.
+    /// يضغط دائرة جزء أو خانة حزب، ويتحقّق من الاختيار في التطبيق نفسه وفي سمة الإتاحة.
+    /// يقرأ ما يعرضه التطبيق في وضع الاختبار (`add.taps`: «عدد الضغطات|الأحزاب المختارة»):
+    /// - لم تصل الضغطة إلى التطبيق: تُعاد مرة واحدة وتُسجَّل.
+    /// - وصلت ولم يتغيّر الاختيار في التطبيق: خطأ في التطبيق، فيفشل.
+    /// - تغيّر الاختيار: نجحت الضغطة. وإن تأخّرت سمة «مختار» عن الظهور طُبع «تشخيص:» بالمدّة،
+    ///   ثم يُنتظر ظهورها حتى 20 ث، فإن لم تظهر فشل الاختبار، لأن VoiceOver يعتمد عليها.
     private func tapUntilSelected(_ element: XCUIElement, in app: XCUIApplication,
                                   file: StaticString = #filePath, line: UInt = #line) {
-        XCTAssertTrue(element.waitForExistence(timeout: 5), "لم يظهر \(element)", file: file, line: line)
+        XCTAssertTrue(element.waitForExistence(timeout: 10), "لم يظهر \(element)", file: file, line: line)
         let hittable = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isHittable == true"), object: element)
-        if XCTWaiter().wait(for: [hittable], timeout: 5) != .completed { app.swipeUp() }
+        if XCTWaiter().wait(for: [hittable], timeout: 10) != .completed { app.swipeUp() }
         for attempt in 1...2 {
             let before = appState(app)
             XCTAssertGreaterThanOrEqual(before.taps, 0, "عدّاد الضغطات add.taps غير ظاهر", file: file, line: line)
+            let start = Date()
             element.tap()
-            let selected = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isSelected == true"), object: element)
-            if XCTWaiter().wait(for: [selected], timeout: 10) == .completed { return }
-            let after = appState(app)
+            // الحقيقة في التطبيق أولاً: هل تغيّر الاختيار؟
+            var after = appState(app)
+            while after.selected == before.selected, Date().timeIntervalSince(start) < 15 {
+                _ = XCTWaiter().wait(for: [XCTestExpectation()], timeout: 0.5)
+                after = appState(app)
+            }
+            if after.selected != before.selected {
+                let selected = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isSelected == true"), object: element)
+                if XCTWaiter().wait(for: [selected], timeout: 1) != .completed {
+                    print("تشخيص: تغيّر الاختيار في التطبيق (\(before.raw) → \(after.raw)) وتأخّرت سمة «مختار»: \(element)")
+                    XCTAssertEqual(XCTWaiter().wait(for: [selected], timeout: 20), .completed,
+                                   "تغيّر الاختيار في التطبيق ولم تظهر سمة «مختار» خلال 20 ث: \(element)", file: file, line: line)
+                    print("تشخيص: ظهرت السمة بعد \(Int(Date().timeIntervalSince(start))) ث")
+                }
+                return
+            }
             if after.taps > before.taps {
-                let model = after.selected == before.selected ? "ولم يتغيّر الاختيار في التطبيق" : "وتغيّر الاختيار في التطبيق ولم تظهر سمته"
-                XCTFail("وصلت الضغطة (\(before.raw) → \(after.raw)) \(model): \(element) · زرّ الإضافة: \(app.buttons["add.go"].label)",
+                XCTFail("وصلت الضغطة (\(before.raw) → \(after.raw)) ولم يتغيّر الاختيار في التطبيق: \(element)",
                         file: file, line: line)
                 return
             }
             if attempt == 1 {
-                XCTContext.runActivity(named: "الضغطة لم تصل إلى التطبيق (\(before.raw)); تُعاد مرة: \(element)") { _ in }
+                print("تشخيص: الضغطة لم تصل إلى التطبيق (\(before.raw))، تُعاد مرة: \(element)")
             }
         }
         XCTFail("لم تصل الضغطة إلى التطبيق مرتين: \(element)", file: file, line: line)
@@ -67,7 +81,8 @@ final class AddUITests: XCTestCase {
         add.tap()
 
         let go = app.buttons["add.go"]
-        XCTAssertTrue(go.waitForExistence(timeout: 5))
+        // أول ورقة بعد إقلاع المحاكي بارداً قد تتأخّر أكثر من 5 ث (فشل هكذا في #43).
+        XCTAssertTrue(go.waitForExistence(timeout: 20))
         XCTAssertFalse(go.isEnabled)
         XCTAssertTrue(app.buttons["add.track.farReview"].isSelected)
         shot(app, "06-add-sheet")

@@ -87,7 +87,7 @@ jobs:
               -derivedDataPath build/dd \
               -resultBundlePath "$rb" \
               ${only:+-only-testing:$only} \
-              CODE_SIGNING_ALLOWED=NO | grep -E "Test Case .*(passed|failed)|error:|\*\* TEST"
+              CODE_SIGNING_ALLOWED=NO | grep -E "Test Case .*(passed|failed)|error:|\*\* TEST|تشخيص:"
             rm -rf "build/x-$key-$look"
             xcrun xcresulttool export attachments --path "$rb" --output-path "build/x-$key-$look"
             python3 scripts/collect-shots.py "build/x-$key-$look" site/screens "$key" "$look"
