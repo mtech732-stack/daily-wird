@@ -12,8 +12,8 @@ enum Shading {
     enum TapResult: Equatable, Sendable {
         /// سُجّل تظليل جديد بتاريخه ووقته.
         case shaded
-        /// الربع مظلّل اليوم أصلاً، فلم يُسجَّل شيء. (والتراجع في المرحلة التالية.)
-        case alreadyReadToday
+        /// الربع مظلّل اليوم، فحُذف تظليل اليوم وحده وعاد الربع إلى عمره السابق (التراجع).
+        case undone
     }
 
     /// هل التاريخان في اليوم نفسه بتوقيت الجهاز (من منتصف الليل إلى منتصف الليل).
@@ -26,15 +26,20 @@ enum Shading {
         Set(readings.filter { sameDay($0.readAt, now, calendar: calendar) }.map(\.quarter))
     }
 
-    /// ضغطة على ربع (5.3): إن لم يُظلَّل اليوم سُجّل تظليله بتاريخه ووقته، وإلا فلا تظليل ثانٍ.
+    /// ضغطة على ربع (5.3): إن لم يُظلَّل اليوم سُجّل تظليله بتاريخه ووقته. وإن ظُلّل اليوم فهي تراجع:
+    /// يُحذف تظليل اليوم وحده، ويبقى ما قبله من السجلّ، فلا يُظلَّل الربع مرتين في يوم أبداً.
     @discardableResult
     static func tap(quarter: Int, track: Track?, in context: ModelContext,
                     now: Date, calendar: Calendar = WirdDate.calendar()) throws -> TapResult {
         precondition((1...Quran.quarterCount).contains(quarter), "رقم الربع 1–240")
         let q = quarter
         let readings = try context.fetch(FetchDescriptor<QuarterReading>(predicate: #Predicate<QuarterReading> { $0.quarter == q }))
-        if readings.contains(where: { sameDay($0.readAt, now, calendar: calendar) }) {
-            return .alreadyReadToday
+        let today = readings.filter { sameDay($0.readAt, now, calendar: calendar) }
+        if !today.isEmpty {
+            // كل تظليل اليوم (وقد تأتي المزامنة بأكثر من صفّ من جهازين)، ولا شيء قبله.
+            for reading in today { context.delete(reading) }
+            try context.save()
+            return .undone
         }
         context.insert(QuarterReading(quarter: quarter, readAt: now, track: track))
         try context.save()
