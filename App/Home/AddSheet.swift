@@ -9,6 +9,10 @@ extension Track: Identifiable {
 struct AddSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var selection: AddSelection
+    /// عدد الضغطات التي وصلت إلى دوائر الأجزاء وخانات الأحزاب. لا يُعرض إلا في اختبارات الواجهة،
+    /// ليفرّق الاختبار بين ضغطة لم تصل إلى التطبيق وضغطة وصلت ولم يتغيّر بها الاختيار.
+    @State private var receivedTaps = 0
+    private static let isUITesting = ProcessInfo.processInfo.arguments.contains("-ui-testing")
     let onAdd: (_ hizbs: [Int], _ track: Track) -> Void
 
     init(track: Track, trackOf: [Int: Track], onAdd: @escaping (_ hizbs: [Int], _ track: Track) -> Void) {
@@ -22,7 +26,7 @@ struct AddSheet: View {
             ScrollView {
                 LazyVStack(spacing: 0) {
                     ForEach(1...Quran.juzCount, id: \.self) { juz in
-                        JuzRow(juz: juz, selection: $selection)
+                        JuzRow(juz: juz, selection: $selection) { receivedTaps += 1 }
                         Rectangle().fill(Theme.line).frame(height: 1)
                     }
                 }
@@ -31,6 +35,16 @@ struct AddSheet: View {
             .scrollIndicators(.hidden)
             .accessibilityIdentifier("add.list")
             bottomBar
+        }
+        .overlay(alignment: .topLeading) {
+            if Self.isUITesting {
+                Color.clear
+                    .frame(width: 1, height: 1)
+                    .accessibilityElement()
+                    .accessibilityIdentifier("add.taps")
+                    .accessibilityValue(Text(verbatim: String(receivedTaps)))
+                    .allowsHitTesting(false)
+            }
         }
         .background(Theme.paper)
         .environment(\.layoutDirection, .rightToLeft)
@@ -133,13 +147,14 @@ private struct TrackSegments: View {
 private struct JuzRow: View {
     let juz: Int
     @Binding var selection: AddSelection
+    var noteTap: () -> Void = {}
 
     var body: some View {
         let hizbs = Quran.hizbs(ofJuz: juz)
         let can = !selection.pickable(inJuz: juz).isEmpty
         let full = selection.isJuzSelected(juz)
         HStack(spacing: 8) {
-            Button { selection.toggleJuz(juz) } label: {
+            Button { noteTap(); selection.toggleJuz(juz) } label: {
                 HStack(spacing: 8) {
                     ZStack {
                         Circle()
@@ -174,6 +189,7 @@ private struct JuzRow: View {
 
             ForEach(hizbs, id: \.self) { hizb in
                 HizbChip(hizb: hizb, state: selection.state(of: hizb), pickable: selection.isPickable(hizb)) {
+                    noteTap()
                     selection.toggle(hizb)
                 }
             }
