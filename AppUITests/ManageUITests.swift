@@ -24,7 +24,7 @@ final class ManageUITests: XCTestCase {
         add(shot)
     }
 
-    private func wait(_ element: XCUIElement, _ format: String, _ args: [Any] = [], timeout: TimeInterval = 15) -> Bool {
+    private func wait(_ element: XCUIElement, _ format: String, _ args: [Any] = [], timeout: TimeInterval = 20) -> Bool {
         let e = XCTNSPredicateExpectation(predicate: NSPredicate(format: format, argumentArray: args), object: element)
         return XCTWaiter().wait(for: [e], timeout: timeout) == .completed
     }
@@ -36,7 +36,7 @@ final class ManageUITests: XCTestCase {
     }
 
     private func tapSelecting(_ element: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
-        XCTAssertTrue(element.waitForExistence(timeout: 15), "لم يظهر \(element)", file: file, line: line)
+        XCTAssertTrue(element.waitForExistence(timeout: 20), "لم يظهر \(element)", file: file, line: line)
         XCTAssertTrue(wait(element, "isHittable == true"), "لا يُضغط \(element)", file: file, line: line)
         element.tap()
         XCTAssertTrue(wait(element, "isSelected == true", timeout: 20), "لم يُختر \(element)", file: file, line: line)
@@ -52,7 +52,7 @@ final class ManageUITests: XCTestCase {
         XCTAssertTrue(app.otherElements["track.\(track).folded"].waitForExistence(timeout: 20))
         app.buttons["track.\(track).more"].tap()
         let button = app.buttons[item]
-        XCTAssertTrue(button.waitForExistence(timeout: 10), "لم يظهر «\(item)» في «⋯»")
+        XCTAssertTrue(button.waitForExistence(timeout: 20), "لم يظهر «\(item)» في «⋯»")
         button.tap()
     }
 
@@ -67,11 +67,11 @@ final class ManageUITests: XCTestCase {
         XCTAssertTrue(wait(label, "isHittable == true"), "لا يُضغط ح \(hizb)", file: file, line: line)
         let entry = app.buttons[item]
         label.press(forDuration: 1.0)
-        if entry.waitForExistence(timeout: 15) { return entry }
+        if entry.waitForExistence(timeout: 20) { return entry }
         print("تشخيص: لم تظهر قائمة ح \(hizb) بعد الضغط المطوّل، يُعاد مرة")
         if label.isHittable {
             label.press(forDuration: 1.0)
-            if entry.waitForExistence(timeout: 15) { return entry }
+            if entry.waitForExistence(timeout: 20) { return entry }
         }
         // سجلّ CI لا يُظهر إلا الأسطر التي تبدأ بـ«تشخيص:»، فيُطبع كل سطر بها.
         for row in app.debugDescription.split(separator: "\n") where row.contains("label:") {
@@ -124,7 +124,7 @@ final class ManageUITests: XCTestCase {
 
         XCTAssertTrue(app.staticTexts["toast"].waitForExistence(timeout: 20))
         expectLabel(app.staticTexts["toast"], "أُزيل حزبان · سجلّهما محفوظ")
-        XCTAssertTrue(app.otherElements["track.nearReview.empty"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.otherElements["track.nearReview.empty"].waitForExistence(timeout: 20))
         expectLabel(app.staticTexts["track.farReview.progress"], "0 من 36")
         shot(app, "20-removed")
     }
@@ -134,7 +134,7 @@ final class ManageUITests: XCTestCase {
         let app = launch()
         menu(app, "farReview", "نقل")
         expectLabel(app.staticTexts["manage.title"], "نقل من مراجعة البعيد")
-        XCTAssertTrue(app.otherElements["manage.target"].waitForExistence(timeout: 10)
+        XCTAssertTrue(app.otherElements["manage.target"].waitForExistence(timeout: 20)
                       || app.staticTexts["manage.target"].exists)
         tapSelecting(app.buttons["manage.hizb.9"])
         expectLabel(app.buttons["manage.go"], "انقل الحزب 9 إلى مراجعة القريب")

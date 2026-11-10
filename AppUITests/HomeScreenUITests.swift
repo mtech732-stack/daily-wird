@@ -33,7 +33,7 @@ final class HomeScreenUITests: XCTestCase {
         let app = launch()
 
         let title = app.staticTexts["home.title"]
-        XCTAssertTrue(title.waitForExistence(timeout: 10))
+        XCTAssertTrue(title.waitForExistence(timeout: 20))
         XCTAssertEqual(title.label, "الورد اليومي")
         let date = app.staticTexts["home.date"]
         XCTAssertTrue(date.exists)
@@ -60,9 +60,9 @@ final class HomeScreenUITests: XCTestCase {
     func test_7_1_1_emptyTrackMenuHasAddOnly() {
         let app = launch()
         let more = app.buttons["track.nearReview.more"]
-        XCTAssertTrue(more.waitForExistence(timeout: 10))
+        XCTAssertTrue(more.waitForExistence(timeout: 20))
         more.tap()
-        XCTAssertTrue(app.buttons["إضافة"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["إضافة"].waitForExistence(timeout: 20))
         XCTAssertFalse(app.buttons["نقل"].exists)
         XCTAssertFalse(app.buttons["إزالة"].exists)
         shot(app, "02-empty-menu")
@@ -74,7 +74,7 @@ final class HomeScreenUITests: XCTestCase {
         let app = launch(seed: Self.sampleSeed)
 
         let farProgress = app.staticTexts["track.farReview.progress"]
-        XCTAssertTrue(farProgress.waitForExistence(timeout: 10))
+        XCTAssertTrue(farProgress.waitForExistence(timeout: 20))
         XCTAssertEqual(farProgress.label, "0 من 36")
         XCTAssertEqual(app.staticTexts["track.nearReview.progress"].label, "0 من 8")
 
@@ -95,11 +95,11 @@ final class HomeScreenUITests: XCTestCase {
         let app = launch(seed: Self.sampleSeed)
 
         let farPull = app.buttons["track.farReview.pull"]
-        XCTAssertTrue(farPull.waitForExistence(timeout: 10))
+        XCTAssertTrue(farPull.waitForExistence(timeout: 20))
         farPull.tap()
 
         let farArchive = app.otherElements["track.farReview.archive"]
-        XCTAssertTrue(farArchive.waitForExistence(timeout: 5))
+        XCTAssertTrue(farArchive.waitForExistence(timeout: 20))
         // الأرشيف فيه الأحزاب كلها، لا حزب موضع التوقّف وحده.
         XCTAssertTrue(app.otherElements["quarter.farReview.5"].exists)
         XCTAssertEqual(app.buttons["track.farReview.pull"].label, "طيّ")
@@ -108,9 +108,9 @@ final class HomeScreenUITests: XCTestCase {
         // فتح القريب يطوي البعيد.
         app.swipeUp()
         let nearPull = app.buttons["track.nearReview.pull"]
-        XCTAssertTrue(nearPull.waitForExistence(timeout: 5))
+        XCTAssertTrue(nearPull.waitForExistence(timeout: 20))
         nearPull.tap()
-        XCTAssertTrue(app.otherElements["track.nearReview.archive"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.otherElements["track.nearReview.archive"].waitForExistence(timeout: 20))
         XCTAssertFalse(app.otherElements["track.farReview.archive"].exists)
         // م23: الأرشيف القصير شريطه «طيّ» في أسفل بطاقته، فلا شريط ملتصق بأسفل الشاشة.
         XCTAssertTrue(app.buttons["track.nearReview.pull"].isHittable)
@@ -119,7 +119,7 @@ final class HomeScreenUITests: XCTestCase {
 
         // «طيّ» يعيده مطويّاً.
         app.buttons["track.nearReview.pull"].tap()
-        XCTAssertTrue(app.otherElements["track.nearReview.folded"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.otherElements["track.nearReview.folded"].waitForExistence(timeout: 20))
         XCTAssertFalse(app.otherElements["track.nearReview.archive"].exists)
     }
 
@@ -127,13 +127,13 @@ final class HomeScreenUITests: XCTestCase {
     func test_7_1_relaunchOpensFolded() {
         var app = launch(seed: Self.sampleSeed)
         let farPull = app.buttons["track.farReview.pull"]
-        XCTAssertTrue(farPull.waitForExistence(timeout: 10))
+        XCTAssertTrue(farPull.waitForExistence(timeout: 20))
         farPull.tap()
-        XCTAssertTrue(app.otherElements["track.farReview.archive"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.otherElements["track.farReview.archive"].waitForExistence(timeout: 20))
         app.terminate()
 
         app = launch(seed: Self.sampleSeed)
-        XCTAssertTrue(app.otherElements["track.farReview.folded"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.otherElements["track.farReview.folded"].waitForExistence(timeout: 20))
         XCTAssertFalse(app.otherElements["track.farReview.archive"].exists)
     }
 }
