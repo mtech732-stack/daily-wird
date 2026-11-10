@@ -15,35 +15,40 @@ final class AddUITests: XCTestCase {
         return app
     }
 
-    /// يضغط دائرة جزء أو خانة حزب ويتحقّق أنها اختيرت. ويقرأ عدّاد الضغطات الذي يعرضه التطبيق
-    /// في اختبارات الواجهة (`add.taps`) ليفرّق بين حالتين:
-    /// - وصلت الضغطة ولم يُختر العنصر: خطأ في التطبيق، فيفشل الاختبار.
-    /// - لم تصل الضغطة إلى التطبيق أصلاً (حدث في CI على محاكٍ بارد مثقل): تُعاد مرة واحدة ويُسجَّل ذلك.
+    /// يضغط دائرة جزء أو خانة حزب ويتحقّق أنها اختيرت. ويقرأ ما يعرضه التطبيق في اختبارات الواجهة
+    /// (`add.taps`: «عدد الضغطات|الأحزاب المختارة») ليعرف أين وقف الأمر إن لم تظهر سمة الاختيار:
+    /// - لم تصل الضغطة إلى التطبيق (محاكٍ بارد مثقل): تُعاد مرة واحدة وتُسجَّل.
+    /// - وصلت ولم يتغيّر الاختيار: خطأ في التطبيق، فيفشل.
+    /// - تغيّر الاختيار ولم تظهر السمة: يفشل كذلك، ويذكر ما في التطبيق وما رآه الاختبار.
     private func tapUntilSelected(_ element: XCUIElement, in app: XCUIApplication,
                                   file: StaticString = #filePath, line: UInt = #line) {
         XCTAssertTrue(element.waitForExistence(timeout: 5), "لم يظهر \(element)", file: file, line: line)
         let hittable = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isHittable == true"), object: element)
         if XCTWaiter().wait(for: [hittable], timeout: 5) != .completed { app.swipeUp() }
         for attempt in 1...2 {
-            let before = receivedTaps(app)
-            XCTAssertGreaterThanOrEqual(before, 0, "عدّاد الضغطات add.taps غير ظاهر", file: file, line: line)
+            let before = appState(app)
+            XCTAssertGreaterThanOrEqual(before.taps, 0, "عدّاد الضغطات add.taps غير ظاهر", file: file, line: line)
             element.tap()
             let selected = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isSelected == true"), object: element)
-            if XCTWaiter().wait(for: [selected], timeout: 5) == .completed { return }
-            let after = receivedTaps(app)
-            if after > before {
-                XCTFail("وصلت الضغطة إلى التطبيق (\(before) → \(after)) ولم يُختر: \(element)", file: file, line: line)
+            if XCTWaiter().wait(for: [selected], timeout: 10) == .completed { return }
+            let after = appState(app)
+            if after.taps > before.taps {
+                let model = after.selected == before.selected ? "ولم يتغيّر الاختيار في التطبيق" : "وتغيّر الاختيار في التطبيق ولم تظهر سمته"
+                XCTFail("وصلت الضغطة (\(before.raw) → \(after.raw)) \(model): \(element) · زرّ الإضافة: \(app.buttons["add.go"].label)",
+                        file: file, line: line)
                 return
             }
             if attempt == 1 {
-                XCTContext.runActivity(named: "الضغطة لم تصل إلى التطبيق (\(before)); تُعاد مرة: \(element)") { _ in }
+                XCTContext.runActivity(named: "الضغطة لم تصل إلى التطبيق (\(before.raw)); تُعاد مرة: \(element)") { _ in }
             }
         }
         XCTFail("لم تصل الضغطة إلى التطبيق مرتين: \(element)", file: file, line: line)
     }
 
-    private func receivedTaps(_ app: XCUIApplication) -> Int {
-        Int(app.otherElements["add.taps"].value as? String ?? "") ?? -1
+    private func appState(_ app: XCUIApplication) -> (taps: Int, selected: String, raw: String) {
+        let raw = app.otherElements["add.taps"].value as? String ?? ""
+        let parts = raw.split(separator: "|", omittingEmptySubsequences: false)
+        return (Int(parts.first ?? "") ?? -1, parts.count > 1 ? String(parts[1]) : "", raw)
     }
 
     private func shot(_ app: XCUIApplication, _ name: String) {
