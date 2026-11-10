@@ -281,4 +281,26 @@ final class ShadingUITests: XCTestCase {
         XCTAssertTrue(detailsRow("مرات التلاوة", app).label.hasSuffix("3"), "التراجع أعاد العدد")
         closeDetails(app)
     }
+
+    /// §13.6، §13.5: السحب الذي يبدأ فوق ربع يمرّر الشاشة، ولا يظلّل الربع ولا يفتح تفاصيله؛
+    /// فالأرباع تغطّي معظم الأرشيف، والمالك يمرّر فوقها كل صباح (سؤال المدقّق على #69).
+    func test_7_1_swipeStartingOnQuarterScrolls() {
+        let app = launch(seed: "farReview:1-9")
+        open("farReview", app)
+        let q5 = app.buttons["quarter.farReview.5"]
+        XCTAssertTrue(q5.waitForExistence(timeout: 20))
+        let before = q5.frame.minY
+
+        q5.swipeUp()
+        XCTAssertLessThan(q5.frame.minY, before - 100, "مرّت الشاشة")
+        XCTAssertEqual(q5.value as? String, "لم يُتلَ", "السحب لا يظلّل")
+        XCTAssertFalse(app.descendants(matching: .any)["details.title"].exists, "السحب لا يفتح التفاصيل")
+
+        let q9 = app.buttons["quarter.farReview.9"]
+        let mid = q9.frame.minY
+        q9.swipeDown()
+        XCTAssertGreaterThan(q9.frame.minY, mid + 100, "ومرّت إلى الأسفل")
+        XCTAssertEqual(q9.value as? String, "لم يُتلَ")
+        XCTAssertFalse(app.descendants(matching: .any)["details.title"].exists)
+    }
 }
