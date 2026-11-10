@@ -26,9 +26,45 @@ env:
   DEVICE_SMALL: iPhone 17e
 
 jobs:
+  # طلب يغيّر المستندات وحدها (docs/ و design/ وملفات .md) لا يمسّ التطبيق، فلا تُشغَّل له
+  # اختبارات الشاشات (اعتمده المالك 10 نوفمبر 08:37). ويبقى فحص «test» ظاهراً بحالة «تُخطّي»،
+  # وهي تُحسب ناجحة فلا يتعطّل الدمج. والدمج في main يشغّل كل شيء دائماً.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.diff.outputs.app }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - id: diff
+        name: هل يمسّ الطلب التطبيق؟
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" != "pull_request" ]; then echo "app=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          files=$(git diff --name-only "$BASE...$HEAD")
+          echo "$files"
+          # يكفي ملف واحد خارج المستندات ليُعدّ الطلب ماسّاً للتطبيق.
+          if printf '%s\n' "$files" | grep -qvE '^(docs/|design/)|\.md$'; then app=true; else app=false; fi
+          echo "يمسّ التطبيق: $app"
+          echo "app=$app" >> "$GITHUB_OUTPUT"
+
+  docs-only:
+    needs: changes
+    if: needs.changes.outputs.app != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "طلب مستندات وحدها، فلا اختبارات للشاشات."
+
   test:
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
     runs-on: macos-26
-    timeout-minutes: 40
+    timeout-minutes: 45
     permissions:
       contents: write # لرفع لقطات طلب الدمج إلى فرع previews وحده (القرار 11)
     steps:
@@ -92,10 +128,34 @@ jobs:
             xcrun xcresulttool export attachments --path "$rb" --output-path "build/x-$key-$look"
             python3 scripts/collect-shots.py "build/x-$key-$look" site/screens "$key" "$look"
           }
+          # تهيئة المحاكي قبل اختباراته (اعتمده المالك 10 نوفمبر 08:37): أول تشغيل بعد إقلاع بارد
+          # كان أبطأ بمرّتين، فتتأخّر فيه الورقة وسمات الإتاحة عن مهل الاختبار (#38، #40، #42، #45).
+          # فيُقلع المحاكي، ويُثبَّت التطبيق ويُشغَّل مرة، ثم يجري اختبار واجهة قصير لتهيئة أداة الاختبار.
+          # نتيجة التهيئة لا تُحتسب؛ والاختبار نفسه يجري ثانية في الجولة الحقيقية ويُحتسب فيها.
+          warm() { # $1 udid
+            local udid=$1 app
+            xcrun simctl boot "$udid" 2>/dev/null || true
+            xcrun simctl bootstatus "$udid" -b
+            app=$(ls -d build/dd/Build/Products/*-iphonesimulator/DailyWird.app | head -n 1)
+            xcrun simctl install "$udid" "$app"
+            bundle=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist")
+            xcrun simctl launch "$udid" "$bundle" -ui-testing || true
+            sleep 20
+            xcrun simctl terminate "$udid" "$bundle" || true
+            xcodebuild test-without-building \
+              -project DailyWird.xcodeproj -scheme DailyWird \
+              -destination "id=$udid" \
+              -derivedDataPath build/dd \
+              -only-testing:DailyWirdUITests/HomeScreenUITests/test_7_1_firstLaunchShowsThreeEmptyTracks \
+              CODE_SIGNING_ALLOWED=NO > "build/warm-$udid.log" 2>&1 || echo "تهيئة: لم ينجح الاختبار التمهيدي (لا يُحتسب)"
+            echo "تهيئة $udid انتهت"
+          }
           # الجولة الأولى تشغّل كل الاختبارات (الوحدة والواجهة)، والبقية الواجهة وحدها للّقطات.
+          warm "$UDID_LARGE"
           run large "$UDID_LARGE" light
           run large "$UDID_LARGE" dark  DailyWirdUITests
           xcrun simctl shutdown "$UDID_LARGE" || true
+          warm "$UDID_SMALL"
           run small "$UDID_SMALL" light DailyWirdUITests
           run small "$UDID_SMALL" dark  DailyWirdUITests
 
@@ -170,7 +230,7 @@ jobs:
           path: site
 
   deploy:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && needs.test.result == 'success'
     needs: test
     runs-on: ubuntu-latest
     permissions:
