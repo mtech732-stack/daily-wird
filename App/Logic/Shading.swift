@@ -61,6 +61,8 @@ struct ShadingState {
     var levels: [Int: AgeLevel] = [:]
     /// ضغطة على ربع في مسار.
     var tap: @MainActor (_ quarter: Int, _ track: Track) -> Void = { _, _ in }
+    /// ضغطة مطوّلة: تفاصيل الربع (7.3، §13.5). ولا تظلّل شيئاً.
+    var details: @MainActor (_ quarter: Int, _ track: Track, _ isShared: Bool) -> Void = { _, _, _ in }
 
     func isToday(_ quarter: Int) -> Bool { today.contains(quarter) }
     func level(_ quarter: Int) -> AgeLevel { levels[quarter] ?? .empty }

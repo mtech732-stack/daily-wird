@@ -32,6 +32,9 @@ struct HomeView: View {
 
     /// المسار المفتوح أرشيفه. لا يُحفظ، فيفتح التطبيق دائماً مطويّاً (7.1).
     @State private var openTrack: Track?
+    /// تفاصيل الربع المفتوحة بالضغط المطوّل (7.3).
+    @State private var details: QuarterDetailsRequest?
+
     /// ارتفاع الرأس والبطاقات، لإظهار إشارة المفاتيح إن بقي لها مكان (§13.6).
     @State private var cardsHeight: CGFloat = 0
     private static let topPadding: CGFloat = 4
@@ -148,6 +151,15 @@ struct HomeView: View {
         }
         .animation(.easeOut(duration: 0.15), value: hizbMenu)
         .animation(.easeOut(duration: 0.2), value: toast)
+        .sheet(item: $details) { request in
+            let state = shading
+            QuarterDetailsSheet(request: request,
+                                history: QuarterDetails.history(request.quarter, readings: readings),
+                                level: state.level(request.quarter), isToday: state.isToday(request.quarter),
+                                now: now) {
+                shade(request.quarter, in: request.track)
+            }
+        }
         .sheet(item: $addTrack) { track in
             AddSheet(track: track, trackOf: Library.trackOfHizb(from: placements)) { hizbs, target, moving in
                 add(hizbs, to: target, moving: moving)
@@ -279,6 +291,8 @@ struct HomeView: View {
     private var shading: ShadingState {
         ShadingState(today: Shading.readToday(readings, now: now), levels: Age.levels(readings, now: now)) { quarter, track in
             shade(quarter, in: track)
+        } details: { quarter, track, isShared in
+            details = QuarterDetailsRequest(quarter: quarter, track: track, isShared: isShared)
         }
     }
 

@@ -32,6 +32,14 @@ enum WirdDate {
         return formatter.string(from: date)
     }
 
+    /// تاريخ قصير لكبسولات «آخر التواريخ» (§13.5): «6 نوفمبر»، والسنة إن خالفت سنة اليوم.
+    static func short(_ date: Date, now: Date, timeZone: TimeZone = .current) -> String {
+        let cal = calendar(timeZone: timeZone)
+        let formatter = formatter(timeZone: timeZone)
+        formatter.dateFormat = cal.component(.year, from: date) == cal.component(.year, from: now) ? "d MMMM" : "d MMMM y"
+        return formatter.string(from: date)
+    }
+
     /// الوقت بنظام 12 ساعة: «5:34 ص» و«9:40 م».
     static func time(_ date: Date, timeZone: TimeZone = .current) -> String {
         let formatter = formatter(timeZone: timeZone)

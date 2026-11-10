@@ -211,4 +211,112 @@ final class ShadingUITests: XCTestCase {
         }
         shot(app, "28-keys")
     }
+
+    /// يقرأ سطر التفاصيل الذي يبدأ بعنوانه («مرات التلاوة»…).
+    private func detailsRow(_ title: String, _ app: XCUIApplication) -> XCUIElement {
+        app.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH %@", title)).firstMatch
+    }
+
+    private func openDetails(_ tile: XCUIElement, _ app: XCUIApplication, title: String,
+                             file: StaticString = #filePath, line: UInt = #line) {
+        // كما في قائمة الحزب (ManageUITests): المحاكي البطيء قد لا يعدّ ضغطة 0.7 ث مطوّلة، فثانية كاملة،
+        // ومرة ثانية إن لم تُفتح، ثم تشخيص في السجلّ.
+        let header = app.descendants(matching: .any)["details.title"]
+        tile.press(forDuration: 1.0)
+        if !header.waitForExistence(timeout: 10) {
+            print("تشخيص: لم تُفتح التفاصيل بعد الضغط المطوّل على \(tile.identifier) (القيمة \(tile.value ?? "")), يُعاد مرة")
+            if tile.exists { tile.press(forDuration: 1.5) }
+        }
+        if !header.waitForExistence(timeout: 15) {
+            for row in app.debugDescription.split(separator: "\n") where row.contains("identifier:") || row.contains("Sheet") {
+                print("تشخيص: \(row)")
+            }
+        }
+        XCTAssertTrue(header.exists, "فُتحت التفاصيل", file: file, line: line)
+        XCTAssertEqual(header.label, title, file: file, line: line)
+    }
+
+    private func closeDetails(_ app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        // الضغط خارج الورقة يغلقها (§13.5).
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.08)).tap()
+        let header = app.descendants(matching: .any)["details.title"]
+        let gone = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: header)
+        XCTAssertEqual(XCTWaiter().wait(for: [gone], timeout: 20), .completed, "أُغلقت التفاصيل", file: file, line: line)
+    }
+
+    /// 7.3، §13.5: الضغطة المطوّلة تفتح التفاصيل ولا تظلّل شيئاً (سيناريو المعاين 6)؛ وفيها المدى والسور والأوجه
+    /// وآخر تلاوة ومرات التلاوة وآخر التواريخ. وبعد تظليل اليوم: كبسولة «اليوم» أولاً، والعدد زاد واحداً،
+    /// وزرّ «تراجع عن تظليل اليوم» يتراجع ويغلق الورقة (سيناريوا المعاين 2 و5 في الصفحة).
+    func test_7_3_detailsByLongPress() {
+        let app = launch(seed: "farReview:1-9", readings: "1:3@05:34,1:20,1:40", now: "2026-11-09T07:00:00")
+        let q2 = app.buttons["quarter.farReview.2"]
+        XCTAssertTrue(q2.waitForExistence(timeout: 20))
+
+        // سيناريو المعاين 2: ظُلّل ثم تراجع، فالتفاصيل «مرات التلاوة 0».
+        q2.tap()
+        expectValue(q2, "تلوته اليوم")
+        q2.tap()
+        expectValue(q2, "لم يُتلَ")
+        openDetails(q2, app, title: "الحزب 1 · الربع 2")
+        XCTAssertTrue(detailsRow("مرات التلاوة", app).label.hasSuffix("0"), detailsRow("مرات التلاوة", app).label)
+        XCTAssertTrue(detailsRow("آخر تلاوة", app).label.contains("لم يُتلَ بعد"))
+        XCTAssertTrue(detailsRow("آخر التواريخ", app).label.contains("لا تواريخ بعد"))
+        closeDetails(app)
+        XCTAssertEqual(q2.value as? String, "لم يُتلَ", "الضغطة المطوّلة لا تظلّل")
+
+        let q1 = app.buttons["quarter.farReview.1"]
+        openDetails(q1, app, title: "الحزب 1 · الربع 1")
+        XCTAssertTrue(detailsRow("المدى", app).label.contains("من الفاتحة 1 إلى البقرة 25"))
+        XCTAssertTrue(detailsRow("السور", app).label.contains("الفاتحة · البقرة"))
+        XCTAssertTrue(detailsRow("الأوجه", app).label.contains("1 · 2 · 3 · 4 · 5"))
+        XCTAssertTrue(detailsRow("آخر تلاوة", app).label.contains("قبل 3 أيام"))
+        XCTAssertTrue(detailsRow("مرات التلاوة", app).label.hasSuffix("3"))
+        XCTAssertFalse(app.buttons["details.undo"].exists, "لا تراجع لربع لم يُظلَّل اليوم")
+        shot(app, "29-details")
+        closeDetails(app)
+
+        q1.tap()
+        expectValue(q1, "تلوته اليوم")
+        openDetails(q1, app, title: "الحزب 1 · الربع 1")
+        XCTAssertTrue(detailsRow("مرات التلاوة", app).label.hasSuffix("4"))
+        XCTAssertTrue(detailsRow("آخر التواريخ", app).label.contains("اليوم"))
+        XCTAssertTrue(detailsRow("آخر تلاوة", app).label.contains("اليوم"))
+        shot(app, "30-details-today")
+        let undo = app.buttons["details.undo"]
+        XCTAssertTrue(undo.exists)
+        undo.tap()
+        let gone = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: undo)
+        XCTAssertEqual(XCTWaiter().wait(for: [gone], timeout: 20), .completed, "التراجع أغلق الورقة")
+        expectValue(q1, "خلال 7 أيام")
+        openDetails(q1, app, title: "الحزب 1 · الربع 1")
+        XCTAssertTrue(detailsRow("مرات التلاوة", app).label.hasSuffix("3"), "التراجع أعاد العدد")
+        closeDetails(app)
+    }
+
+    /// §13.6، §13.5: السحب الذي يبدأ فوق ربع يمرّر الشاشة، ولا يظلّل الربع ولا يفتح تفاصيله؛
+    /// فالأرباع تغطّي معظم الأرشيف، والمالك يمرّر فوقها كل صباح (سؤال المدقّق على #69).
+    func test_7_1_swipeStartingOnQuarterScrolls() {
+        let app = launch(seed: "farReview:1-9")
+        open("farReview", app)
+        let q5 = app.buttons["quarter.farReview.5"]
+        XCTAssertTrue(q5.waitForExistence(timeout: 20))
+        let before = q5.frame.minY
+
+        q5.swipeUp()
+        XCTAssertLessThan(q5.frame.minY, before - 100, "مرّت الشاشة")
+        XCTAssertEqual(q5.value as? String, "لم يُتلَ", "السحب لا يظلّل")
+        XCTAssertFalse(app.descendants(matching: .any)["details.title"].exists, "السحب لا يفتح التفاصيل")
+
+        // ربع ظاهر الآن في وسط الشاشة، يبدأ منه السحب إلى الأسفل.
+        let screen = app.windows.firstMatch.frame
+        // الربع المشترك يظهر في موضعين، فيُؤخذ أول ظهور له.
+        let visible = (1...36).lazy.map { app.buttons.matching(identifier: "quarter.farReview.\($0)").firstMatch }
+            .first { $0.exists && $0.frame.minY > screen.minY + 150 && $0.frame.maxY < screen.maxY - 150 }
+        guard let start = visible else { return XCTFail("لا ربع ظاهر في وسط الشاشة") }
+        let mid = start.frame.minY
+        start.swipeDown()
+        XCTAssertGreaterThan(start.frame.minY, mid + 100, "ومرّت إلى الأسفل")
+        XCTAssertEqual(start.value as? String, "لم يُتلَ")
+        XCTAssertFalse(app.descendants(matching: .any)["details.title"].exists)
+    }
 }
