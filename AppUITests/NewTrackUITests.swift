@@ -181,7 +181,7 @@ final class NewTrackUITests: XCTestCase {
         // عنصراً مستقلّاً (#101، والقسم ظاهر على الشاشة). فيُتحقّق من الأرشيف ومن أوجه الحزب كلها.
         XCTAssertTrue(app.otherElements["track.new.archive"].waitForExistence(timeout: 20), "لم تُفتح البطاقة")
         XCTAssertTrue(page(app, 112).waitForExistence(timeout: 20))
-        expectLabel(page(app, 112), "الوجه 112، محفوظ")
+        expectLabel(page(app, 112), "الوجه 112، محفوظ، مشترك مع الحزب 11")
         expectLabel(page(app, 117), "الوجه 117، لم يُحفظ، موضع التوقّف")
         XCTAssertTrue(page(app, 121).exists)
         shot(app, "48-new-all-pages")
