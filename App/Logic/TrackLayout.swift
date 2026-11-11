@@ -87,6 +87,16 @@ struct ReviewTrackLayout: Equatable, Sendable {
         }
     }
 
+    /// معرّف صفّ أول ظهور لموضع التوقّف في الأرشيف: يُفتح الأرشيف عليه (§14.2، ذ18).
+    var bookmarkRowID: String? {
+        for section in sections {
+            if let row = section.rows.first(where: \.hasBookmark) {
+                return "row.\(track.rawValue).\(section.suras[0]).\(row.hizb)"
+            }
+        }
+        return nil
+    }
+
     /// الأرباع المشتركة في المسار: تظهر في أكثر من قسم (ت8).
     var sharedQuarters: Set<Int> { sections.reduce(into: Set<Int>()) { $0.formUnion($1.shared) } }
 }

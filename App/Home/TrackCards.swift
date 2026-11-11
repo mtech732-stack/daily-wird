@@ -118,6 +118,8 @@ struct CardBackground: ViewModifier {
 
 /// بطاقة مسار مراجعة فيه محفوظ: مطويّة على موضع التوقّف، أو مفتوحة على أرشيفه (7.1).
 struct ReviewTrackCard: View {
+    /// إحداثيات البطاقة، لقياس صفّ موضع التوقّف من أعلاها.
+    static let space = "track.card"
     let layout: ReviewTrackLayout
     let isOpen: Bool
     /// ضيق الصفّ المطويّ (أقل من 330): السورة 13 والمسافات 6 (§6).
@@ -128,6 +130,8 @@ struct ReviewTrackCard: View {
     var shading: ShadingState?
     /// الحزب المعروض في الصفّ المطويّ: حزب موضع التوقّف، أو حزبه السابق في مهلة 0.8 ث (§14.3).
     var displayedHizb: Int?
+    /// بُعد صفّ موضع التوقّف عن أعلى البطاقة عند فتح الأرشيف، للنزول إليه (ذ18).
+    var onBookmarkRow: (CGFloat) -> Void = { _ in }
     let onToggle: () -> Void
     var onAdd: () -> Void = {}
     /// «نقل» و«إزالة» من «⋯» (§12.4).
@@ -141,7 +145,7 @@ struct ReviewTrackCard: View {
                         showsMenu: true, onAdd: onAdd, onManage: onManage, quarterCount: layout.quarters.count)
                 .padding(.horizontal, isOpen ? 8 : 0)
             if isOpen {
-                ArchiveView(layout: layout, menu: hizbMenu, shading: shading)
+                ArchiveView(layout: layout, menu: hizbMenu, shading: shading, onBookmarkRow: onBookmarkRow)
                     .padding(.top, 4)
                 // «طيّ» في أسفل البطاقة؛ ويلتصق بأسفل الشاشة عند التمرير (م23).
                 PullBar(track: layout.track, isOpen: true, action: onToggle)
@@ -172,6 +176,7 @@ struct ReviewTrackCard: View {
         .padding(.horizontal, isOpen ? 8 : 16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .modifier(CardBackground())
+        .coordinateSpace(.named(ReviewTrackCard.space))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("track.\(layout.track.rawValue).card")
     }
@@ -237,12 +242,15 @@ struct ArchiveView: View {
     let layout: ReviewTrackLayout
     var menu: HizbMenu?
     var shading: ShadingState?
+    var onBookmarkRow: (CGFloat) -> Void = { _ in }
 
     var body: some View {
         let bookmark = layout.bookmarkQuarter
+        let anchor = layout.bookmarkRowID
         VStack(alignment: .leading, spacing: 12) {
             ForEach(layout.sections) { section in
-                SuraSectionView(track: layout.track, section: section, bookmark: bookmark, menu: menu, shading: shading)
+                SuraSectionView(track: layout.track, section: section, bookmark: bookmark, menu: menu, shading: shading,
+                                anchorRowID: anchor, onAnchorRow: onBookmarkRow)
             }
         }
         .padding(.top, 4)
@@ -259,6 +267,9 @@ struct SuraSectionView: View {
     let bookmark: Int?
     var menu: HizbMenu?
     var shading: ShadingState?
+    /// صفّ أول ظهور لموضع التوقّف، يُقاس بُعده عن أعلى البطاقة (ذ18).
+    var anchorRowID: String?
+    var onAnchorRow: (CGFloat) -> Void = { _ in }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -282,7 +293,15 @@ struct SuraSectionView: View {
             .padding(.bottom, 6)
 
             ForEach(section.rows) { row in
-                rowView(row)
+                let id = "row.\(track.rawValue).\(section.suras[0]).\(row.hizb)"
+                if id == anchorRowID {
+                    rowView(row)
+                        .onGeometryChange(for: CGFloat.self) { $0.frame(in: .named(ReviewTrackCard.space)).minY } action: {
+                            onAnchorRow($0)
+                        }
+                } else {
+                    rowView(row)
+                }
             }
         }
         .padding(.top, 8)
