@@ -67,6 +67,8 @@ struct HomeView: View {
 
     /// العدّاد (5.7، §16.8): في `UserDefaults` وحده، لا في SwiftData.
     @AppStorage(CounterStore.key) private var count = 0
+    /// يتغيّر مع كل تصفير، لاهتزازه الأوضح (§16.3).
+    @State private var resetToken = 0
     /// ارتفاع «تصفير» فوق الدائرة، لحساب القطر من المكان الباقي (§16.1).
     @State private var resetHeight: CGFloat = 26
     /// الشاشة القصيرة (ذ44): العدّاد صفّ أفقي، وتضيق ثلاث مسافات حتى يُرى كاملاً بلا تمرير.
@@ -115,7 +117,7 @@ struct HomeView: View {
                                 switch counterMode {
                                 case .big:
                                     Spacer(minLength: 8)
-                                    CounterView(mode: counterMode, count: count, onTap: increment)
+                                    CounterView(mode: counterMode, count: count, onTap: increment, onReset: resetCounter)
                                         .padding(.bottom, 4)
                                         .onGeometryChange(for: CGFloat.self) { proxy in
                                             proxy.size.height
@@ -125,7 +127,7 @@ struct HomeView: View {
                                     Spacer(minLength: 0)
                                     KeysHint()
                                 default:
-                                    CounterView(mode: .row, count: count, onTap: increment)
+                                    CounterView(mode: .row, count: count, onTap: increment, onReset: resetCounter)
                                         .padding(.top, 6)
                                         .padding(.bottom, 4)
                                     Spacer(minLength: 0)
@@ -160,7 +162,7 @@ struct HomeView: View {
                 Color.clear
                     .frame(height: barInside)
                     .overlay(alignment: .top) {
-                        CounterView(mode: .bar, count: count, onTap: increment)
+                        CounterView(mode: .bar, count: count, onTap: increment, onReset: resetCounter)
                     }
             }
             }
@@ -170,6 +172,8 @@ struct HomeView: View {
             // اهتزاز خفيف مع كل ضغطة تزيد العدد (5.7، §16.3، ذ41)، ولا شيء غيره ولا صوت.
             // ويتبع إعداد «اللمس» في الجهاز، ولا يُجرَّب على المحاكي.
             .sensoryFeedback(trigger: count, CounterLayout.feedback(from:to:))
+            // وأوضح منه مرة عند إتمام التصفير (ذ41).
+            .sensoryFeedback(.impact(weight: .medium), trigger: resetToken)
         }
         .background(Theme.background.ignoresSafeArea())
         // م18: ما جاءت به المزامنة من صفّين مفتوحين للحزب يُسوّى بإغلاق الأقدم، ولا يُحذف شيء.
@@ -628,6 +632,15 @@ struct HomeView: View {
     private func increment() {
         count += 1
         AccessibilityNotification.Announcement(CounterLayout.text(count)).post()
+    }
+
+    /// التصفير بعد الإمساك 0.8 ث أو بإجراء قارئ الشاشة (§16.4): بلا حوار ولا إشعار ولا تراجع.
+    /// والعدد لا يُصفَّر بغير ذلك: لا بيوم جديد ولا بإغلاق التطبيق.
+    private func resetCounter() {
+        guard count != 0 else { return }
+        count = 0
+        resetToken += 1
+        AccessibilityNotification.Announcement("صُفّر العدّاد").post()
     }
 
     /// حالة العدّاد في الشاشة المطويّة (§16.1، ذ44): القطر ما بقي بين البطاقات والإشارة بعد «تصفير»،
