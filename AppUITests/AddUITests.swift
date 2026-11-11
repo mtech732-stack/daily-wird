@@ -16,7 +16,7 @@ final class AddUITests: XCTestCase {
     }
 
     /// يضغط دائرة جزء أو خانة حزب، ويتحقّق من الاختيار في التطبيق نفسه وفي سمة الإتاحة.
-    /// يقرأ ما يعرضه التطبيق في وضع الاختبار (`add.taps`: «عدد الضغطات|الأحزاب المختارة»):
+    /// يقرأ ما يعرضه التطبيق في وضع الاختبار (`add.taps`: «عدد الضغطات|الأحزاب المختارة|ضغطات أضف»):
     /// - لم تصل الضغطة إلى التطبيق: تُعاد مرة واحدة وتُسجَّل.
     /// - وصلت ولم يتغيّر الاختيار في التطبيق: خطأ في التطبيق، فيفشل.
     /// - تغيّر الاختيار: نجحت الضغطة. وإن تأخّرت سمة «مختار» عن الظهور طُبع «تشخيص:» بالمدّة،
@@ -79,10 +79,31 @@ final class AddUITests: XCTestCase {
         element.tap()
     }
 
-    private func appState(_ app: XCUIApplication) -> (taps: Int, selected: String, raw: String) {
+    private func appState(_ app: XCUIApplication) -> (taps: Int, selected: String, go: Int, raw: String) {
         let raw = app.otherElements["add.taps"].value as? String ?? ""
         let parts = raw.split(separator: "|", omittingEmptySubsequences: false)
-        return (Int(parts.first ?? "") ?? -1, parts.count > 1 ? String(parts[1]) : "", raw)
+        return (Int(parts.first ?? "") ?? -1, parts.count > 1 ? String(parts[1]) : "",
+                parts.count > 2 ? Int(parts[2]) ?? -1 : -1, raw)
+    }
+
+    /// يضغط «أضف» وفي الاختيار حزب في مسار آخر، فينتظر سؤال النقل. على محاكي CI قد لا تصل الضغطة
+    /// إلى التطبيق (فشل هكذا بعد #112: لم يظهر «انقله» 20 ث). فيُقرأ عدّاد «أضف» في التطبيق:
+    /// لم تصل ← تُعاد مرة وتُسجَّل؛ وصلت ولم يظهر السؤال ← خطأ في التطبيق فيفشل.
+    private func tapGoExpectingConflict(_ app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        let go = app.buttons["add.go"]
+        let question = app.staticTexts["conflict.question"]
+        for attempt in 1...2 {
+            let before = appState(app)
+            tapEnabled(go, file: file, line: line)
+            if question.waitForExistence(timeout: 10) { return }
+            let after = appState(app)
+            if after.go > before.go {
+                XCTFail("وصلت ضغطة «أضف» (\(before.raw) → \(after.raw)) ولم يظهر سؤال النقل", file: file, line: line)
+                return
+            }
+            if attempt == 1 { print("تشخيص: ضغطة «أضف» لم تصل إلى التطبيق (\(before.raw))، تُعاد مرة") }
+        }
+        XCTFail("لم تصل ضغطة «أضف» إلى التطبيق مرتين: \(appState(app).raw)", file: file, line: line)
     }
 
     private func shot(_ app: XCUIApplication, _ name: String) {
@@ -191,10 +212,9 @@ final class AddUITests: XCTestCase {
         item.tap()
         XCTAssertTrue(app.buttons["add.juz.5"].waitForExistence(timeout: 20))
         tapUntilSelected(app.buttons["add.juz.5"], in: app)
-        tapEnabled(app.buttons["add.go"])
+        tapGoExpectingConflict(app)
 
         let question = app.staticTexts["conflict.question"]
-        XCTAssertTrue(question.waitForExistence(timeout: 20), "لم يظهر سؤال النقل بعد «أضف»: \(appState(app).raw)")
         XCTAssertEqual(question.label, "الحزب 10 موجود في مراجعة القريب. أتنقله؟")
         XCTAssertEqual(app.buttons["conflict.move"].label, "انقله إلى مراجعة البعيد")
         XCTAssertEqual(app.buttons["conflict.keep"].label, "اتركه في مراجعة القريب")
@@ -213,7 +233,7 @@ final class AddUITests: XCTestCase {
         app.buttons["إضافة"].tap()
         XCTAssertTrue(app.buttons["add.hizb.10"].waitForExistence(timeout: 20))
         tapUntilSelected(app.buttons["add.hizb.10"], in: app)
-        tapEnabled(app.buttons["add.go"])
+        tapGoExpectingConflict(app)
         XCTAssertTrue(app.buttons["conflict.move"].waitForExistence(timeout: 20))
         app.buttons["conflict.move"].tap()
         XCTAssertTrue(app.staticTexts["toast"].waitForExistence(timeout: 20))
