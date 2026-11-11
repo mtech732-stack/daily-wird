@@ -266,6 +266,7 @@ struct ReviewTrackCard: View {
                 .padding(.horizontal, isOpen ? 8 : 0)
             if isOpen {
                 ArchiveView(layout: layout, menu: hizbMenu, shading: shading, onBookmarkRow: onBookmarkRow)
+                    .rowTypeSize()
                     .padding(.top, 4)
                 // «طيّ» في أسفل البطاقة؛ ويلتصق بأسفل الشاشة عند التمرير (م23).
                 PullBar(track: layout.track, isOpen: true, action: onToggle)
@@ -282,6 +283,7 @@ struct ReviewTrackCard: View {
                     if let row = layout.foldedRow(hizb: displayedHizb ?? layout.bookmarkHizb) {
                         FoldedRowView(track: layout.track, row: row, bookmark: layout.bookmarkQuarter, narrow: narrow,
                                       menu: hizbMenu, shading: shading)
+                            .rowTypeSize()
                             .id(row.hizb)
                             .transition(.opacity)
                     }
@@ -586,6 +588,15 @@ struct LastEntryLine: View {
                 .lineLimit(1)
                 .fixedSize()
         }
+    }
+}
+
+extension View {
+    /// صفوف الأرباع والأوجه وما بجانبها («ح»، والسورة ووسم الجزء، وسطر الحزب) لا تكبر فوق «كبير»،
+    /// كما في المرجع (s6-ax1 · s6-ax5): الصفّ ثابت العرض بمربّعاته 44، فلو كبرت تسميته لقُطعت بنقاط.
+    /// أما الرؤوس والسطور فتتبع حجم الخط كاملاً (§17.4).
+    func rowTypeSize() -> some View {
+        dynamicTypeSize(...DynamicTypeSize.large)
     }
 }
 
