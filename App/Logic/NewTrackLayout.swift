@@ -79,10 +79,12 @@ struct NewTrackLayout: Equatable, Sendable {
     }
 
     /// تسمية الوجه لقارئ الشاشة (§15.8): «الوجه 117، لم يُحفظ، موضع التوقّف».
-    func pageLabel(_ page: Int, showsBookmark: Bool = true) -> String {
+    /// والوجه المشترك (§15.4): «الوجه 121، محفوظ، أتممته اليوم، مشترك مع الحزب 13».
+    func pageLabel(_ page: Int, inHizb hizb: Int? = nil, showsBookmark: Bool = true) -> String {
         "الوجه \(Digits.en(page))، " + (completed.contains(page) ? "محفوظ" : "لم يُحفظ")
             + (today.contains(page) ? "، أتممته اليوم" : "")
             + (showsBookmark && page == bookmarkPage && Slice.showsBookmark ? "، موضع التوقّف" : "")
+            + (hizb.flatMap { Quran.sharingHizb(page: page, inHizb: $0) }.map { "، مشترك مع الحزب \(Digits.en($0))" } ?? "")
     }
 }
 

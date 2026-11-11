@@ -197,4 +197,36 @@ final class NewTrackTests: XCTestCase {
         XCTAssertEqual(layout.pageLabel(116, showsBookmark: false), "الوجه 116، لم يُحفظ")
         XCTAssertEqual(layout.pageLabel(116), "الوجه 116، لم يُحفظ، موضع التوقّف")
     }
+
+    // MARK: المرحلة 3 (§15.4)
+
+    /// §15.8: الوجه المشترك: أول وجه في الحزب وهو آخر وجه في الذي قبله، أو آخره وهو أول وجه في الذي بعده.
+    func test_5_6_sharingHizb() {
+        XCTAssertEqual(Quran.sharingHizb(page: 112, inHizb: 12), 11)
+        XCTAssertEqual(Quran.sharingHizb(page: 121, inHizb: 12), 13)
+        XCTAssertEqual(Quran.sharingHizb(page: 121, inHizb: 13), 12)
+        XCTAssertNil(Quran.sharingHizb(page: 116, inHizb: 12))
+        XCTAssertNil(Quran.sharingHizb(page: 1, inHizb: 1))
+        XCTAssertNil(Quran.sharingHizb(page: 604, inHizb: 60))
+        // متناظر: إن شارك ح أ ح ب في وجه شاركه ح ب فيه.
+        for hizb in 1...Quran.hizbCount {
+            for page in Quran.pages(ofHizb: hizb) {
+                if let other = Quran.sharingHizb(page: page, inHizb: hizb) {
+                    XCTAssertEqual(Quran.sharingHizb(page: page, inHizb: other), hizb, "الوجه \(page)")
+                    XCTAssertTrue(Quran.pages(ofHizb: other).contains(page))
+                }
+            }
+        }
+    }
+
+    /// §15.4: إتمامه مرة يُتمّه في الحزبين؛ وإن أُتمّ في حزب سابق ظهر ممتلئاً من أول يوم.
+    func test_5_6_sharedPageCountsInBoth() {
+        let layout = NewTrackLayout(hizbs: [13], completed: [121])
+        XCTAssertEqual(layout.progressText, "1 من 11")
+        XCTAssertEqual(layout.bookmarkPage, 122)
+        XCTAssertEqual(layout.pageLabel(121, inHizb: 13), "الوجه 121، محفوظ، مشترك مع الحزب 12")
+        let two = NewTrackLayout(hizbs: [12, 13], completed: Set(112...121), today: [121])
+        XCTAssertEqual(two.progressText, "10 من 20")
+        XCTAssertEqual(two.pageLabel(121, inHizb: 12), "الوجه 121، محفوظ، أتممته اليوم، مشترك مع الحزب 13")
+    }
 }

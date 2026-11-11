@@ -100,7 +100,8 @@ struct NewHizbBlock: View {
                             PageTile(page: page, isDone: layout.completed.contains(page),
                                      isToday: layout.today.contains(page),
                                      isBookmark: showsBookmark && page == layout.bookmarkPage, under: under,
-                                     label: layout.pageLabel(page, showsBookmark: showsBookmark)) {
+                                     isShared: Quran.sharingHizb(page: page, inHizb: hizb) != nil,
+                                     label: layout.pageLabel(page, inHizb: hizb, showsBookmark: showsBookmark)) {
                                 onPage(page)
                             }
                         }
@@ -162,6 +163,8 @@ struct PageTile: View {
     let isToday: Bool
     let isBookmark: Bool
     var under: Color = Theme.card
+    /// الوجه المشترك بين حزبين: الزاوية العليا اليمنى مقطوعة كالربع المشترك (§15.4).
+    var isShared = false
     let label: String
     var onTap: () -> Void = {}
 
@@ -176,6 +179,11 @@ struct PageTile: View {
             // التعبئة تتغيّر بتلاشٍ 0.15 ث، وفوراً مع «تقليل الحركة» (§13.1).
             .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: isDone)
             .frame(width: Theme.Size.tile, height: Theme.Size.tile)
+            .overlay {
+                if isShared {
+                    CutCorner().fill(under).accessibilityHidden(true)
+                }
+            }
             .overlay {
                 if isBookmark && Slice.showsBookmark {
                     RoundedRectangle(cornerRadius: Theme.Radius.tile + 4.5, style: .continuous)
