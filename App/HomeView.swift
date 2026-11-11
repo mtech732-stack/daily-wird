@@ -165,9 +165,7 @@ struct HomeView: View {
             .onChange(of: counterMode, initial: true) { _, mode in isShort = mode == .row }
             // اهتزاز خفيف مع كل ضغطة تزيد العدد (5.7، §16.3، ذ41)، ولا شيء غيره ولا صوت.
             // ويتبع إعداد «اللمس» في الجهاز، ولا يُجرَّب على المحاكي.
-            .sensoryFeedback(trigger: count) { old, new in
-                new == old + 1 ? .impact(weight: .light) : nil
-            }
+            .sensoryFeedback(trigger: count, CounterLayout.feedback(from:to:))
         }
         .background(Theme.background.ignoresSafeArea())
         // م18: ما جاءت به المزامنة من صفّين مفتوحين للحزب يُسوّى بإغلاق الأقدم، ولا يُحذف شيء.

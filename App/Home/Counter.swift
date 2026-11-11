@@ -53,6 +53,12 @@ enum CounterLayout {
         isBar ? 14 : (diameter * 0.18).rounded()
     }
 
+    /// الاهتزاز مع تغيّر العدد (§16.3، ذ41): خفيف حين تزيده ضغطة واحداً، ولا شيء غير ذلك.
+    /// فالتصفير لا يُطلق الخفيف، وله اهتزازه الأوضح.
+    static func feedback(from old: Int, to new: Int) -> SensoryFeedback? {
+        new == old + 1 ? .impact(weight: .light) : nil
+    }
+
     /// العدد بأرقام إنجليزية بلا فاصل آلاف (ذ39): «12500».
     static func text(_ count: Int) -> String { String(count) }
 }
