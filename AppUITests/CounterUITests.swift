@@ -96,7 +96,8 @@ final class CounterUITests: XCTestCase {
         let screen = app.windows.firstMatch.frame
         XCTAssertGreaterThanOrEqual(keys.frame.minY, screen.maxY - 40, "المفاتيح لا تُرى عند الفتح")
         // سحب يبدأ على الدائرة إلى أعلى الشاشة.
-        c.press(forDuration: 0.05, thenDragTo: app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.15)))
+        c.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            .press(forDuration: 0.05, thenDragTo: app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.15)))
         let shown = XCTNSPredicateExpectation(predicate: NSPredicate(format: "frame.minY < %f", screen.maxY - 200), object: keys)
         XCTAssertEqual(XCTWaiter().wait(for: [shown], timeout: 20), .completed, "ظهرت المفاتيح بالسحب")
         expectCount(app, "33")
