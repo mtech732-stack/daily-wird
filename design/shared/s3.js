@@ -137,5 +137,5 @@ function interactive(scr,S,o={}){
 function still(scr,S,ui,afterFn){paint(scr,S,ui||{});
   if(ui&&ui.swap)scr.querySelector(`.track[data-track="${ui.swap}"]`)?.classList.add('pinned');
   setTimeout(()=>{if(S.open&&!(ui&&ui.noScroll))toBookmark(scr,S.open);afterFn&&afterFn(scr);},40);}
-window.S3={make,tap,restart,advance,add,screen,still,interactive,days,toBookmark,lineOn};
+window.S3={make,tap,restart,advance,add,screen,still,interactive,days,toBookmark,lineOn,decorate};
 })();

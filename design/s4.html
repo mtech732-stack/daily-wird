@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ش4 · المحفوظ الجديد</title>
+<link rel="stylesheet" href="shared/ds.css">
+<link rel="stylesheet" href="shared/s1.css">
+<link rel="stylesheet" href="shared/s2.css">
+<link rel="stylesheet" href="shared/s3.css">
+<link rel="stylesheet" href="shared/s4.css">
+<link rel="stylesheet" href="shared/page.css">
+<style>
+h2.grp{font-size:20px;font-weight:600;margin:34px 0 4px}
+p.grp{margin:0 0 16px;color:var(--pg-muted);font-size:14.5px;max-width:80ch;line-height:1.75}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <h1>ش4 · المحفوظ الجديد: التصميم</h1>
+    <p>يختار المالك الحزب الذي يحفظ فيه الآن، فتظهر أوجهه مربّعات بأرقامها في المصحف. ضغطة على الوجه: أتممت حفظه اليوم، وضغطة ثانية في اليوم نفسه: تراجع. وموضع التوقّف أول وجه لم يتمّ، والبطاقة مطويّة على صفّ أوجهه الخمسة. والوجه المشترك بين حزبين يُتمّ مرة فيُحسب لهما. فإذا تمّت أوجه الحزب كلها سأل التطبيق: «أترفعه إلى مراجعة القريب؟» ولا ينقل شيئاً بنفسه. المرجع المكتوب: <code>design/system.md</code> §15.</p>
+    <nav class="links"><a href="index.html">نظام التصميم</a><a href="main.html">الشاشة الرئيسية</a><a href="juz-amma.html">جزء عمّ</a><a href="s1.html">ش1 · المحفوظ</a><a href="s2.html">ش2 · التظليل والعمر</a><a href="s3.html">ش3 · موضع التوقّف</a><a href="s4.html" aria-current="page">ش4 · المحفوظ الجديد</a><a href="mockups.html">النماذج المعتمدة</a></nav>
+  </header>
+  <div class="bar">
+    <button id="bGray">فحص الرمادي</button>
+    <button id="bDark">ليلاً</button>
+    <button id="bOrn">بلا زخرفة (للمقارنة)</button>
+  </div>
+
+  <h2 class="grp">جرّبها بنفسك</h2>
+  <p class="grp">اضغط الوجه الذي عليه الإطار فيمتلئ وينتقل الإطار إلى ما بعده، واضغطه ثانية للتراجع. وأتمّ الوجه الأخير لترى سؤال الرفع. واضغط مطوّلاً «ح 12» لقائمته، و«⋯» لقائمة المسار. والأزرار تحت الهاتف تقدّم الأيام، وتُتمّ الحزب إلا وجهاً، وتبدأ بالمسار فارغاً.</p>
+  <div class="gal" id="g0"></div>
+  <div class="days"><button id="d1">يوم جديد</button><button id="dAlmost">الحزب إلا وجهاً</button><button id="dEmpty">الجديد فارغاً</button><button id="d0">من البداية</button><output id="dOut"></output></div>
+
+  <h2 class="grp">1 · اختيار الحزب الذي تحفظه (5.6 · القرار 5)</h2>
+  <p class="grp">البطاقة الفارغة فيها زرّ واحد يفتح ورقة الأجزاء الثلاثين. يُختار منها حزب (أو أكثر إن شاء المالك)، والحزب الذي في مسار مراجعة يُسأل عنه قبل نقله، كما في ش1.</p>
+  <div class="gal" id="g1"></div>
+
+  <h2 class="grp">2 · إتمام الوجه والتراجع وموضع التوقّف</h2>
+  <p class="grp">ضغطة على الوجه: أتممته اليوم، وعليه علامة «اليوم». وضغطة ثانية في اليوم نفسه: تراجع. وموضع التوقّف أول وجه لم يتمّ، والصفّ المطويّ صفّ أوجهه الخمسة.</p>
+  <div class="gal" id="g2"></div>
+
+  <h2 class="grp">3 · الوجه المشترك بين حزبين</h2>
+  <p class="grp">وجه يبدأ في منتصفه حزب جديد: زاويته مقطوعة كالربع المشترك. يُتمّ مرة واحدة فيُحسب للحزبين، ويظهر تحت كلٍّ منهما.</p>
+  <div class="gal" id="g3"></div>
+
+  <h2 class="grp">4 · اكتمال الحزب والرفع إلى القريب (5.6 · 5.2)</h2>
+  <p class="grp">حين تتمّ أوجه الحزب كلها يسأل التطبيق، ولا ينقل بنفسه. «لاحقاً» يُبقي الحزب في الجديد، ويبقى زرّ الرفع في بطاقته. والحزب المرفوع يدخل القريب بأرباعه الأربعة غير مظلّلة، ويبقى سجلّ أوجهه.</p>
+  <div class="gal" id="g4"></div>
+
+  <h2 class="grp">5 · القوائم والنقل بين المسارات الثلاثة</h2>
+  <p class="grp">كل حزب ينتقل بيد المالك إلى أي مسار آخر (5.2)، من قائمته أو من «⋯». ولا يكون حزب في مسارين.</p>
+  <div class="gal" id="g5"></div>
+
+  <h2 class="grp">6 · ليلاً، وأصغر شاشة وأكبرها، وأطول محتوى</h2>
+  <div class="gal" id="g6"></div>
+</div>
+<script src="shared/quran.js"></script>
+<script src="shared/ds.js"></script>
+<script src="shared/s2.js"></script>
+<script src="shared/s3.js"></script>
+<script src="shared/s4.js"></script>
+<script>
+const {phone,fitAll,N}=WIRD,{make,tapPage,raise,foldView,still,interactive}=S4;
+const G=id=>document.getElementById(id);
+const fig=(g,o)=>{const s=phone(G(g),o);s.classList.add('wl');s.dataset.id=o.id||'';if(o.dark)s.classList.add('wd');return s;};
+/* محفوظ المالك كما في النماذج المعتمدة وش3: البعيد ح 1–9، والقريب ح 10–11، والجديد ح 12 (الأوجه 112–121)
+   أتمّ منها 112–116 في الأيام الخمسة الماضية، فموضع التوقّف الوجه 117 */
+const AGE=r=>r<=8?12:r<=19?3:r<=22?0:r<=30?41:r<=34?20:r<=36?null:r<=38?3:r<=40?9:r<=44?15:null;
+const PG={112:4,113:4,114:3,115:2,116:1};
+const mine=(o={})=>make(Object.assign({far:[1,2,3,4,5,6,7,8,9],near:[10,11],nw:[12],pg:PG,agesOf:AGE},o));
+const almost=(o={})=>mine(Object.assign({pg:{112:9,113:8,114:7,115:6,116:5,117:4,118:3,119:2,120:1}},o));
+const S_=(ids,s)=>new Set(ids);
+
+/* 0 · الهاتف التفاعلي */
+const ph=interactive(fig('g0',{title:'هاتف تفاعلي',cap:'لا يُحفظ شيء؛ «من البداية» يعيده كما كان.'}),mine(),{onRender:S=>G('dOut').textContent=S.shift?`مضى ${N(S.shift)} يوماً`:'اليوم: الاثنين 9 نوفمبر'});
+const reset=S=>{Object.keys(ph.S).forEach(k=>delete ph.S[k]);Object.assign(ph.S,S);ph.render();};
+G('d1').onclick=()=>ph.advance(1);G('dAlmost').onclick=()=>reset(almost());G('dEmpty').onclick=()=>reset(mine({nw:[],pg:{}}));G('d0').onclick=()=>reset(mine());
+
+/* 1 · اختيار الحزب */
+still(fig('g1',{id:'s4-empty',title:'1 · لم يُحدَّد الحزب بعدُ',cap:'البطاقة الفارغة بسطرها، وزرّ «اختر الحزب الذي تحفظه»، و«⋯» فيها «إضافة» وحدها.'}),mine({nw:[],pg:{}}));
+still(fig('g1',{id:'s4-pick',title:'2 · ورقة الحزب الذي تحفظه',cap:'الأجزاء الثلاثون، في كل صفّ حزباه، وتحت الحزب السورة التي يبدأ بها. لا دائرة للجزء: يُحفظ حزب في وقت واحد (القرار 5)، ويجوز اختيار ثانٍ. وما في البعيد والقريب بإطار متقطّع واسم مساره.'}),mine({nw:[],pg:{}}),{ov:'add',t:'new',sel:S_([12]),j:4});
+still(fig('g1',{id:'s4-pick-conf',title:'3 · حزب في مسار مراجعة',cap:'اختار ح 11 وهو في القريب: يُسأل عند «أضف» كما في ش1، والخياران بالحجم نفسه.'}),mine({nw:[],pg:{}}),{ov:'conf',t:'new',sel:S_([11]),conf:[11],j:4});
+still(fig('g1',{id:'s4-picked',title:'4 · بعد الاختيار',cap:'«0 من 10»، والإطار على أول أوجهه 112، وسطر «آخر إدخال» محجوز مكانه حتى أول إتمام (ذ17). والوجه 112 مقطوع الزاوية: يبدأ في منتصفه ح 12، وأوله آخر ح 11.'}),mine({pg:{}}),{toast:'أُضيف ح 12 إلى المحفوظ الجديد'});
+
+/* 2 · إتمام الوجه */
+still(fig('g2',{id:'s4-fold',title:'5 · عند الفتح',cap:'«5 من 10»: أتمّ 112–116، فالبطاقة مطويّة على صفّ 117–121، والإطار على 117 وعلامة الكتاب بجانب «ح 12». و«آخر إدخال أمس».'}),mine());
+{const S=mine();tapPage(S,117);
+ still(fig('g2',{id:'s4-tap',title:'6 · أتمّ الوجه 117',cap:'امتلأ وعليه علامة «اليوم»، وانتقل الإطار إلى 118، و«6 من 10»، و«آخر إدخال اليوم». وضغطة ثانية عليه اليوم تراجع.'}),S);}
+{const S=mine({pg:{112:4,113:4,114:3,115:2}}),v=foldView(S);tapPage(S,116);S.pinNew=v;
+ still(fig('g2',{id:'s4-row-pin',title:'7 · آخر الصفّ: لحظة قبل الانتقال',cap:'أتمّ 116 آخر الصفّ الأول. يبقى الصفّ 0.8 ث بما أتمّه وعلامة «اليوم»، بلا إطار، ثم يتلاشى إلى الصفّ التالي (كما في ش3، ذ20).'}),S);}
+{const S=mine({pg:{112:4,113:4,114:3,115:2}});tapPage(S,116);
+ still(fig('g2',{id:'s4-row-after',title:'8 · بعد الانتقال',cap:'الصفّ 117–121، والإطار على 117.'}),S);}
+still(fig('g2',{id:'s4-old',title:'9 · ضغطة على وجه أُتمّ قبل اليوم',cap:'لا تغيّر شيئاً، ويقول الإشعار متى أُتمّ (ذ29). فالتراجع في يوم الإتمام وحده (5.6).'}),mine(),{toast:'أتممت الوجه 113 الخميس 5 نوفمبر'},s=>{});
+still(fig('g2',{id:'s4-archive',title:'10 · «عرض كل أوجه الحزب»',cap:'الأوجه العشرة صفّين، تحت سطر الحزب. والوجهان 112 و121 مقطوعا الزاوية: الأول مشترك مع ح 11، والآخر مع ح 13.'}),mine({open:'new'}));
+
+/* 3 · الوجه المشترك */
+{const S=mine({nw:[12,13],pg:{112:9,113:8,114:7,115:6,116:5,117:4,118:3,119:2,120:1}});tapPage(S,121);
+ still(fig('g3',{id:'s4-shared-fold',title:'11 · حزبان في الجديد، والوجه 121 بينهما',cap:'ح 12 وح 13 معاً. أتمّ 121 اليوم فاكتمل به ح 12، وهو أول أوجه ح 13 فأُتمّ فيه كذلك: البطاقة على ح 13 والإطار على 122، والتقدّم «11 من 20» يعدّ 121 مرة واحدة. وتحت الصفّ زرّ رفع ح 12 (بعد «لاحقاً»).'}),S);}
+{const S=mine({nw:[12,13],pg:{112:9,113:8,114:7,115:6,116:5,117:4,118:3,119:2,120:1}});tapPage(S,121);S.open='new';
+ still(fig('g3',{id:'s4-shared-open',title:'12 · في عرض كل الأوجه',cap:'كل حزب تحت سطره، و121 في الاثنين. وزرّ الرفع تحت ح 12 وحده.'}),S);}
+
+/* 4 · الاكتمال */
+still(fig('g4',{id:'s4-complete-before',title:'13 · بقي وجه واحد',cap:'«9 من 10»، والإطار على 121.'}),almost());
+{const S=almost();tapPage(S,121);
+ still(fig('g4',{id:'s4-complete-dialog',title:'14 · اكتمل الحزب',cap:'كما في النموذج المعتمد 6: يمتلئ الوجه أولاً، وبعد 0.45 ث يظهر السؤال. «ارفعه» زرّ أساسي، و«لاحقاً» هادئ. والصحّ بلون الكحلي على البرتقالي (ت10).'}),S,{ov:'done',h:12});
+ const T=almost();tapPage(T,121);
+ still(fig('g4',{id:'s4-later',title:'15 · بعد «لاحقاً»',cap:'يبقى ح 12 في الجديد «10 من 10» بلا موضع توقّف، وتحت أوجهه زرّ «ارفع ح 12 إلى مراجعة القريب» حتى يرفعه أو يتراجع عن وجه.'}),T);
+ const U=almost();tapPage(U,121);raise(U,12);
+ still(fig('g4',{id:'s4-raised',title:'16 · بعد الرفع',cap:'القريب «2 من 12»: دخل ح 12 دورته بأرباعه الأربعة غير مظلّلة بعد ح 11، وموضع التوقّف كما كان. والجديد فارغ ينتظر اختيار المالك، ولا يقترح عليه حزباً.'}),U,{toast:'رُفع ح 12 إلى مراجعة القريب'});
+ const V=almost();tapPage(V,121);raise(V,12);V.open='near';
+ still(fig('g4',{id:'s4-raised-archive',title:'17 · ح 12 في أرشيف القريب',cap:'تحت «المائدة»، أرباعه «لم يُتلَ». وسجلّ أوجهه باقٍ، تاريخاً لحفظه (5.6).'}),V,{},s=>{const sc=s.querySelector('.scroll'),l=s.querySelector('.track[data-track="near"] .lbl[data-h="12"]');if(l)sc.scrollTop=l.getBoundingClientRect().top-sc.getBoundingClientRect().top+sc.scrollTop-260;});}
+
+/* 5 · القوائم والنقل */
+still(fig('g5',{id:'s4-menu-new',title:'18 · «⋯» في المحفوظ الجديد',cap:'إضافة · نقل · إزالة. ولا «ابدأ دورة جديدة»: الدورة لمسارَي المراجعة (5.5).'}),mine(),{ov:'tmenu',t:'new'});
+still(fig('g5',{id:'s4-hmenu-new',title:'19 · قائمة ح 12',cap:'بضغطة مطوّلة على «ح 12»: النقل إلى القريب أو البعيد في أي وقت، ثم الإزالة.'}),mine(),{ov:'hmenu',t:'new',h:12});
+still(fig('g5',{id:'s4-hmenu-far',title:'20 · قائمة حزب في البعيد',cap:'صار فيها «نقل إلى المحفوظ الجديد»، لمن أراد أن يعيد حفظ حزب.'}),mine(),{ov:'hmenu',t:'far',h:6});
+still(fig('g5',{id:'s4-move-dest',title:'21 · «نقل» من «⋯»: الوجهة',cap:'بعد «إلى» مقطعان بالمسارين الآخرين، والأول مختار (ذ32).'}),mine(),{ov:'manage',mode:'move',t:'far',sel:S_([9])});
+still(fig('g5',{id:'s4-add-review',title:'22 · إضافة إلى القريب',cap:'ح 12 بإطار متقطّع «في الجديد» وشريط برتقالي. فإن اختير سُئل المالك عن نقله.'}),mine(),{ov:'add',t:'near',sel:S_([]),j:4});
+still(fig('g5',{id:'s4-remove-new',title:'23 · إزالة من الجديد',cap:'بتأكيد، وسجلّ أوجهه باقٍ.'}),mine(),{ov:'rdlg',t:'new',sel:S_([12])});
+still(fig('g5',{id:'s4-keys',title:'24 · مفاتيح الرموز',cap:'في مجموعة المحفوظ الجديد مفتاح ثالث «بين حزبين» للزاوية المقطوعة على الوجه (ذ31).'}),mine(),{},s=>{const sc=s.querySelector('.scroll'),k=s.querySelector('.keys');sc.scrollTop=k.offsetTop-40;});
+
+/* 6 · المقاسات والليل وأطول محتوى */
+still(fig('g6',{id:'s4-dark-fold',dark:true,title:'25 · ليلاً',cap:''}),mine());
+{const S=almost();tapPage(S,121);still(fig('g6',{id:'s4-dark-dialog',dark:true,title:'26 · الاكتمال ليلاً',cap:''}),S,{ov:'done',h:12});}
+still(fig('g6',{id:'s4-375-fold',size:'s375',title:'27 · 375×667',cap:'البطاقات الثلاث بلا تمرير.'}),mine());
+{const S=almost();tapPage(S,121);still(fig('g6',{id:'s4-375-later',size:'s375',title:'28 · زرّ الرفع على 375×667',cap:''}),S);}
+still(fig('g6',{id:'s4-440-fold',size:'s440',title:'29 · 440×956',cap:''}),mine());
+{const far=[...Array(57)].map((_,i)=>i+1);
+ still(fig('g6',{id:'s4-stress-60',title:'30 · أطول حزب: ح 60',cap:'14 وجهاً (591–604) في ثلاثة صفوف، و28 سورة: «الأعلى ← الناس». والبعيد 57 حزباً والقريب ح 58–59.'}),make({far,near:[58,59],nw:[60],pg:{591:6,592:5,593:4,594:3,595:2,596:1},agesOf:AGE,open:'new'}));
+ still(fig('g6',{id:'s4-375-stress',size:'s375',title:'31 · ح 60 مطويّاً على 375×667',cap:'الصفّ 597–601، والسطر «ح 60 · الأعلى ← الناس · الجزء 30».'}),make({far,near:[58,59],nw:[60],pg:{591:6,592:5,593:4,594:3,595:2,596:1},agesOf:AGE}));}
+
+setTimeout(fitAll,60);fitAll();
+G('bGray').onclick=e=>{document.querySelectorAll('.phone').forEach(p=>p.classList.toggle('gray'));e.target.classList.toggle('on');};
+G('bDark').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>p.classList.toggle('wd'));e.target.classList.toggle('on');};
+G('bOrn').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>p.classList.toggle('plain'));e.target.classList.toggle('on');};
+if(location.hash.includes('gray'))G('bGray').click();
+if(location.hash.includes('dark'))G('bDark').click();
+</script>
+</body>
+</html>

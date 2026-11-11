@@ -1,0 +1,32 @@
+/* ش4 · المحفوظ الجديد · design/system.md §15. يبني على ds.css وs1–s3 ولا يغيّر فيها شيئاً */
+
+/* سطر الحزب فوق الأوجه: «ح 12» 14/500 `ink` (يُضغط مطوّلاً لقائمته)، ثم السورة والجزء 13 `muted` */
+.nsub{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);min-height:30px;margin:0;white-space:nowrap;min-width:0}
+.nsub .lbl{width:auto;height:30px;color:var(--ink);position:relative;cursor:default}
+.nsub .lbl:after{content:"";position:absolute;inset:-7px -8px} /* مساحة اللمس 44 */
+.nsub .ns{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ncur .pages{margin:4px 0 8px}
+.track.open .ncur{padding:0 8px}
+.track.open .nh{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:6px 10px 2px;margin:4px 0 10px}
+.ncur .nh+.nh{margin-top:6px}
+.track:not(.open) .ncur .nh+.btn.raise{margin-top:0}
+
+/* زرّ الرفع تحت أوجه حزب اكتمل: ثانوي، ارتفاعه 44 (§15.5) */
+.btn.raise{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:9px 14px;margin:2px 0 12px;font-size:15px}
+.btn.raise svg{flex:none}
+
+/* حوار اكتمال الحزب: الدائرة البرتقالية من النموذج المعتمد 6، وصحّها بلون `onNew` (ت10) */
+.dlg.done .big{width:58px;height:58px;border-radius:50%;margin:0 auto 12px;background:var(--new);color:var(--on-new);display:flex;align-items:center;justify-content:center}
+.dlg.done h4{font-size:21px}
+
+/* ورقة اختيار الحزب الذي يُحفظ: الجزء نصّ بلا دائرة */
+.jbtn.jl{width:72px;cursor:default;font-weight:500;color:var(--muted)}
+.sheet.pick .dest{margin:4px 0 0}
+
+/* وجهة النقل: مقطعان بالمسارين الآخرين، بعد «إلى» (ذ32) */
+.seg.dest2{align-items:center}
+.seg.dest2 .to{flex:none;font-size:14px;color:var(--muted);padding:0 6px 0 2px}
+.seg.dest2 button{font-size:14px}
+
+/* القائمة فوق ما رُفع من الأوجه */
+.nh.lift{position:relative;z-index:7;background:var(--card);border-radius:14px;box-shadow:0 8px 24px rgba(10,22,36,.22);margin:0 -6px;padding:0 6px 2px}
