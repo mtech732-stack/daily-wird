@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- شاشة البداية (8.3، design/system.md §17.2، ذ47): الأيقونة مبسوطة على الشاشة، بلا نصّ ولا شعار.
      الأرضية LaunchPaper، والشريط LaunchBand (ارتفاعه 85 ومركزه مركز الشاشة طولاً، يُقصّ من الجانبين)،
-     والعلامة LaunchRibbon (من أعلى الشاشة لا المنطقة الآمنة إلى أسفل الشريط + 32 + 5.6، ومركزها 68% من العرض).
+     والعلامة LaunchRibbon (من أعلى الشاشة لا المنطقة الآمنة إلى أسفل الشريط + 32 + 2.04 (نصف الفاصل)، ومركزها 68% من العرض).
      وصورة العلامة طويلة تُرسى من أسفلها، فيُقصّ أعلاها مكان التمديد. -->
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="LSV-cn-001">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
@@ -39,7 +39,7 @@
                             <constraint firstAttribute="trailing" secondItem="LSB-im-001" secondAttribute="trailing" id="LSC-02"/>
                             <constraint firstItem="LSB-im-001" firstAttribute="centerY" secondItem="LSV-vw-001" secondAttribute="centerY" id="LSC-03"/>
                             <constraint firstItem="LSR-im-001" firstAttribute="top" secondItem="LSV-vw-001" secondAttribute="top" id="LSC-05"/>
-                            <constraint firstItem="LSR-im-001" firstAttribute="bottom" secondItem="LSB-im-001" secondAttribute="bottom" constant="37.6" id="LSC-06"/>
+                            <constraint firstItem="LSR-im-001" firstAttribute="bottom" secondItem="LSB-im-001" secondAttribute="bottom" constant="34.04" id="LSC-06"/>
                             <constraint firstItem="LSR-im-001" firstAttribute="centerX" secondItem="LSV-vw-001" secondAttribute="centerX" multiplier="1.367" id="LSC-08"/>
                         </constraints>
                     </view>

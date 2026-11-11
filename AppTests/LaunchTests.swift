@@ -23,7 +23,7 @@ final class LaunchTests: XCTestCase {
     }
 
     /// §17.2 على 390×844: الشريط بعرض الشاشة وارتفاعه 85 ومركزه مركزها طولاً، والعلامة من أعلى الشاشة
-    /// إلى أسفل الشريط + 37.6، ومركزها على 68% من العرض كما في الأيقونة.
+    /// إلى أسفل الشريط + 34.04، ومركزها على 68% من العرض كما في الأيقونة.
     func test_8_3_launchScreenLayout() throws {
         let controller = try XCTUnwrap(UIStoryboard(name: "LaunchScreen", bundle: .main).instantiateInitialViewController())
         let view = try XCTUnwrap(controller.view)
@@ -36,7 +36,7 @@ final class LaunchTests: XCTestCase {
         XCTAssertEqual(band.frame.height, 85, accuracy: 0.5)
         XCTAssertEqual(band.frame.midY, 422, accuracy: 0.5)
         XCTAssertEqual(ribbon.frame.minY, 0, accuracy: 0.5, "من أعلى الشاشة لا المنطقة الآمنة")
-        XCTAssertEqual(ribbon.frame.maxY, band.frame.maxY + 37.6, accuracy: 0.5)
+        XCTAssertEqual(ribbon.frame.maxY, band.frame.maxY + 34.04, accuracy: 0.5)
         XCTAssertEqual(ribbon.frame.midX / 390, 0.68, accuracy: 0.01)
         XCTAssertTrue(band.clipsToBounds && ribbon.clipsToBounds)
     }
