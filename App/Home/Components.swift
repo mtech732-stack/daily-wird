@@ -58,7 +58,7 @@ struct HizbLabel: View {
         .frame(width: width, height: Theme.Size.touch, alignment: .leading)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(Text(verbatim: "الحزب \(Digits.en(hizb))" + (isBookmark && Slice.showsBookmark ? "، موضع التوقّف" : "")))
+        .accessibilityLabel(Text(verbatim: "الحزب \(Digits.en(hizb))" + (isBookmark && Slice.showsBookmark ? "، فيه موضع التوقّف" : "")))
         .modifier(HizbMenuModifier(hizb: hizb, menu: menu))
     }
 }

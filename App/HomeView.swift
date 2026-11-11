@@ -11,6 +11,9 @@ struct HomeView: View {
     @Environment(\.modelContext) private var context
     @Query private var placements: [HizbPlacement]
     @Query private var readings: [QuarterReading]
+    /// دورات مسارَي المراجعة (5.5، §14.1).
+    @Query private var cycles: [ReviewCycle]
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
 
     /// «الآن» الذي تُرسم به الشاشة. يتحدّث عند منتصف الليل والتطبيق مفتوح، ومع العودة من الخلفية،
@@ -40,6 +43,17 @@ struct HomeView: View {
     private static let topPadding: CGFloat = 4
     /// المقبض 4 وفراغ 4 والنصّ نحو 18 وحشو 12 فوقه و12 تحته.
     private static let hintHeight: CGFloat = 50
+
+    /// الصفّ المطويّ الباقي على حزبه بعد انتقال موضع التوقّف عنه، مدّة المهلة (§14.3، ذ20).
+    @State private var pinned: [Track: Int] = [:]
+    @State private var pinTasks: [Track: Task<Void, Never>] = [:]
+    /// مهلة بقاء الصفّ 0.8 ث. وفي اختبارات الواجهة تطول بـ`-pin-seconds` ليُقرأ الصفّ فيها على محاكٍ بطيء.
+    static let pinSeconds: Double = {
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("-ui-testing"), let i = args.firstIndex(of: "-pin-seconds"), i + 1 < args.count,
+           let value = Double(args[i + 1]) { return value }
+        return 0.8
+    }()
 
     /// موضع شريط «طيّ» في أسفل البطاقة المفتوحة، لإلصاقه بأسفل الشاشة إن نزل تحتها (م23).
     @State private var foldBar = FoldBarPosition()
@@ -97,7 +111,11 @@ struct HomeView: View {
         }
         .background(Theme.background.ignoresSafeArea())
         // م18: ما جاءت به المزامنة من صفّين مفتوحين للحزب يُسوّى بإغلاق الأقدم، ولا يُحذف شيء.
-        .task { try? Library.reconcile(in: context) }
+        // وما سبق ش3 من أحزاب بلا دورة تبدأ دورته من أقدم إضافة (§14.1).
+        .task {
+            try? Library.reconcile(in: context)
+            try? Cycles.ensure(in: context)
+        }
         // منتصف الليل والتطبيق مفتوح: يُعاد الرسم بيوم جديد (§13.2).
         .task(id: Shading.nextMidnight(after: now)) {
             let wait = Shading.nextMidnight(after: now).timeIntervalSince(WirdClock.now())
@@ -260,7 +278,7 @@ struct HomeView: View {
     @ViewBuilder
     private func card(for track: Track, narrow: Bool, proxy: ScrollViewProxy) -> some View {
         if track.isReview {
-            let layout = ReviewTrackLayout(track: track, hizbs: Library.activeHizbs(in: track, from: placements))
+            let layout = reviewLayout(for: track)
             if layout.isEmpty {
                 EmptyTrackCard(track: track) { addTrack = track }
             } else {
@@ -270,7 +288,7 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     LastEntryLine(track: track, date: LastEntry.latest(in: layout.quarters, readings: readings), now: now)
                     ReviewTrackCard(layout: layout, isOpen: openTrack == track, narrow: narrow, hizbMenu: menu,
-                                    shading: shading) {
+                                    shading: shading, displayedHizb: pinned[track]) {
                         toggle(track, proxy: proxy)
                     } onAdd: {
                         addTrack = track
@@ -287,6 +305,15 @@ struct HomeView: View {
         }
     }
 
+    /// تخطيط مسار المراجعة بأرباعه المظلّلة في دورته الحالية (§14.1–14.2).
+    private func reviewLayout(for track: Track, readings: [QuarterReading]? = nil) -> ReviewTrackLayout {
+        let hizbs = Library.activeHizbs(in: track, from: placements)
+        let quarters = hizbs.flatMap(Quran.quarters(ofHizb:))
+        let start = Cycles.current(track, in: cycles)?.startedAt
+        return ReviewTrackLayout(track: track, hizbs: hizbs,
+                                 done: Cycles.done(quarters: quarters, readings: readings ?? self.readings, since: start))
+    }
+
     /// حالة التظليل في الشاشة كلها: الربع واحد في السجلّ، فيظهر مظلّلاً حيث ظهر (7.1.1).
     private var shading: ShadingState {
         ShadingState(today: Shading.readToday(readings, now: now), levels: Age.levels(readings, now: now)) { quarter, track in
@@ -301,11 +328,47 @@ struct HomeView: View {
     private func shade(_ quarter: Int, in track: Track) {
         let at = WirdClock.now()
         now = at
+        let reviews = Track.allCases.filter(\.isReview)
+        let before = Dictionary(uniqueKeysWithValues: reviews.map { ($0, reviewLayout(for: $0).bookmarkHizb) })
         do {
             let result = try Shading.tap(quarter: quarter, track: track, in: context, now: at)
             AccessibilityNotification.Announcement(result == .shaded ? "تلوته اليوم" : "تراجعت").post()
+            let fresh = (try? context.fetch(FetchDescriptor<QuarterReading>())) ?? readings
+            for review in reviews {
+                follow(review, from: before[review] ?? nil, to: reviewLayout(for: review, readings: fresh).bookmarkHizb)
+            }
         } catch {
             show("تعذّر التسجيل")
+        }
+    }
+
+    /// انتقال موضع التوقّف إلى حزب آخر: يبقى الصفّ على حزبه 0.8 ث بلا إطار ولا علامة،
+    /// ثم يتلاشى إلى الحزب الجديد في 0.25 ث، وفوراً مع «تقليل الحركة» (§14.3، ذ20).
+    /// وكل ضغطة في المهلة تُعالَج كعادتها ثم يُعاد الحساب (م38): إن رجع الموضع إلى الحزب المعروض
+    /// (كالتراجع) أُلغي الانتقال، وإلا بقيت المهلة، وعند انقضائها يُعرض حزب الموضع كما هو حينئذ.
+    private func follow(_ track: Track, from old: Int?, to new: Int?) {
+        let shown = pinned[track] ?? old
+        if new == shown {
+            pinTasks[track]?.cancel()
+            pinTasks[track] = nil
+            pinned[track] = nil
+            return
+        }
+        guard let shown, new != nil, pinned[track] == nil else { return }
+        pinned[track] = shown
+        pinTasks[track] = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(Self.pinSeconds))
+            guard !Task.isCancelled else { return }
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
+                pinned[track] = nil
+            }
+            pinTasks[track] = nil
+            let current = reviewLayout(for: track)
+            if let q = current.bookmarkQuarter {
+                AccessibilityNotification.Announcement(
+                    "موضع التوقّف: الحزب \(Digits.en(Quran.quarter(q).hizb))، الربع \(Digits.en(Quran.position(ofQuarter: q)))"
+                ).post()
+            }
         }
     }
 

@@ -147,9 +147,9 @@ final class ShadingTests: XCTestCase {
         XCTAssertEqual(UITestSeed.date(of: list[1], now: now, calendar: cal), date("2026-11-07T23:30:00"))
     }
 
-    /// ذ10، ذ16: تقدّم الدورة وعلامة موضع التوقّف مخفيّان في ش2 حتى يُبنيا مع الدورة في ش3.
-    func test_s2_cycleProgressAndBookmarkHidden() {
-        XCTAssertFalse(Slice.showsCycleProgress)
-        XCTAssertFalse(Slice.showsBookmark)
+    /// §14: ما أُخفي في ش2 (ذ10، ذ16) يظهر في ش3: تقدّم الدورة وعلامة موضع التوقّف.
+    func test_s3_cycleProgressAndBookmarkShown() {
+        XCTAssertTrue(Slice.showsCycleProgress)
+        XCTAssertTrue(Slice.showsBookmark)
     }
 }

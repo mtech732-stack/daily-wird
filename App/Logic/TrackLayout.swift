@@ -6,9 +6,13 @@ struct ReviewTrackLayout: Equatable, Sendable {
     /// أحزاب المسار مرتّبة تصاعدياً بلا تكرار.
     let hizbs: [Int]
 
-    init(track: Track, hizbs: [Int]) {
+    /// أرباع المسار المظلّلة في الدورة الحالية (5.5، §14.1).
+    let done: Set<Int>
+
+    init(track: Track, hizbs: [Int], done: Set<Int> = []) {
         self.track = track
         self.hizbs = Array(Set(hizbs)).sorted()
+        self.done = done
     }
 
     var isEmpty: Bool { hizbs.isEmpty }
@@ -16,19 +20,25 @@ struct ReviewTrackLayout: Equatable, Sendable {
     /// أرباع المسار مرتّبة تصاعدياً بأرقامها، من أول المصحف إلى آخره (5.5).
     var quarters: [Int] { hizbs.flatMap(Quran.quarters(ofHizb:)) }
 
-    /// موضع التوقّف (5.5): أول ربع بالترتيب لم يُظلَّل منذ بداية الدورة الحالية.
-    /// في ش1 لا تظليل بعدُ (يأتي في ش2)، فهو أول ربع في المسار. وحسابه من الدورة في ش3.
-    var bookmarkQuarter: Int? { quarters.first }
+    /// موضع التوقّف (5.5، §14.2): أول ربع بترتيب أرقام الأرباع لم يُظلَّل في الدورة الحالية.
+    /// وإن ظُلّلت كلها فأول المسار (اكتمال الدورة في المرحلة 3).
+    var bookmarkQuarter: Int? { quarters.first { !done.contains($0) } ?? quarters.first }
 
     /// الحزب الذي فيه موضع التوقّف: تُطوى عليه البطاقة (7.1).
     var bookmarkHizb: Int? { bookmarkQuarter.map { Quran.quarter($0).hizb } }
 
-    /// تقدّم الدورة «[ما ظُلّل] من [عدد الأرباع]» (7.1). لا تظليل في ش1، فهو «0 من …».
-    var progressText: String { "\(Digits.en(0)) من \(Digits.en(quarters.count))" }
+    /// أرباع المسار المظلّلة في الدورة، والربع المشترك مرة واحدة (§14.1).
+    var doneCount: Int { quarters.filter(done.contains).count }
+
+    /// تقدّم الدورة «[ما ظُلّل في الدورة] من [عدد أرباع المسار]» (7.1، §14.1).
+    var progressText: String { "\(Digits.en(doneCount)) من \(Digits.en(quarters.count))" }
 
     /// الصفّ المطويّ: حزب موضع التوقّف بأرباعه الأربعة، وسورته أو سورتاه، ووسم جزئه (7.1).
-    var foldedRow: FoldedRow? {
-        guard let hizb = bookmarkHizb else { return nil }
+    var foldedRow: FoldedRow? { foldedRow(hizb: bookmarkHizb) }
+
+    /// الصفّ المطويّ لحزب بعينه: يبقى على حزبه 0.8 ث بعد إتمامه قبل أن ينتقل (§14.3، ذ20).
+    func foldedRow(hizb: Int?) -> FoldedRow? {
+        guard let hizb, hizbs.contains(hizb) else { return nil }
         let qs = Quran.quarters(ofHizb: hizb)
         var suras: [Int] = []
         for q in qs { for s in Quran.quarter(q).suras where !suras.contains(s) { suras.append(s) } }

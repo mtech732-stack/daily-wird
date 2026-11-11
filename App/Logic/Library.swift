@@ -56,6 +56,7 @@ enum Library {
             p.removedAt = now
         }
         for hizb in list { context.insert(HizbPlacement(hizb: hizb, track: track, addedAt: now)) }
+        if !list.isEmpty { try Cycles.startIfNeeded(track, in: context, now: now) }
         try context.save()
         return list
     }
@@ -97,6 +98,7 @@ enum Library {
         let set = Set(list)
         for p in placements where p.removedAt == nil && set.contains(p.hizb) { p.removedAt = now }
         for hizb in list { context.insert(HizbPlacement(hizb: hizb, track: target, addedAt: now)) }
+        if !list.isEmpty { try Cycles.startIfNeeded(target, in: context, now: now) }
         try context.save()
         return list
     }
