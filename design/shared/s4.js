@@ -273,7 +273,7 @@ function interactive(scr,S,o={}){
     $('[data-tm]',e=>{const a=e.dataset.tm,t=ui.t;ui=a==='add'?U({ov:'add',t}):U({ov:'manage',mode:a,t});render();});
     $('[data-hm]',e=>{const a=e.dataset.hm,h=ui.h,t=ui.t;
       if(a==='remove'){ui=U({ov:'rdlg',t,sel:new Set([h])});render();return;}
-      if(a==='near'&&t==='new'){const bmMoved=raise(S,h);toast(`رُفع ح ${N(h)} إلى ${TT.near}${bmMoved?' · وفيه الآن موضع التوقّف':''}`);return;}
+      if(a==='near'&&t==='new'){const done=hzDone(S,h),bmMoved=raise(S,h);toast(`${done?'رُفع':'نُقل'} ح ${N(h)} إلى ${TT.near}${bmMoved?' · وفيه الآن موضع التوقّف':''}`);return;} /* «رُفع» للمكتمل وحده (ذ38) */
       moveTo(S,a,[h]);toast(`نُقل ح ${N(h)} إلى ${TT[a]}`);});
     const up=h=>{const bmMoved=raise(S,h);toast(`رُفع ح ${N(h)} إلى ${TT.near}${bmMoved?' · وفيه الآن موضع التوقّف':''}`);};
     $('[data-up]',e=>up(+e.dataset.up));
