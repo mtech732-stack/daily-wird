@@ -25,6 +25,8 @@ struct TrackHeader: View {
                 .font(Theme.font(.semiBold, size: 19, relativeTo: .headline))
                 .foregroundStyle(Theme.ink)
                 .accessibilityAddTraits(.isHeader)
+                // مع سطر الاكتمال لا يلتفّ العنوان، فلا يزيد الرأس ارتفاعاً، ويأخذ السطر ما بقي (م43).
+                .fixedSize(horizontal: completedDays != nil, vertical: false)
                 .frame(maxWidth: .infinity, alignment: .leading)
             if let days = completedDays {
                 // يُقدَّم على العنوان في توزيع العرض، فيُعرض بصيغته الكاملة ما اتّسع الرأس لها (م43).
@@ -36,15 +38,6 @@ struct TrackHeader: View {
                     .foregroundStyle(Theme.muted)
                     .accessibilityLabel(Text(verbatim: "تقدّم الدورة: \(progress) ربعاً"))
                     .accessibilityIdentifier("track.\(track.rawValue).progress")
-            }
-            if Self.isUITesting, let quarterCount {
-                // لا يُرى ولا يُلمس: تقرؤه اختبارات الواجهة لتتحقّق من الإضافة والنقل والإزالة.
-                Color.clear
-                    .frame(width: 1, height: 1)
-                    .accessibilityElement()
-                    .accessibilityLabel(Text(verbatim: Digits.en(quarterCount)))
-                    .accessibilityIdentifier("track.\(track.rawValue).quarterCount")
-                    .allowsHitTesting(false)
             }
             if showsMenu {
                 // قائمة المسار (7.1.1، §12.4). في مسار فارغ «إضافة» وحدها (م21).
@@ -76,6 +69,17 @@ struct TrackHeader: View {
             }
         }
         .frame(minHeight: 30)
+        .background(alignment: .topLeading) {
+            if Self.isUITesting, let quarterCount {
+                // لا يُرى ولا يُلمس ولا يأخذ من عرض الرأس: تقرؤه اختبارات الواجهة لتتحقّق من الإضافة والنقل والإزالة.
+                Color.clear
+                    .frame(width: 1, height: 1)
+                    .accessibilityElement()
+                    .accessibilityLabel(Text(verbatim: Digits.en(quarterCount)))
+                    .accessibilityIdentifier("track.\(track.rawValue).quarterCount")
+                    .allowsHitTesting(false)
+            }
+        }
     }
 }
 
