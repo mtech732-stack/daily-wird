@@ -13,10 +13,12 @@ final class CounterUITests: XCTestCase {
     private static let owner = "farReview:1-9;nearReview:10-11;new:12"
 
     private func launch(seed: String = CounterUITests.owner, counter: Int? = nil, readings: String? = "37:0",
-                        pages: String? = "112-116:3") -> XCUIApplication {
+                        pages: String? = "112-116:3", keep: Bool = false, now: String? = nil) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing", "-seed", seed]
             + (counter.map { ["-counter", String($0)] } ?? [])
+            + (keep ? ["-keep-counter"] : [])
+            + (now.map { ["-now", $0] } ?? [])
             + (readings.map { ["-readings", $0] } ?? [])
             + (pages.map { ["-pages", $0] } ?? [])
         app.launch()
@@ -185,5 +187,86 @@ final class CounterUITests: XCTestCase {
         // إجراء الزيادة لقارئ الشاشة (accessibilityAdjustableAction).
         c.increment()
         expectCount(app, "7")
+    }
+
+    // MARK: المرحلة 3: التصفير بالإمساك والحفظ (§16.4، §16.8)
+
+    private func reset(_ app: XCUIApplication) -> XCUIElement {
+        app.descendants(matching: .any).matching(identifier: "counter.reset").firstMatch
+    }
+
+    /// سيناريو المعاين 3 و§16.8: العدد محفوظ بعد إغلاق التطبيق وفتحه، ولا يتغيّر بيوم جديد.
+    func test_5_7_countPersistsAcrossLaunchesAndDays() {
+        var app = launch(counter: 0)
+        let c = circle(app)
+        XCTAssertTrue(c.waitForExistence(timeout: 20))
+        for _ in 0..<6 { c.tap() }
+        expectCount(app, "6")
+        app.terminate()
+
+        app = launch(keep: true)
+        XCTAssertTrue(circle(app).waitForExistence(timeout: 20))
+        expectCount(app, "6")
+        app.terminate()
+
+        // اليوم التالي: لا تصفير بيوم جديد (5.7: «حتى يصفّره المالك»).
+        let tomorrow = ISO8601DateFormatter.string(from: Date().addingTimeInterval(86_400),
+                                                   timeZone: .current, formatOptions: [.withFullDate])
+        app = launch(keep: true, now: "\(tomorrow)T09:00:00")
+        XCTAssertTrue(circle(app).waitForExistence(timeout: 20))
+        expectCount(app, "6")
+    }
+
+    /// سيناريو المعاين 4 و5 وذ42: ضغطة عابرة على «تصفير» وإمساك 0.4 ث لا يصفّران.
+    func test_5_7_shortPressDoesNotReset() {
+        let app = launch(counter: 6)
+        XCTAssertTrue(circle(app).waitForExistence(timeout: 20))
+        expectCount(app, "6")
+        reset(app).tap()
+        expectCount(app, "6")
+        reset(app).press(forDuration: 0.4)
+        // ينتظر ما بعد 0.8 ث من بدء الإمساك ليُتيقّن أن شيئاً لم يقع بعد الرفع.
+        _ = XCTWaiter().wait(for: [XCTestExpectation()], timeout: 2)
+        expectCount(app, "6")
+    }
+
+    /// سيناريو المعاين 6 و§16.4: الإمساك ثانية يصفّر بلا حوار ولا إشعار، ويبقى صفراً بعد إعادة الفتح.
+    func test_5_7_holdResets() {
+        var app = launch(counter: 38)
+        XCTAssertTrue(circle(app).waitForExistence(timeout: 20))
+        expectCount(app, "38")
+        reset(app).press(forDuration: 1.5)
+        expectCount(app, "0")
+        XCTAssertFalse(app.staticTexts["toast"].exists, "لا إشعار بعد التصفير")
+        XCTAssertFalse(app.alerts.firstMatch.exists, "لا حوار تأكيد")
+        shot(app, "72-counter-reset")
+        app.terminate()
+        app = launch(keep: true)
+        XCTAssertTrue(circle(app).waitForExistence(timeout: 20))
+        expectCount(app, "0")
+    }
+
+    /// سيناريو المعاين 7 وذ43: والعدد صفر لا يغيّر الإمساك شيئاً، ثم الضغطة تزيد واحداً.
+    func test_5_7_holdAtZeroDoesNothing() {
+        let app = launch(counter: 0)
+        XCTAssertTrue(circle(app).waitForExistence(timeout: 20))
+        reset(app).press(forDuration: 1.5)
+        expectCount(app, "0")
+        circle(app).tap()
+        expectCount(app, "1")
+    }
+
+    /// سيناريو المعاين 9: الإمساك في الشريط يصفّر كما في الكبير، وبالطيّ تعود الدائرة الكبيرة بالصفر.
+    func test_5_7_holdResetsInBar() {
+        let app = launch(counter: 12)
+        let pull = app.buttons["track.farReview.pull"]
+        XCTAssertTrue(pull.waitForExistence(timeout: 20))
+        pull.tap()
+        let bar = app.descendants(matching: .any)["counter.bar"]
+        XCTAssertTrue(bar.waitForExistence(timeout: 20))
+        expectCount(app, "12")
+        reset(app).press(forDuration: 1.5)
+        expectCount(app, "0")
+        shot(app, "73-counter-bar-reset")
     }
 }

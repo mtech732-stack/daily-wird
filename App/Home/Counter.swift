@@ -53,6 +53,9 @@ enum CounterLayout {
         isBar ? 14 : (diameter * 0.18).rounded()
     }
 
+    /// مدّة الإمساك للتصفير (5.7، ذ42).
+    static let holdSeconds: Double = 0.8
+
     /// الاهتزاز مع تغيّر العدد (§16.3، ذ41): خفيف حين تزيده ضغطة واحداً، ولا شيء غير ذلك.
     /// فالتصفير لا يُطلق الخفيف، وله اهتزازه الأوضح.
     static func feedback(from old: Int, to new: Int) -> SensoryFeedback? {
@@ -113,12 +116,18 @@ struct CounterPressStyle: ButtonStyle {
     }
 }
 
-/// «تصفير»: كبسولة بحدّ `line` (§6، §16.4). والعدد صفر: نصّها `muted`، هادئة لا تعمل (ذ43).
-/// ومساحة لمسها 44 لا تزيد ارتفاعها. والإمساك للتصفير في المرحلة 3.
+/// «تصفير»: كبسولة بحدّ `line` (§6، §16.4). يعمل بالإمساك 0.8 ث وحده (5.7، ذ42): ما دام الإصبع عليه
+/// تمتلئ من اليمين خطّياً بـ`ink` 20% ويصير حدّها `ink`، فإذا امتلأت صُفّر العدد. وإن رُفع الإصبع أو خرج
+/// قبل ذلك انحسرت 0.2 ث ولم يتغيّر شيء. والعدد صفر: نصّها `muted`، هادئة لا تعمل (ذ43).
+/// ومساحة لمسها 44 لا تزيد ارتفاعها.
 struct CounterResetButton: View {
     let isIdle: Bool
     /// فوق الدائرة الكبيرة 13، وبجانب دائرة الشريط 12.
     var isBig = true
+    var onReset: () -> Void = {}
+
+    @State private var fill: CGFloat = 0
+    @State private var holding = false
 
     var body: some View {
         Text(verbatim: "تصفير")
@@ -126,17 +135,52 @@ struct CounterResetButton: View {
             .foregroundStyle(isIdle ? Theme.muted : Theme.ink)
             .padding(.vertical, 3)
             .padding(.horizontal, isBig ? 14 : 12)
-            .overlay(Capsule().strokeBorder(Theme.line, lineWidth: 1))
+            .background {
+                // التعبئة من اليمين إلى اليسار في الإحداثيات الفعلية (اتجاه القراءة، 8.3).
+                GeometryReader { geo in
+                    Rectangle()
+                        .fill(Theme.ink.opacity(0.2))
+                        .frame(width: geo.size.width * fill)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+                }
+                .environment(\.layoutDirection, .leftToRight)
+                .clipShape(Capsule())
+            }
+            .overlay(Capsule().strokeBorder(holding ? Theme.ink : Theme.line, lineWidth: 1))
             .padding(.vertical, 9)
             .padding(.horizontal, 4)
             .contentShape(Rectangle())
+            .onLongPressGesture(minimumDuration: CounterLayout.holdSeconds, maximumDistance: 20) {
+                guard !isIdle else { return }
+                onReset()
+                release()
+            } onPressingChanged: { pressing in
+                if pressing && !isIdle {
+                    holding = true
+                    withAnimation(.linear(duration: CounterLayout.holdSeconds)) { fill = 1 }
+                } else if !pressing {
+                    release()
+                }
+            }
             .padding(.vertical, -9)
             .padding(.horizontal, -4)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text(verbatim: "تصفير العدّاد"))
             .accessibilityHint(Text(verbatim: "اضغط مطوّلاً للتصفير"))
             .accessibilityAddTraits(.isButton)
+            // لمن لا يمسك: إجراء مخصّص (§16.8)، ولا إجراء والعدد صفر.
+            .accessibilityActions {
+                if !isIdle {
+                    Button { onReset() } label: { Text(verbatim: "صفّر العدّاد") }
+                }
+            }
             .accessibilityIdentifier("counter.reset")
+    }
+
+    /// تنحسر التعبئة 0.2 ث (§16.4).
+    private func release() {
+        holding = false
+        withAnimation(.easeOut(duration: 0.2)) { fill = 0 }
     }
 }
 
@@ -152,12 +196,13 @@ struct CounterView: View {
     let mode: Mode
     let count: Int
     let onTap: () -> Void
+    var onReset: () -> Void = {}
 
     var body: some View {
         switch mode {
         case .big(let diameter):
             VStack(spacing: 6) {
-                CounterResetButton(isIdle: count == 0)
+                CounterResetButton(isIdle: count == 0, onReset: onReset)
                 CounterCircle(count: count, diameter: diameter, onTap: onTap)
             }
             .frame(maxWidth: .infinity)
@@ -165,7 +210,7 @@ struct CounterView: View {
             .accessibilityIdentifier("counter")
         case .row:
             HStack(spacing: 18) {
-                CounterResetButton(isIdle: count == 0)
+                CounterResetButton(isIdle: count == 0, onReset: onReset)
                 CounterCircle(count: count, diameter: CounterLayout.small, isBar: true, onTap: onTap)
             }
             .frame(maxWidth: .infinity)
@@ -175,7 +220,7 @@ struct CounterView: View {
             VStack(spacing: 0) {
                 Rectangle().fill(Theme.line).frame(height: 1)
                 HStack(spacing: 18) {
-                    CounterResetButton(isIdle: count == 0, isBig: false)
+                    CounterResetButton(isIdle: count == 0, isBig: false, onReset: onReset)
                     CounterCircle(count: count, diameter: CounterLayout.small, isBar: true, onTap: onTap)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
