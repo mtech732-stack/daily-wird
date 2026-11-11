@@ -10,12 +10,13 @@ final class TypeSizeUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    /// القريب أُكملت دورته اليوم في 19 يوماً، والجديد «5 من 10»، وسطور «آخر إدخال» كلها.
+    /// القريب ينقصه الربع 40 لتكتمل دورته في 19 يوماً (يُضغط في الاختبار، فالاكتمال لا يُبذر)،
+    /// والجديد «5 من 10»، وسطور «آخر إدخال» كلها.
     private func launch(_ size: String) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing", "-seed", "farReview:1-9;nearReview:10;new:12",
                                "-cycle", "farReview:20,nearReview:18",
-                               "-readings", "1:0,37:5,38:5,39:5,40:0", "-pages", "112-116:1",
+                               "-readings", "1:0,37:5,38:5,39:5", "-pages", "112-116:1",
                                "-UIPreferredContentSizeCategoryName", size]
         app.launch()
         return app
@@ -30,6 +31,20 @@ final class TypeSizeUITests: XCTestCase {
 
     private func title(_ app: XCUIApplication, _ text: String) -> XCUIElement {
         app.staticTexts.matching(NSPredicate(format: "label == %@", text)).firstMatch
+    }
+
+    /// يضغط الربع 40 في القريب فتكتمل دورته، ويمرّر إليه إن كان تحت الشاشة مع الخطّ الكبير.
+    private func completeNear(_ app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        let q40 = app.buttons["quarter.nearReview.40"]
+        XCTAssertTrue(q40.waitForExistence(timeout: 20), "لا ربع 40", file: file, line: line)
+        for _ in 0..<4 where !q40.isHittable { app.swipeUp() }
+        XCTAssertTrue(q40.isHittable, "الربع 40 لا يُضغط", file: file, line: line)
+        q40.tap()
+        let done = app.descendants(matching: .any)["track.nearReview.completed"]
+        if !done.waitForExistence(timeout: 20) {
+            q40.tap()
+            XCTAssertTrue(done.waitForExistence(timeout: 20), "لم تكتمل دورة القريب", file: file, line: line)
+        }
     }
 
     /// يتحقّق أن `below` تحت `above` لا بجانبه.
@@ -56,23 +71,20 @@ final class TypeSizeUITests: XCTestCase {
         let more = app.buttons["track.farReview.more"]
         XCTAssertTrue(more.exists)
         XCTAssertLessThanOrEqual(more.frame.minY, farTitle.frame.minY + 4, "«⋯» في أعلى الرأس")
+        let tile = app.buttons["quarter.farReview.1"]
+        XCTAssertTrue(tile.exists)
+        XCTAssertEqual(tile.frame.width, 44, accuracy: 1, "المربّعات ثابتة مع أكبر الخطوط")
         shot(app, "78-ax5-top")
 
+        completeNear(app)
         let done = app.descendants(matching: .any)["track.nearReview.completed"]
-        XCTAssertTrue(done.waitForExistence(timeout: 20))
         XCTAssertEqual(done.label, "اكتملت دورة مراجعة القريب في 19 يوماً")
         expectBelow(done, title(app, "مراجعة القريب"), "سطر الاكتمال")
 
         let progress = app.staticTexts["track.new.progress"]
         expectBelow(progress, title(app, "المحفوظ الجديد"), "سطر التقدّم في الجديد")
 
-        let tile = app.buttons["quarter.farReview.1"]
-        XCTAssertTrue(tile.exists)
-        XCTAssertEqual(tile.frame.width, 44, accuracy: 1, "المربّعات ثابتة مع أكبر الخطوط")
-
-        // ما تحت: سطر الاكتمال وسطور «آخر إدخال» بفاصلها كسرَ سطر (م54).
-        app.swipeUp()
-        _ = app.staticTexts["home.title"].waitForExistence(timeout: 2)
+        // سطر الاكتمال وسطور «آخر إدخال» بفاصلها كسرَ سطر (م54).
         shot(app, "79-ax5-near")
         app.swipeUp()
         shot(app, "80-ax5-new")
@@ -84,8 +96,11 @@ final class TypeSizeUITests: XCTestCase {
         let homeTitle = app.staticTexts["home.title"]
         XCTAssertTrue(homeTitle.waitForExistence(timeout: 20))
         expectBelow(app.staticTexts["home.date"], homeTitle, "التاريخ")
+        completeNear(app)
         let done = app.descendants(matching: .any)["track.nearReview.completed"]
         expectBelow(done, title(app, "مراجعة القريب"), "سطر الاكتمال")
+        app.swipeDown()
+        _ = homeTitle.waitForExistence(timeout: 2)
         shot(app, "81-ax1")
     }
 
