@@ -27,7 +27,9 @@ struct TrackHeader: View {
                 .accessibilityAddTraits(.isHeader)
                 .frame(maxWidth: .infinity, alignment: .leading)
             if let days = completedDays {
+                // يُقدَّم على العنوان في توزيع العرض، فيُعرض بصيغته الكاملة ما اتّسع الرأس لها (م43).
                 CompletionLine(track: track, days: days)
+                    .layoutPriority(1)
             } else if let progress {
                 Text(verbatim: progress)
                     .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
