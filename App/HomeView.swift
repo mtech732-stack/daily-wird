@@ -22,6 +22,9 @@ struct HomeView: View {
     /// ومع تغيّر الوقت في الجهاز، فتختفي علامات «اليوم» دون فتح جديد (القرار 2، §13.2).
     @State private var now = WirdClock.now()
 
+    /// ورقة الإعدادات (7.4، §17.3).
+    @State private var showsSettings = false
+
     /// المسار الذي فُتحت عليه ورقة الإضافة (7.2).
     @State private var addTrack: Track?
     /// الإشعار العابر (§12.6).
@@ -106,7 +109,7 @@ struct HomeView: View {
                         // إلا بالسحب (§13.6). والعدّاد بين البطاقات والإشارة (§16.1، §16.6).
                         VStack(alignment: .leading, spacing: 0) {
                             VStack(alignment: .leading, spacing: isShort && openTrack == nil ? 6 : 8) {
-                                HomeHeader(now: now)
+                                HomeHeader(now: now) { showsSettings = true }
                                     .padding(.bottom, 6)
                                 ForEach(Track.allCases, id: \.self) { track in
                                     card(for: track, narrow: narrow, proxy: proxy, viewport: viewport)
@@ -249,6 +252,9 @@ struct HomeView: View {
         }
         .animation(.easeOut(duration: 0.15), value: hizbMenu)
         .animation(.easeOut(duration: 0.2), value: toast)
+        .sheet(isPresented: $showsSettings) {
+            SettingsSheet()
+        }
         .sheet(item: $details) { request in
             let state = shading
             QuarterDetailsSheet(request: request,
@@ -719,6 +725,7 @@ struct Removal: Equatable {
 struct HomeHeader: View {
     /// «الآن» من الشاشة، فيتحدّث التاريخ مع منتصف الليل كما تتحدّث الأرباع.
     var now: Date = WirdClock.now()
+    var onSettings: () -> Void = {}
 
     @Environment(\.dynamicTypeSize) private var typeSize
 
@@ -748,18 +755,22 @@ struct HomeHeader: View {
                 }
             }
             Spacer(minLength: 8)
-            // زرّ الإعدادات (§6). شاشة الإعدادات نفسها في ش6 (7.4).
-            Image(systemName: "gearshape")
-                .font(.system(size: 18, weight: .regular))
-                .foregroundStyle(Theme.ink)
-                .frame(width: 36, height: 36)
-                .overlay(
-                    RoundedRectangle(cornerRadius: Theme.Radius.iconButton, style: .continuous)
-                        .strokeBorder(Theme.line, lineWidth: 1)
-                )
-                .frame(width: Theme.Size.touch, height: Theme.Size.touch)
-                .accessibilityLabel(Text(verbatim: "الإعدادات"))
-                .accessibilityIdentifier("home.settings")
+            // زرّ الإعدادات (§6) يفتح ورقتها (7.4، §17.3).
+            Button(action: onSettings) {
+                Image(systemName: "gearshape")
+                    .font(.system(size: 18, weight: .regular))
+                    .foregroundStyle(Theme.ink)
+                    .frame(width: 36, height: 36)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Theme.Radius.iconButton, style: .continuous)
+                            .strokeBorder(Theme.line, lineWidth: 1)
+                    )
+                    .frame(width: Theme.Size.touch, height: Theme.Size.touch)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(verbatim: "الإعدادات"))
+            .accessibilityIdentifier("home.settings")
         }
     }
 }
