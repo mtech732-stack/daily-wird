@@ -71,9 +71,10 @@ final class ShadingUITests: XCTestCase {
         q2.tap()
         expectValue(q2, "تلوته اليوم")
         XCTAssertEqual(app.buttons["quarter.farReview.1"].value as? String, "لم يُتلَ", "الضغطة على ربعها وحده")
-        XCTAssertFalse(app.staticTexts["track.farReview.progress"].exists, "تقدّم الدورة مخفيّ (ذ10)")
+        // ش3 (§14): الإطار على أول ربع لم يُظلَّل في الدورة، والتقدّم يعدّ ما ظُلّل فيها.
+        XCTAssertTrue(app.buttons["quarter.farReview.1"].label.contains("موضع التوقّف"))
         XCTAssertFalse(q2.label.contains("موضع التوقّف"))
-        XCTAssertFalse(app.buttons["quarter.farReview.1"].label.contains("موضع التوقّف"), "لا علامة موضع توقّف (ذ16)")
+        XCTAssertEqual(app.staticTexts["track.farReview.progress"].label, "تقدّم الدورة: 1 من 36 ربعاً")
         shot(app, "22-shaded")
 
     }

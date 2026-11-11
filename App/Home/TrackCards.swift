@@ -25,6 +25,7 @@ struct TrackHeader: View {
                 Text(verbatim: progress)
                     .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
                     .foregroundStyle(Theme.muted)
+                    .accessibilityLabel(Text(verbatim: "تقدّم الدورة: \(progress) ربعاً"))
                     .accessibilityIdentifier("track.\(track.rawValue).progress")
             }
             if Self.isUITesting, let quarterCount {
@@ -125,6 +126,8 @@ struct ReviewTrackCard: View {
     var hizbMenu: HizbMenu?
     /// التظليل: حالة الأرباع وضغطتها (5.3).
     var shading: ShadingState?
+    /// الحزب المعروض في الصفّ المطويّ: حزب موضع التوقّف، أو حزبه السابق في مهلة 0.8 ث (§14.3).
+    var displayedHizb: Int?
     let onToggle: () -> Void
     var onAdd: () -> Void = {}
     /// «نقل» و«إزالة» من «⋯» (§12.4).
@@ -150,9 +153,14 @@ struct ReviewTrackCard: View {
                         onFoldBarMove(maxY)
                     }
             } else {
-                if let row = layout.foldedRow {
-                    FoldedRowView(track: layout.track, row: row, bookmark: layout.bookmarkQuarter, narrow: narrow,
-                                  menu: hizbMenu, shading: shading)
+                // ينتقل الصفّ إلى حزب الموضع الجديد بتلاشٍ 0.25 ث، فوق بعضهما فلا يتغيّر ارتفاع البطاقة (§14.3).
+                ZStack(alignment: .leading) {
+                    if let row = layout.foldedRow(hizb: displayedHizb ?? layout.bookmarkHizb) {
+                        FoldedRowView(track: layout.track, row: row, bookmark: layout.bookmarkQuarter, narrow: narrow,
+                                      menu: hizbMenu, shading: shading)
+                            .id(row.hizb)
+                            .transition(.opacity)
+                    }
                 }
                 // عنوان البطاقة لا يفتح شيئاً؛ الشريط وحده يُسدلها (7.1).
                 PullBar(track: layout.track, isOpen: false, action: onToggle)
@@ -181,7 +189,7 @@ struct FoldedRowView: View {
     var body: some View {
         let gap: CGFloat = narrow ? 6 : 8
         HStack(spacing: gap) {
-            HizbLabel(hizb: row.hizb, isBookmark: true, width: narrow ? Theme.Size.hizbLabelWidthNarrow : Theme.Size.hizbLabelWidth, menu: menu)
+            HizbLabel(hizb: row.hizb, isBookmark: bookmark.map(row.quarters.contains) ?? false, width: narrow ? Theme.Size.hizbLabelWidthNarrow : Theme.Size.hizbLabelWidth, menu: menu)
             HStack(spacing: gap) {
                 ForEach(row.quarters, id: \.self) { q in
                     QuarterTile(track: track, quarter: q, isBookmark: q == bookmark, isShared: row.shared.contains(q),

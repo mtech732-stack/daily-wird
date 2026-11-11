@@ -3,11 +3,15 @@ import SwiftData
 
 /// محفوظ مثالي تبدأ به اختبارات الواجهة ولقطاتها، في مخزن في الذاكرة وحده.
 /// يُفعَّل بالوسيط `-ui-testing`، ومعه اختيارياً `-seed "farReview:1-9;nearReview:10-11"`،
-/// وتظليلات سابقة `-readings "1:0,5:3@23:30"`: الربع ثم كم يوماً مضى، واختيارياً الساعة.
+/// وتظليلات سابقة `-readings "1:0,5:3@23:30"`: الربع ثم كم يوماً مضى، واختيارياً الساعة،
+/// وبداية الدورة `-cycle "farReview:20"`: كم يوماً مضى على بدايتها (أول ذلك اليوم). وإن لم تُذكر
+/// بدأت دورة كل مسار عند فتح التطبيق، فلا يُعدّ فيها ما ظُلّل قبله.
 /// لا شيء من محفوظ المالك في الكود (4.4): المثال في ملف الاختبار.
 struct UITestSeed: Equatable {
     var hizbs: [Track: [Int]] = [:]
     var readings: [Reading] = []
+    /// كم يوماً مضى على بداية دورة كل مسار (§14.1).
+    var cycles: [Track: Int] = [:]
 
     /// تظليل سابق: الربع، وكم يوماً مضى عليه، والساعة والدقيقة (إن لم تُذكر: قبل دقيقة إن كان اليوم،
     /// وإلا 9:00 ص).
@@ -24,6 +28,14 @@ struct UITestSeed: Equatable {
         if let i = arguments.firstIndex(of: "-seed"), i + 1 < arguments.count { seed = parse(arguments[i + 1]) }
         if let i = arguments.firstIndex(of: "-readings"), i + 1 < arguments.count {
             seed.readings = parseReadings(arguments[i + 1])
+        }
+        if let i = arguments.firstIndex(of: "-cycle"), i + 1 < arguments.count {
+            for part in arguments[i + 1].split(separator: ",") {
+                let kv = part.split(separator: ":")
+                if kv.count == 2, let track = Track(rawValue: String(kv[0])), let days = Int(kv[1]), days >= 0 {
+                    seed.cycles[track] = days
+                }
+            }
         }
         return seed
     }
@@ -79,6 +91,13 @@ struct UITestSeed: Equatable {
         let now = WirdClock.now()
         for reading in readings {
             context.insert(QuarterReading(quarter: reading.quarter, readAt: Self.date(of: reading, now: now)))
+        }
+        let calendar = WirdDate.calendar()
+        for track in hizbs.keys where track.isReview {
+            let start = cycles[track].flatMap {
+                calendar.date(byAdding: .day, value: -$0, to: calendar.startOfDay(for: now))
+            } ?? now
+            context.insert(ReviewCycle(track: track, startedAt: start))
         }
         try? context.save()
     }

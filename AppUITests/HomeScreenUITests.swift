@@ -73,12 +73,12 @@ final class HomeScreenUITests: XCTestCase {
     func test_7_1_cardsFoldOnBookmark() {
         let app = launch(seed: Self.sampleSeed)
 
-        // تقدّم الدورة مخفيّ في ش2 حتى يُبنى مع الدورة في ش3 (ذ10).
+        // تقدّم الدورة (§14.1): لا تظليل في الدورة بعدُ.
         let farCount = app.otherElements["track.farReview.quarterCount"]
         XCTAssertTrue(farCount.waitForExistence(timeout: 20))
         XCTAssertEqual(farCount.label, "36")
         XCTAssertEqual(app.otherElements["track.nearReview.quarterCount"].label, "8")
-        XCTAssertFalse(app.staticTexts["track.farReview.progress"].exists)
+        XCTAssertEqual(app.staticTexts["track.farReview.progress"].label, "تقدّم الدورة: 0 من 36 ربعاً")
 
         // البعيد مطويّ على ح 1 (الأرباع 1–4)، والقريب على ح 10 (الأرباع 37–40).
         for q in 1...4 { XCTAssertTrue(app.buttons["quarter.farReview.\(q)"].exists, "الربع \(q)") }
