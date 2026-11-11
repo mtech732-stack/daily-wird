@@ -176,7 +176,7 @@ struct AboutPage: View {
                     SettingsGroup {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(verbatim: "حدود الأوجه والأرباع والأحزاب والسور من بيانات مشروع «تنزيل» المفتوحة، على مصحف المدينة النبوية.")
-                            Text(verbatim: "وصُحّح منها 26 حدّاً على طبعة مجمّع الملك فهد، كما في مصحف المالك.")
+                            Text(verbatim: "وصُحّح منها 26 حدّاً على طبعة مجمّع الملك فهد.")
                             Text(verbatim: "Tanzil.net · رخصة CC BY 3.0")
                                 .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
                                 .foregroundStyle(Theme.muted)
