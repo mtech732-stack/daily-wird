@@ -72,7 +72,7 @@ final class SettingsUITests: XCTestCase {
     }
 
     /// 7.4 و§17.3: «عن التطبيق» تُدفع داخل الورقة، وفيها مصدر البيانات ونسبة «تنزيل» برخصتها،
-    /// والاسم والإصدار. ولا اسم للمالك ولا شعار قبل جواب س8. و«‹ الإعدادات» يرجع.
+    /// والاسم والإصدار. ولا اسم للمالك ولا شعار، فالتطبيق عامّ (القرار 32). و«‹ الإعدادات» يرجع.
     func test_7_4_aboutInsideSettings() {
         let app = launch()
         openSettings(app)
@@ -84,7 +84,7 @@ final class SettingsUITests: XCTestCase {
         expectContains(source, "Tanzil.net · رخصة CC BY 3.0")
         expectContains(app.staticTexts["about.app"], "الورد اليومي · الإصدار ")
         let owner = app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'المالك (' OR label CONTAINS 'س8'"))
-        XCTAssertEqual(owner.count, 0, "لا اسم للمالك ولا موضع ظاهر له قبل س8")
+        XCTAssertEqual(owner.count, 0, "لا اسم للمالك ولا شعار (القرار 32)")
         shot(app, "83-about")
 
         app.buttons["about.back"].tap()

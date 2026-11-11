@@ -8,9 +8,4 @@ enum AppInfo {
     static var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
     }
-
-    /// شعار المالك واسمه لـ«عن التطبيق» (8.4، §17.3). ينتظران جواب س8، ولا يُكتبان ولا يُرسمان قبله.
-    /// والشعار اسم أصل صورة في `Assets.xcassets`.
-    static let ownerLogo: String? = nil
-    static let ownerName: String? = nil
 }
