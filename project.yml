@@ -30,7 +30,8 @@ targets:
         CFBundleLocalizations: [ar]
         CFBundleShortVersionString: "0.1"
         CFBundleVersion: "1"
-        UILaunchScreen: {}
+        # شاشة البداية (§17.2، ذ47): App/Resources/LaunchScreen.storyboard بأصولها في Assets.xcassets.
+        UILaunchStoryboardName: LaunchScreen
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UIAppFonts:
           - IBMPlexSansArabic-Regular.ttf
@@ -41,6 +42,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.mtech732.dailywird
         GENERATE_INFOPLIST_FILE: NO
+        # الأيقونة بأوضاعها الثلاثة (8.4، القرار 13، §17.5): Any وDark وTinted في AppIcon.
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
   DailyWirdTests:
     type: bundle.unit-test
     platform: iOS

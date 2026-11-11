@@ -29,11 +29,18 @@ struct DailyWirdApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HomeView()
-                .environment(\.layoutDirection, .rightToLeft)
-                // اختبارات الواجهة وحدها: `-dark` يفرض الليل، لأن فحص طلب الدمج نهاريّ (القرار 24).
-                // وفي التطبيق يتبع الجهاز ولا اختيار له (§1، §17.3).
-                .preferredColorScheme(Self.testScheme)
+            if LaunchPreview.isRequested {
+                LaunchPreview()
+                    .ignoresSafeArea()
+                    .accessibilityIdentifier("launch.preview")
+                    .preferredColorScheme(Self.testScheme)
+            } else {
+                HomeView()
+                    .environment(\.layoutDirection, .rightToLeft)
+                    // اختبارات الواجهة وحدها: `-dark` يفرض الليل، لأن فحص طلب الدمج نهاريّ (القرار 24).
+                    // وفي التطبيق يتبع الجهاز ولا اختيار له (§1، §17.3).
+                    .preferredColorScheme(Self.testScheme)
+            }
         }
         .modelContainer(container)
     }
