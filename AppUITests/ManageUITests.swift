@@ -54,6 +54,18 @@ final class ManageUITests: XCTestCase {
         let button = app.buttons[item]
         XCTAssertTrue(button.waitForExistence(timeout: 20), "لم يظهر «\(item)» في «⋯»")
         button.tap()
+        // البندان يفتحان ورقة الإدارة. وضغطة تضيع على المحاكي (#43) تُعاد مرة: على البند إن بقيت القائمة،
+        // أو من «⋯» إن أُغلقت بلا ورقة.
+        let title = app.staticTexts["manage.title"]
+        if title.waitForExistence(timeout: 10) { return }
+        print("تشخيص: لم تُفتح ورقة الإدارة بعد «\(item)»، تُعاد الضغطة مرة")
+        if button.exists && button.isHittable {
+            button.tap()
+        } else {
+            app.buttons["track.\(track).more"].tap()
+            if button.waitForExistence(timeout: 20) { button.tap() }
+        }
+        XCTAssertTrue(title.waitForExistence(timeout: 20), "لم تُفتح ورقة الإدارة بعد «\(item)»")
     }
 
     /// يضغط «ح [رقم]» ضغطة مطوّلة حتى تظهر قائمة الحزب المخصّصة (§12.5، م22، م32)، ويعيد بندها
