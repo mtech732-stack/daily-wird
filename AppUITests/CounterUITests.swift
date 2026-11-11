@@ -58,7 +58,8 @@ final class CounterUITests: XCTestCase {
         let newCard = app.descendants(matching: .any)["track.new.card"]
         let screen = app.windows.firstMatch.frame
         // الترتيب: البطاقات ثم «تصفير» ثم الدائرة ثم الإشارة، وكله في الشاشة (§16.1، §16.6).
-        XCTAssertLessThanOrEqual(newCard.frame.maxY, reset.frame.minY)
+        // إطار «تصفير» للإتاحة يمتدّ 9 فوق الكبسولة (مساحة اللمس 44)، فيُقابَل بمنتصفه.
+        XCTAssertLessThan(newCard.frame.maxY, reset.frame.midY)
         XCTAssertLessThan(reset.frame.maxY, c.frame.minY)
         XCTAssertLessThanOrEqual(c.frame.maxY, hint.frame.minY)
         XCTAssertLessThanOrEqual(hint.frame.maxY, screen.maxY)
@@ -94,7 +95,8 @@ final class CounterUITests: XCTestCase {
         let keys = app.descendants(matching: .any)["keys"]
         let screen = app.windows.firstMatch.frame
         XCTAssertGreaterThanOrEqual(keys.frame.minY, screen.maxY - 40, "المفاتيح لا تُرى عند الفتح")
-        c.swipeUp()
+        // سحب يبدأ على الدائرة إلى أعلى الشاشة.
+        c.press(forDuration: 0.05, thenDragTo: app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.15)))
         let shown = XCTNSPredicateExpectation(predicate: NSPredicate(format: "frame.minY < %f", screen.maxY - 200), object: keys)
         XCTAssertEqual(XCTWaiter().wait(for: [shown], timeout: 20), .completed, "ظهرت المفاتيح بالسحب")
         expectCount(app, "33")
@@ -152,9 +154,10 @@ final class CounterUITests: XCTestCase {
         XCTAssertTrue(juz.waitForExistence(timeout: 20))
         juz.tap()
         let go = app.buttons["add.go"]
-        let enabled = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isEnabled == true AND isHittable == true"), object: go)
-        if XCTWaiter().wait(for: [enabled], timeout: 20) != .completed { juz.tap() }
-        XCTAssertEqual(XCTWaiter().wait(for: [enabled], timeout: 20), .completed, "لم يتفعّل «أضف»")
+        let enabled = { XCTNSPredicateExpectation(predicate: NSPredicate(format: "isEnabled == true AND isHittable == true"), object: go) }
+        // ضغطة الجزء قد لا تصل على المحاكي (#43)، فتُعاد مرة.
+        if XCTWaiter().wait(for: [enabled()], timeout: 20) != .completed { juz.tap() }
+        XCTAssertEqual(XCTWaiter().wait(for: [enabled()], timeout: 20), .completed, "لم يتفعّل «أضف»")
         go.tap()
         let toast = app.staticTexts["toast"]
         XCTAssertTrue(toast.waitForExistence(timeout: 20))
