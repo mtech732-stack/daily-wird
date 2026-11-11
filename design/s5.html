@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ش5 · العدّاد</title>
+<link rel="stylesheet" href="shared/ds.css">
+<link rel="stylesheet" href="shared/s1.css">
+<link rel="stylesheet" href="shared/s2.css">
+<link rel="stylesheet" href="shared/s3.css">
+<link rel="stylesheet" href="shared/s4.css">
+<link rel="stylesheet" href="shared/s5.css">
+<link rel="stylesheet" href="shared/page.css">
+<style>
+h2.grp{font-size:20px;font-weight:600;margin:34px 0 4px}
+p.grp{margin:0 0 16px;color:var(--pg-muted);font-size:14.5px;max-width:80ch;line-height:1.75}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <h1>ش5 · العدّاد: التصميم</h1>
+    <p>دائرة كبيرة تحت البطاقات الثلاث، جاهزة من أول فتحة. الضغط في أي موضع منها يزيد العدد واحداً مع اهتزاز خفيف، فيعدّ المالك وعينه على المصحف. و«تصفير» فوقها لا يعمل إلا بالإمساك، حتى لا يضيع العدّ بلمسة خاطئة. والعدد محفوظ في الجهاز وحده حتى يصفّره المالك. وعند فتح أرشيف مسار يصغر إلى شريط أسفل الشاشة. ومفاتيح الرموز تبقى ختام الصفحة تحته بالسحب (القرار 27). المرجع المكتوب: <code>design/system.md</code> §16.</p>
+    <nav class="links"><a href="index.html">نظام التصميم</a><a href="main.html">الشاشة الرئيسية</a><a href="juz-amma.html">جزء عمّ</a><a href="s1.html">ش1 · المحفوظ</a><a href="s2.html">ش2 · التظليل والعمر</a><a href="s3.html">ش3 · موضع التوقّف</a><a href="s4.html">ش4 · المحفوظ الجديد</a><a href="s5.html" aria-current="page">ش5 · العدّاد</a><a href="mockups.html">النماذج المعتمدة</a></nav>
+  </header>
+  <div class="bar">
+    <button id="bGray">فحص الرمادي</button>
+    <button id="bDark">ليلاً</button>
+    <button id="bOrn">بلا زخرفة (للمقارنة)</button>
+  </div>
+
+  <h2 class="grp">جرّبها بنفسك</h2>
+  <p class="grp">اضغط الدائرة فيزيد العدد (وعلى الهاتف يهتزّ إن كان المتصفّح يسمح). وأمسك «تصفير» حتى يمتلئ فيصفّر، وارفع إصبعك قبل ذلك فلا يتغيّر شيء. وافتح أرشيف مسار لترى العدّاد شريطاً، واسحب الشاشة للأعلى لمفاتيح الرموز. والأزرار تحت الهاتف تضع عدداً كبيراً لترى حجم الرقم.</p>
+  <div class="gal" id="g0"></div>
+  <div class="days"><button id="c999">999</button><button id="c1250">1250</button><button id="c12500">12500</button><button id="c0">من البداية</button><output id="cOut"></output></div>
+
+  <h2 class="grp">1 · الدائرة والعدد (5.7 · 7.1)</h2>
+  <p class="grp">قطرها ما بقي من الشاشة تحت البطاقات (98 على محفوظ المالك في الشاشة الأساسية، و136 على الكبيرة)، والعدد كبير فيها وتحته «+». ويصغر الرقم إذا زادت خاناته حتى يبقى داخل الدائرة.</p>
+  <div class="gal" id="g1"></div>
+
+  <h2 class="grp">2 · الاهتزاز</h2>
+  <p class="grp">لا يُرى في صورة. مع كل ضغطة اهتزاز خفيف واحد (Light)، ومع إتمام التصفير اهتزاز أوضح (Medium) يختلف عنه فيُعرف بلا نظر. ولا صوت، ولا اهتزاز عند بدء الإمساك ولا عند التظليل (ذ11). التفاصيل في §16.3.</p>
+
+  <h2 class="grp">3 · التصفير بالإمساك</h2>
+  <p class="grp">يمتلئ الزرّ من اليمين في 0.8 ث ما دام الإصبع عليه، فإذا امتلأ صار العدد صفراً. وإن رُفع الإصبع قبل ذلك انحسرت التعبئة ولم يتغيّر العدد. ولا حوار تأكيد، لأن الإمساك هو التأكيد.</p>
+  <div class="gal" id="g3"></div>
+
+  <h2 class="grp">4 · مع الأرشيف المفتوح</h2>
+  <p class="grp">يصغر العدّاد إلى شريط ملتصق بأسفل الشاشة، دائرته 64 و«تصفير» بجانبها، ويبقى العدد نفسه. وشريط «طيّ» فوقه. ويعود كبيراً عند الطيّ.</p>
+  <div class="gal" id="g4"></div>
+
+  <h2 class="grp">5 · ختام الصفحة: مفاتيح الرموز (القرار 27)</h2>
+  <p class="grp">تحت العدّاد الإشارة «اسحب للأعلى لمفاتيح الرموز»، والمفاتيح بعدها لا تُرى إلا بالسحب، كما كانت في ش2–ش4 ولم يُزحها العدّاد.</p>
+  <div class="gal" id="g5"></div>
+
+  <h2 class="grp">6 · ليلاً، وأصغر شاشة وأكبرها، وأطول محتوى</h2>
+  <div class="gal" id="g6"></div>
+</div>
+<script src="shared/quran.js"></script>
+<script src="shared/ds.js"></script>
+<script src="shared/s2.js"></script>
+<script src="shared/s3.js"></script>
+<script src="shared/s4.js"></script>
+<script src="shared/s5.js"></script>
+<script>
+const {phone,fitAll,N}=WIRD,{make,tapPage}=S4,{still,interactive}=S5;
+const G=id=>document.getElementById(id);
+const fig=(g,o)=>{const s=phone(G(g),o);s.classList.add('wl');s.dataset.id=o.id||'';if(o.dark)s.classList.add('wd');return s;};
+/* محفوظ المالك كما في ش4: البعيد ح 1–9، والقريب ح 10–11، والجديد ح 12 وقد أتمّ منه 112–116. والعدد 33 كما في النماذج المعتمدة */
+const AGE=r=>r<=8?12:r<=19?3:r<=22?0:r<=30?41:r<=34?20:r<=36?null:r<=38?3:r<=40?9:r<=44?15:null;
+const PG={112:4,113:4,114:3,115:2,116:1};
+const mine=(o={})=>{const S=make(Object.assign({far:[1,2,3,4,5,6,7,8,9],near:[10,11],nw:[12],pg:PG,agesOf:AGE},o));S.count=o.count??33;return S;};
+const far57=[...Array(57)].map((_,i)=>i+1);
+const ح60=(o={})=>{const S=make(Object.assign({far:far57,near:[58,59],nw:[60],pg:{591:6,592:5,593:4,594:3,595:2,596:1},agesOf:AGE},o));S.count=o.count??33;return S;};
+const toKeys=s=>{const sc=s.querySelector('.scroll'),c=s.querySelector('.s5c');sc.scrollTop=c.offsetTop-sc.offsetTop-40;};
+
+/* 0 · الهاتف التفاعلي */
+const ph=interactive(fig('g0',{title:'هاتف تفاعلي',cap:'لا يُحفظ شيء هنا؛ وفي التطبيق يبقى العدد بعد الإغلاق حتى يُصفَّر.'}),mine(),{onCount:S=>G('cOut').textContent=`العدد ${N(S.count)}`});
+const setC=n=>{ph.S.count=n;ph.render();G('cOut').textContent=`العدد ${N(n)}`;};
+G('c999').onclick=()=>setC(999);G('c1250').onclick=()=>setC(1250);G('c12500').onclick=()=>setC(12500);G('c0').onclick=()=>setC(33);
+
+/* 1 · الدائرة والعدد */
+still(fig('g1',{id:'s5-fold',title:'1 · عند الفتح',cap:'البطاقات الثلاث، ثم «تصفير» والدائرة 98 والعدد 33 وتحته «+»، ثم الإشارة. كل ذلك بلا تمرير.'}),mine());
+still(fig('g1',{id:'s5-zero',title:'2 · أول مرة: صفر',cap:'العدد 0، و«تصفير» في مكانه بلون هادئ لا يعمل، فلا تقفز الدائرة حين يظهر (ذ43).'}),mine({count:0}));
+still(fig('g1',{id:'s5-press',title:'3 · لحظة الضغط',cap:'الدائرة تخفت قليلاً وتصغر 4% ما دام الإصبع عليها، والعدد زاد فوراً إلى 34 مع الاهتزاز (ذ40).'}),mine({count:34}),{press:true});
+still(fig('g1',{id:'s5-d4',title:'4 · أربع خانات',cap:'1250: يصغر الرقم إلى 0.31 من القطر (ذ39). بلا فاصل آلاف.'}),mine({count:1250}));
+still(fig('g1',{id:'s5-d5',title:'5 · خمس خانات',cap:'12500: 0.25 من القطر، ويبقى داخل الدائرة بهامش.'}),mine({count:12500}));
+
+/* 3 · التصفير */
+still(fig('g3',{id:'s5-hold',title:'6 · أثناء الإمساك',cap:'بعد 0.4 ث: امتلأ نصف الزرّ من اليمين، وحدّه صار بلون الكحلي. والعدد لم يتغيّر بعدُ.'}),mine(),{hold:.5});
+still(fig('g3',{id:'s5-hold-full',title:'7 · لحظة الامتلاء',cap:'عند 0.8 ث يمتلئ الزرّ، فيُصفَّر العدد مع اهتزاز أوضح، ثم تنحسر التعبئة.'}),mine(),{hold:1});
+still(fig('g3',{id:'s5-reset',title:'8 · بعد التصفير',cap:'0، و«تصفير» هادئ حتى أول ضغطة. ولا إشعار ولا تراجع (ذ42).'}),mine({count:0}));
+
+/* 4 · الأرشيف */
+still(fig('g4',{id:'s5-bar-far',title:'9 · أرشيف البعيد مفتوحاً',cap:'العدّاد شريط ارتفاعه 88 في أسفل الشاشة، وفوقه شريط «طيّ» ملتصق، والنزول إلى موضع التوقّف كما في ش3.'}),mine({open:'far'}));
+still(fig('g4',{id:'s5-bar-new',title:'10 · كل أوجه الحزب',cap:'كذلك في المحفوظ الجديد.'}),mine({open:'new'}));
+still(fig('g4',{id:'s5-bar-hold',title:'11 · التصفير في الشريط',cap:'الإمساك نفسه، و«تصفير» بجانب الدائرة.'}),mine({open:'near'}),{hold:.5});
+still(fig('g4',{id:'s5-bar-toast',title:'12 · إشعار والشريط ظاهر',cap:'الإشعار العابر يرتفع فوق الشريط فلا يغطّي العدد.'}),mine({open:'far'}),{s4:{toast:'نُقل ح 9 إلى مراجعة القريب'}});
+
+/* 5 · المفاتيح */
+still(fig('g5',{id:'s5-keys',title:'13 · بعد السحب للأعلى',cap:'الدائرة، ثم الإشارة، ثم مفاتيح الرموز ختاماً للصفحة.'}),mine(),{},toKeys);
+
+/* 6 · المقاسات والليل وأطول محتوى */
+still(fig('g6',{id:'s5-dark-fold',dark:true,title:'14 · ليلاً',cap:'دائرة فاتحة برقم كحلي: `ink` و`paper` ليلاً.'}),mine());
+still(fig('g6',{id:'s5-dark-bar',dark:true,title:'15 · الشريط ليلاً',cap:''}),mine({open:'far'}),{hold:.5});
+still(fig('g6',{id:'s5-375-fold',size:'s375',title:'16 · 375×667',cap:'صفّ أفقي: دائرة 64 و«تصفير» بجانبها، وتخفى الإشارة (ت6). وتضيق ثلاث مسافات حتى يُرى العدّاد كاملاً (ذ44).'}),mine());
+still(fig('g6',{id:'s5-375-d5',size:'s375',title:'17 · خمس خانات في الدائرة 64',cap:''}),mine({count:12500}));
+still(fig('g6',{id:'s5-375-bar',size:'s375',title:'18 · الشريط على 375×667',cap:''}),mine({open:'far'}));
+still(fig('g6',{id:'s5-440-fold',size:'s440',title:'19 · 440×956',cap:'الزيادة كلها للدائرة: 136.'}),mine());
+still(fig('g6',{id:'s5-empty',title:'20 · المسارات فارغة',cap:'البطاقات أقصر، والدائرة لا تزيد على 136.'}),mine({far:[],near:[],nw:[],pg:{},count:0}));
+still(fig('g6',{id:'s5-stress',title:'21 · أطول محتوى',cap:'ح 60 بسوره الكثيرة في الجديد، والبعيد 57 حزباً: الدائرة تصغر بما بقي.'}),ح60());
+still(fig('g6',{id:'s5-375-stress',size:'s375',title:'22 · أطول محتوى على 375×667',cap:''}),ح60());
+
+setTimeout(fitAll,60);fitAll();
+G('bGray').onclick=e=>{document.querySelectorAll('.phone').forEach(p=>p.classList.toggle('gray'));e.target.classList.toggle('on');};
+G('bDark').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>p.classList.toggle('wd'));e.target.classList.toggle('on');};
+G('bOrn').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>p.classList.toggle('plain'));e.target.classList.toggle('on');};
+if(location.hash.includes('gray'))G('bGray').click();
+if(location.hash.includes('dark'))G('bDark').click();
+</script>
+</body>
+</html>
