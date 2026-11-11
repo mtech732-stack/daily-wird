@@ -14,6 +14,8 @@ struct AddSheet: View {
     /// ومعه الأحزاب المختارة («2|1,2»)، ليفرّق الاختبار بين ضغطة لم تصل إلى التطبيق،
     /// وضغطة وصلت ولم يتغيّر بها الاختيار، واختيار تغيّر ولم تظهر سمته بعد.
     @State private var receivedTaps = 0
+    /// ضغطات «أضف» التي وصلت، لاختبارات الواجهة: تفرّق بين ضغطة لم تصل وسؤال لم يظهر.
+    @State private var goTaps = 0
     private static let isUITesting = ProcessInfo.processInfo.arguments.contains("-ui-testing")
     /// سؤال النقل ظاهر فوق الورقة (§12.3).
     @State private var asking = false
@@ -49,7 +51,7 @@ struct AddSheet: View {
                     .frame(width: 1, height: 1)
                     .accessibilityElement()
                     .accessibilityIdentifier("add.taps")
-                    .accessibilityValue(Text(verbatim: "\(receivedTaps)|\(selection.sortedSelection.map(String.init).joined(separator: ","))"))
+                    .accessibilityValue(Text(verbatim: "\(receivedTaps)|\(selection.sortedSelection.map(String.init).joined(separator: ","))|\(goTaps)"))
                     .allowsHitTesting(false)
             }
         }
@@ -118,6 +120,7 @@ struct AddSheet: View {
         return VStack(spacing: 0) {
             Rectangle().fill(Theme.line).frame(height: 1)
             Button {
+                goTaps += 1
                 // الحزب الذي في مسار آخر يُسأل عنه عند «أضف» لا عند اختياره (ذ5).
                 if selection.conflicts.isEmpty {
                     onAdd(list, selection.track, false)
