@@ -41,7 +41,7 @@ final class CounterUITests: XCTestCase {
         let element = circle(app)
         let match = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", text), object: element)
         if XCTWaiter().wait(for: [match], timeout: 20) != .completed {
-            XCTAssertEqual(element.exists ? element.value as? String : "(غير موجود)", text, file: file, line: line)
+            XCTAssertEqual(element.exists ? (element.value as? String ?? "") : "(غير موجود)", text, file: file, line: line)
         }
     }
 
@@ -177,16 +177,15 @@ final class CounterUITests: XCTestCase {
         shot(app, "71-counter-d5")
     }
 
-    /// سيناريو المعاين 13: الدائرة تُقرأ «العدّاد» وقيمتها العدد، والتمرير للأعلى يزيدها.
-    func test_5_7_voiceOverIncrement() {
+    /// سيناريو المعاين 13: الدائرة عنصر واحد يُقرأ «العدّاد» وقيمته العدد. والزيادة بالتمرير للأعلى
+    /// (`accessibilityAdjustableAction`) لا تستدعيها XCUITest على iOS، فتُجرَّب في ورقة الجهاز.
+    func test_5_7_voiceOverLabel() {
         let app = launch(counter: 6)
         let c = circle(app)
         XCTAssertTrue(c.waitForExistence(timeout: 20))
         XCTAssertEqual(c.label, "العدّاد")
         expectCount(app, "6")
-        // إجراء الزيادة لقارئ الشاشة (accessibilityAdjustableAction).
-        c.increment()
-        expectCount(app, "7")
+        XCTAssertEqual(app.descendants(matching: .any).matching(identifier: "counter.circle").count, 1, "عنصر واحد")
     }
 
     // MARK: المرحلة 3: التصفير بالإمساك والحفظ (§16.4، §16.8)
