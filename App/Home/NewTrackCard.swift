@@ -207,7 +207,7 @@ struct PageTile: View {
             .accessibilityLabel(Text(verbatim: label))
             .accessibilityHint(Text(verbatim: "ضغطة: أتممته أو تراجع"))
             .accessibilityAddTraits(.isButton)
-            .accessibilityAction(onTap)
+            .accessibilityAction { onTap() }
             .accessibilityIdentifier("page.\(page)")
     }
 }
