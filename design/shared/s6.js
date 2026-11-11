@@ -13,9 +13,9 @@ const PHONE='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke=
 
 /* حالة النسخ الاحتياطي (5.8): ثلاث، ونصّ «متوقّف» بنصّ الوثيقة */
 const CLOUDS={
-  on:{b:'ok',i:CHECK,t:'iCloud',s:'يُنسخ سجلّك إلى iCloud تلقائياً',f:'كل ما تظلّله وتحفظه يُنسخ إلى حسابك في iCloud، فيعود كاملاً إن حذفت التطبيق ثم ثبّتّه. والعدّاد في هذا الجهاز وحده.'},
-  off:{b:'off',i:SLASH,t:'iCloud',s:'النسخ الاحتياطي متوقّف: iCloud غير مفعّل',f:'يعمل التطبيق في هذا الجهاز، وسجلّك محفوظ فيه. ويبدأ النسخ وحده متى سجّلت الدخول إلى iCloud في إعدادات الجهاز.'},
-  local:{b:'loc',i:PHONE,t:'في هذا الجهاز',s:'سجلّك محفوظ في هذا الجهاز',f:'النسخ إلى iCloud يُفعَّل قبل الإطلاق (ش7)، ويُنقل إليه سجلّك كما هو.'},
+  on:{b:'b-ok',i:CHECK,t:'iCloud',s:'يُنسخ سجلّك إلى iCloud تلقائياً',f:'كل ما تظلّله وتحفظه يُنسخ إلى حسابك في iCloud، فيعود كاملاً إن حذفت التطبيق ثم ثبّتّه. والعدّاد في هذا الجهاز وحده.'},
+  off:{b:'b-off',i:SLASH,t:'iCloud',s:'النسخ الاحتياطي متوقّف: iCloud غير مفعّل',f:'يعمل التطبيق في هذا الجهاز، وسجلّك محفوظ فيه. ويبدأ النسخ وحده متى سجّلت الدخول إلى iCloud في إعدادات الجهاز.'},
+  local:{b:'b-loc',i:PHONE,t:'في هذا الجهاز',s:'سجلّك محفوظ في هذا الجهاز',f:'النسخ إلى iCloud يأتي في تحديث قريب، ويُنقل إليه سجلّك كما هو.'},
 };
 function settingsHTML(o={}){
   const c=CLOUDS[o.cloud||'local'];
@@ -31,18 +31,18 @@ function settingsHTML(o={}){
     </div></div>`;
 }
 function aboutHTML(o={}){
-  const logo=o.logo?`<img class="logo" src="${o.logo}" alt="">`:`<div class="logo" aria-hidden="true">شعار المالك<br>(س8)</div>`;
   return `<div class="dim"></div><div class="sheet tall set about" role="dialog" aria-label="عن التطبيق"><div class="shd"><div class="grab"></div>
     <div class="ttl sub"><button class="back">${ARR}الإعدادات</button><h4>عن التطبيق</h4><button class="lnk">تمّ</button></div></div>
     <div class="slist">
-      <div class="who">${logo}<b><span class="ph">${o.name||'اسم المالك (س8)'}</span></b><span>الورد اليومي · الإصدار 1.0</span></div>
+      <div class="who"><img class="appic" src="icon/app-icon-${o.dark?'dark':'light'}-1024.png" alt=""><b>الورد اليومي</b><span>الإصدار 1.0</span></div>
       <div class="sgh">مصدر البيانات القرآنية</div>
       <div class="sgrp"><div class="src">
         <p>حدود الأوجه والأرباع والأحزاب والسور من بيانات مشروع «تنزيل» المفتوحة، على مصحف المدينة النبوية.</p>
-        <p>وصُحّح منها 26 حدّاً على طبعة مجمّع الملك فهد، كما في مصحف المالك.</p>
+        <p>وصُحّح منها 26 حدّاً على طبعة مجمّع الملك فهد.</p>
         <p class="m">Tanzil.net · رخصة CC BY 3.0</p></div></div>
     </div></div>`;
 }
+/* «عن التطبيق» بلا اسم المالك ولا شعاره (القرار 32): أيقونة التطبيق واسمه وإصداره، ثم مصدر البيانات */
 /* الشاشة الرئيسية كما في ش5، وفوقها الورقة */
 function settings(scr,S,o={}){S5.still(scr,S);scr.insertAdjacentHTML('beforeend',o.about?aboutHTML(o):settingsHTML(o));scr.classList.add('s6set');}
 /* شاشة البداية: صورة واحدة بقياس الشاشة من design/launch/ (يولّدها design/tools/build_launch.py) */
