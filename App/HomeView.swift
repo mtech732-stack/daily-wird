@@ -280,11 +280,26 @@ struct HomeView: View {
     private func add(_ hizbs: [Int], to track: Track, moving: Bool) {
         do {
             let before = Library.trackOfHizb(from: placements)
+            let bookmarkBefore = reviewLayout(for: track).bookmarkHizb
             let changed = try Library.add(hizbs, to: track, in: context, moving: moving, now: WirdClock.now())
             // ما كان في مسار آخر قد نُقل، وما سواه أُضيف جديداً.
             let moved = changed.filter { before[$0] != nil && before[$0] != track }
             let added = changed.filter { !moved.contains($0) }
-            show(changed.isEmpty ? "لم يُضف شيء" : Phrase.addedToast(added: added, moved: moved, to: track))
+            guard !changed.isEmpty else { return show("لم يُضف شيء") }
+            // §14.6 (ذ22): إن كان المضاف قبل موضع التوقّف انتقل إليه الموضع والصفّ المطويّ بغير ضغطة،
+            // فيقوله الإشعار. والمسار الذي كان فارغاً لا موضع له قبلها.
+            let after = reviewLayout(for: track,
+                                     readings: (try? context.fetch(FetchDescriptor<QuarterReading>())) ?? readings,
+                                     cycles: (try? context.fetch(FetchDescriptor<ReviewCycle>())) ?? cycles,
+                                     placements: (try? context.fetch(FetchDescriptor<HizbPlacement>())) ?? placements)
+            if let old = bookmarkBefore, let new = after.bookmarkHizb, new != old, changed.contains(new) {
+                pinTasks[track]?.cancel()
+                pinTasks[track] = nil
+                pinned[track] = nil
+                show(Phrase.addedWithBookmark(added: added, moved: moved, bookmark: new, to: track))
+            } else {
+                show(Phrase.addedToast(added: added, moved: moved, to: track))
+            }
         } catch {
             show("تعذّرت الإضافة")
         }

@@ -66,6 +66,15 @@ enum Phrase {
         }
     }
 
+    /// الإضافة التي نقلت موضع التوقّف (§14.6، ذ22): «أُضيف ح 4 · وفيه الآن موضع التوقّف».
+    /// وإن أُضيف معه غيره سُمّي حزب الموضع: «أُضيف حزبان إلى مراجعة القريب · وفي ح 4 الآن موضع التوقّف».
+    static func addedWithBookmark(added: [Int], moved: [Int], bookmark: Int, to track: Track) -> String {
+        if added == [bookmark] && moved.isEmpty {
+            return "أُضيف \(Digits.hizbLabel(bookmark)) · وفيه الآن موضع التوقّف"
+        }
+        return addedToast(added: added, moved: moved, to: track) + " · وفي \(Digits.hizbLabel(bookmark)) الآن موضع التوقّف"
+    }
+
     // MARK: النقل والإزالة (§12.5، م20)
 
     /// «نُقل ح 10 إلى مراجعة البعيد» · «نُقل 3 أحزاب إلى …»
