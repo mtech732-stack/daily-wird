@@ -196,6 +196,21 @@ final class CounterUITests: XCTestCase {
         XCTAssertEqual(app.descendants(matching: .any).matching(identifier: "counter.circle").count, 1, "عنصر واحد")
     }
 
+    /// يضغط الدائرة حتى يصير العدد `n`، ويعيد الضغطة مرة إن بقي العدد قبلها (ضاعت على المحاكي).
+    private func tapCounting(_ app: XCUIApplication, to n: Int, file: StaticString = #filePath, line: UInt = #line) {
+        let c = circle(app)
+        c.tap()
+        let reached = { XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", String(n)), object: c) }
+        if XCTWaiter().wait(for: [reached()], timeout: 10) == .completed { return }
+        if (c.value as? String) == String(n - 1) {
+            print("تشخيص: ضاعت ضغطة الدائرة إلى \(n)، تُعاد مرة")
+            c.tap()
+        }
+        if XCTWaiter().wait(for: [reached()], timeout: 10) != .completed {
+            XCTAssertEqual(c.value as? String, String(n), file: file, line: line)
+        }
+    }
+
     // MARK: المرحلة 3: التصفير بالإمساك والحفظ (§16.4، §16.8)
 
     private func reset(_ app: XCUIApplication) -> XCUIElement {
@@ -207,7 +222,8 @@ final class CounterUITests: XCTestCase {
         var app = launch(counter: 0)
         let c = circle(app)
         XCTAssertTrue(c.waitForExistence(timeout: 20))
-        for _ in 0..<6 { c.tap() }
+        // ضغطة واحدة ثم العدد الذي بعدها: ضغطة تضيع على المحاكي (#43) تُعاد، ولا تُحسب ضغطة وصلت مرّتين.
+        for n in 1...6 { tapCounting(app, to: n) }
         expectCount(app, "6")
         app.terminate()
 
