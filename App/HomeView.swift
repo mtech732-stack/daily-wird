@@ -34,6 +34,9 @@ struct HomeView: View {
     @State private var removal: Removal?
     /// تأكيد «ابدأ دورة جديدة» (§14.5، ذ21).
     @State private var newCycle: Track?
+    /// حوار اكتمال الحزب (§15.5): يظهر بعد 0.45 ث من الضغطة التي أتمّت آخر أوجهه (ذ34).
+    @State private var completedHizb: Int?
+    @State private var completedTask: Task<Void, Never>?
     /// قائمة الحزب المفتوحة بالضغط المطوّل (§12.5).
     @State private var hizbMenu: HizbMenuRequest?
 
@@ -169,7 +172,7 @@ struct HomeView: View {
                 HizbMenuOverlay(request: request) { action in
                     hizbMenu = nil
                     switch action {
-                    case .move: move([request.hizb], from: request.track)
+                    case .move(let target): move([request.hizb], from: request.track, to: target)
                     case .remove: removal = Removal(track: request.track, hizbs: [request.hizb])
                     case nil: break
                     }
@@ -194,11 +197,11 @@ struct HomeView: View {
             }
         }
         .sheet(item: $manage) { request in
-            ManageSheet(request: request, hizbs: Library.activeHizbs(in: request.track, from: placements)) { hizbs in
+            ManageSheet(request: request, hizbs: Library.activeHizbs(in: request.track, from: placements)) { hizbs, target in
                 if request.mode == .remove {
                     remove(hizbs, from: request.track)
                 } else {
-                    move(hizbs, from: request.track)
+                    move(hizbs, from: request.track, to: target)
                 }
             }
         }
@@ -214,6 +217,15 @@ struct HomeView: View {
                 ) { confirmed in
                     self.removal = nil
                     if confirmed { remove(removal.hizbs, from: removal.track) }
+                }
+            }
+        }
+        .overlay {
+            // حوار اكتمال الحزب (§15.5): «ارفعه إلى مراجعة القريب» أو «لاحقاً»، ولا ينقل التطبيق شيئاً بنفسه.
+            if let hizb = completedHizb {
+                HizbCompleteDialog(hizb: hizb) { raising in
+                    completedHizb = nil
+                    if raising { raise(hizb) }
                 }
             }
         }
@@ -234,16 +246,36 @@ struct HomeView: View {
         }
     }
 
-    /// ينقل إلى المسار الآخر فوراً بلا سؤال، لأن النقل لا يمحو شيئاً (ذ6)، ثم يؤكّده بإشعار.
-    private func move(_ hizbs: [Int], from track: Track) {
-        let target = Library.otherReviewTrack(track)
+    /// ينقل إلى مسار آخر فوراً بلا سؤال، لأن النقل لا يمحو شيئاً (ذ6)، ثم يؤكّده بإشعار.
+    /// ونقل حزب مكتمل من الجديد إلى القريب هو الرفع (§15.5–15.6) بإشعاره (ذ36)، وغير المكتمل «نُقل» (م48).
+    private func move(_ hizbs: [Int], from track: Track, to target: Track) {
+        let raising = track == .newMemorization && target == .nearReview && hizbs.count == 1
+            && newLayout.isComplete(hizbs[0])
+        let bookmarkBefore = target.isReview ? reviewLayout(for: target).bookmarkHizb : nil
         do {
             let moved = try Library.move(hizbs, from: track, to: target, in: context, now: WirdClock.now())
             foldIfEmptied(track, removing: moved)
-            if !moved.isEmpty { show(Phrase.movedToast(moved, to: target)) }
+            guard !moved.isEmpty else { return }
+            if raising {
+                completedHizb = nil
+                let after = reviewLayout(for: target,
+                                         readings: (try? context.fetch(FetchDescriptor<QuarterReading>())) ?? readings,
+                                         cycles: (try? context.fetch(FetchDescriptor<ReviewCycle>())) ?? cycles,
+                                         placements: (try? context.fetch(FetchDescriptor<HizbPlacement>())) ?? placements)
+                // ذ22: إن انتقل إليه موضع التوقّف في القريب قاله الإشعار. والقريب الفارغ لا موضع له قبله.
+                let bookmark = bookmarkBefore != nil && after.bookmarkHizb == moved[0] && bookmarkBefore != moved[0]
+                show(Phrase.raisedToast(moved[0], bookmark: bookmark))
+            } else {
+                show(Phrase.movedToast(moved, to: target))
+            }
         } catch {
             show("تعذّر النقل")
         }
+    }
+
+    /// الرفع إلى القريب من الحوار أو الزرّ (§15.5).
+    private func raise(_ hizb: Int) {
+        move([hizb], from: .newMemorization, to: .nearReview)
     }
 
     /// تنتهي الدورة بيد المالك وتبدأ غيرها: «0 من 36»، والإطار على أول ربع، والصفّ على أول حزب (§14.5).
@@ -367,7 +399,10 @@ struct HomeView: View {
                     LastEntryLine(track: track, date: LastEntry.latest(inPages: layout.pages, completions: completions),
                                   now: now)
                     NewTrackCard(layout: layout, isOpen: openTrack == track, displayedRow: pinnedPages,
-                                 onPage: { completePage($0) }) {
+                                 hizbMenu: HizbMenu(track: track) { hizb, frame in
+                                     hizbMenu = HizbMenuRequest(track: track, hizb: hizb, labelFrame: frame)
+                                 },
+                                 onPage: { completePage($0) }, onRaise: { raise($0) }) {
                         toggle(track, proxy: proxy)
                     } onAdd: {
                         addTrack = track
@@ -386,19 +421,35 @@ struct HomeView: View {
     private func completePage(_ page: Int) {
         let at = WirdClock.now()
         now = at
-        let before = newLayout.foldedRow
+        let layoutBefore = newLayout
+        let before = layoutBefore.foldedRow
         do {
-            switch try Pages.tap(page: page, in: context, now: at) {
+            let result = try Pages.tap(page: page, in: context, now: at)
+            switch result {
             case .completed:
                 AccessibilityNotification.Announcement("أتممته اليوم").post()
             case .undone:
                 AccessibilityNotification.Announcement("تراجعت").post()
+                completedTask?.cancel()
             case .completedBefore(let date):
                 show(Phrase.pageDoneBefore(page, on: date, now: at))
                 return
             }
             let fresh = (try? context.fetch(FetchDescriptor<PageCompletion>())) ?? completions
-            followPages(from: before, to: newLayout(completions: fresh).foldedRow)
+            let after = newLayout(completions: fresh)
+            // الضغطة التي أتمّت آخر وجه في حزب: يمتلئ الوجه، ثم بعد 0.45 ث الحوار (ذ34)، ولا مهلة للصفّ.
+            if result == .completed,
+               let done = after.hizbs.first(where: { after.isComplete($0) && !layoutBefore.isComplete($0)
+                                                   && Quran.pages(ofHizb: $0).contains(page) }) {
+                completedTask?.cancel()
+                completedTask = Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(450))
+                    guard !Task.isCancelled else { return }
+                    completedHizb = done
+                }
+                return
+            }
+            followPages(from: before, to: after.foldedRow)
         } catch {
             show("تعذّر التسجيل")
         }
@@ -445,11 +496,13 @@ struct HomeView: View {
                               cycles: [ReviewCycle]? = nil, placements: [HizbPlacement]? = nil) -> ReviewTrackLayout {
         let readings = readings ?? self.readings
         let cycles = cycles ?? self.cycles
-        let hizbs = Library.activeHizbs(in: track, from: placements ?? self.placements)
+        let placements = placements ?? self.placements
+        let hizbs = Library.activeHizbs(in: track, from: placements)
         let quarters = hizbs.flatMap(Quran.quarters(ofHizb:))
         let start = Cycles.current(track, in: cycles)?.startedAt
         return ReviewTrackLayout(track: track, hizbs: hizbs,
-                                 done: Cycles.done(quarters: quarters, readings: readings, since: start),
+                                 done: Cycles.done(quarters: quarters, readings: readings, since: start,
+                                                   floors: Library.leftNew(from: placements)),
                                  completedDays: Cycles.completedDays(track, quarters: quarters, cycles: cycles,
                                                                      readings: readings, now: now))
     }

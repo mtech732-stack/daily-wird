@@ -57,7 +57,7 @@ final class ManageUITests: XCTestCase {
     }
 
     /// يضغط «ح [رقم]» ضغطة مطوّلة حتى تظهر قائمة الحزب المخصّصة (§12.5، م22، م32)، ويعيد بندها
-    /// (`hizbmenu.move` أو `hizbmenu.remove`). ينتظر أن يصير «ح» قابلاً للضغط أولاً، ويعيد الضغط
+    /// (`hizbmenu.move.[المسار]` أو `hizbmenu.remove`). ينتظر أن يصير «ح» قابلاً للضغط أولاً، ويعيد الضغط
     /// مرة إن لم تظهر القائمة، فإن لم تظهر فشل بطباعة ما على الشاشة بأسطر «تشخيص:».
     @discardableResult
     private func pressHizb(_ app: XCUIApplication, _ track: String, _ hizb: Int, item: String,
@@ -85,7 +85,7 @@ final class ManageUITests: XCTestCase {
     /// ينقله فوراً بلا سؤال (ذ6)، ويؤكّده الإشعار.
     func test_12_5_hizbMenuMovesWithoutAsking() {
         let app = launch()
-        let move = pressHizb(app, "nearReview", 10, item: "hizbmenu.move")
+        let move = pressHizb(app, "nearReview", 10, item: "hizbmenu.move.farReview")
         // الرأس بلون muted (م32)، والبنود بنصوصها بلا علامات خفيّة.
         expectLabel(app.staticTexts["hizbmenu.header"], "ح 10 · النساء · الجزء 5")
         expectLabel(move, "نقل إلى مراجعة البعيد")
@@ -162,7 +162,7 @@ final class ManageUITests: XCTestCase {
     /// §12.5: الضغط خارج قائمة الحزب يغلقها بلا نقل ولا إزالة.
     func test_12_5_hizbMenuClosesOnOutsideTap() {
         let app = launch()
-        let move = pressHizb(app, "farReview", 1, item: "hizbmenu.move")
+        let move = pressHizb(app, "farReview", 1, item: "hizbmenu.move.nearReview")
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.92)).tap()
         XCTAssertTrue(wait(move, "exists == false"), "لم تُغلق القائمة")
         expectLabel(app.otherElements["track.farReview.quarterCount"], "36")

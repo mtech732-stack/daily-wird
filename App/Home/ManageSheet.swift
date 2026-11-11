@@ -21,13 +21,21 @@ struct ManageSheet: View {
     let request: ManageRequest
     /// أحزاب هذا المسار الآن.
     let hizbs: [Int]
-    let onDone: (_ hizbs: [Int]) -> Void
+    let onDone: (_ hizbs: [Int], _ target: Track) -> Void
 
     @State private var selected: Set<Int> = []
     @State private var confirming = false
+    /// وجهة النقل: مقطعان بالمسارين الآخرين، والأول مختار (§15.6، ذ32).
+    @State private var target: Track
+
+    init(request: ManageRequest, hizbs: [Int], onDone: @escaping (_ hizbs: [Int], _ target: Track) -> Void) {
+        self.request = request
+        self.hizbs = hizbs
+        self.onDone = onDone
+        _target = State(initialValue: Library.destinations(from: request.track)[0])
+    }
 
     private var removing: Bool { request.mode == .remove }
-    private var target: Track { Library.otherReviewTrack(request.track) }
     private var list: [Int] { selected.sorted() }
     private var juzs: [Int] { Array(Set(hizbs.map(Quran.juz(ofHizb:)))).sorted() }
 
@@ -58,7 +66,7 @@ struct ManageSheet: View {
                 ) { confirmed in
                     confirming = false
                     if confirmed {
-                        onDone(list)
+                        onDone(list, target)
                         dismiss()
                     }
                 }
@@ -95,17 +103,38 @@ struct ManageSheet: View {
                     .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
                     .foregroundStyle(Theme.muted)
             } else {
-                // سطر الوجهة: «إلى» ثم شريط لونها واسمها.
-                HStack(spacing: 8) {
+                // سطر الوجهة (ذ32): «إلى» `muted` ثم مقطعان بالمسارين الآخرين، 14/500.
+                HStack(spacing: 4) {
                     Text(verbatim: "إلى")
                         .font(Theme.font(.regular, size: 14, relativeTo: .subheadline))
                         .foregroundStyle(Theme.muted)
-                    TrackMark(track: target, width: 4, height: 18)
-                    Text(verbatim: target.title)
-                        .font(Theme.font(.semiBold, size: 15, relativeTo: .subheadline))
-                        .foregroundStyle(Theme.ink)
+                        .padding(.horizontal, 6)
+                    ForEach(Library.destinations(from: request.track), id: \.self) { track in
+                        let on = target == track
+                        Button { target = track } label: {
+                            HStack(spacing: 8) {
+                                TrackMark(track: track, width: 4, height: 18)
+                                Text(verbatim: track.title)
+                                    .font(Theme.font(on ? .semiBold : .medium, size: 14, relativeTo: .subheadline))
+                                    .foregroundStyle(Theme.ink)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.85)
+                            }
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .background(RoundedRectangle(cornerRadius: Theme.Radius.tile, style: .continuous)
+                                .fill(on ? Theme.card : Color.clear))
+                            .overlay(RoundedRectangle(cornerRadius: Theme.Radius.tile, style: .continuous)
+                                .strokeBorder(on ? Theme.ink : Color.clear, lineWidth: 1.5))
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(on ? .isSelected : [])
+                        .accessibilityIdentifier("manage.to.\(track.rawValue)")
+                    }
                 }
-                .accessibilityElement(children: .combine)
+                .padding(4)
+                .background(RoundedRectangle(cornerRadius: Theme.Radius.button, style: .continuous).fill(Theme.ghost))
+                .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("manage.target")
             }
         }
@@ -121,7 +150,7 @@ struct ManageSheet: View {
                 if removing {
                     confirming = true
                 } else {
-                    onDone(list)
+                    onDone(list, target)
                     dismiss()
                 }
             } label: {
