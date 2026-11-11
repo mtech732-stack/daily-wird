@@ -234,4 +234,45 @@ final class CycleTests: XCTestCase {
                                           readings: try ctx.fetch(FetchDescriptor<QuarterReading>()),
                                           now: date("2026-11-05T10:00:00"), calendar: cal))
     }
+
+    // MARK: المرحلة 4: الإضافة في منتصف الدورة (§14.6)
+
+    /// المضاف يدخل الدورة الحالية في مكانه ويزيد العدد، فإن كان قبل الموضع انتقل إليه الموضع.
+    /// وتظليلاته بعد بداية الدورة تُعدّ فيها (س7).
+    func test_14_6_addMidCycle() throws {
+        let ctx = try context()
+        try Library.add([10, 11], to: .nearReview, in: ctx, now: date("2026-11-01T08:00:00"))
+        for q in 37...38 { ctx.insert(QuarterReading(quarter: q, readAt: date("2026-11-05T08:00:00"))) }
+        ctx.insert(QuarterReading(quarter: 17, readAt: date("2026-10-01T08:00:00")))
+        try ctx.save()
+        try Library.add([12], to: .nearReview, in: ctx, now: date("2026-11-06T08:00:00"))
+        var near = try layout(ctx, .nearReview)
+        XCTAssertEqual(near.progressText, "2 من 12")
+        XCTAssertEqual(near.bookmarkQuarter, 39)
+        try Library.add([5], to: .nearReview, in: ctx, now: date("2026-11-06T09:00:00"))
+        near = try layout(ctx, .nearReview)
+        XCTAssertEqual(near.progressText, "2 من 16", "تظليل ح 5 قبل الدورة لا يُعدّ")
+        XCTAssertEqual(near.bookmarkQuarter, 17)
+        XCTAssertEqual(near.foldedRow?.hizb, 5)
+        XCTAssertEqual(try cycles(ctx).count, 1, "الدورة نفسها")
+    }
+
+    /// س7: الحزب المنقول من مسار آخر وفيه تظليلات بعد بداية الدورة تُعدّ فيها.
+    func test_14_6_movedHizbReadingsCount() throws {
+        let ctx = try context()
+        try Library.add([10], to: .nearReview, in: ctx, now: date("2026-11-01T08:00:00"))
+        try Library.add([1], to: .farReview, in: ctx, now: date("2026-11-01T08:00:00"))
+        ctx.insert(QuarterReading(quarter: 1, readAt: date("2026-11-03T08:00:00")))
+        try ctx.save()
+        try Library.move([1], from: .farReview, to: .nearReview, in: ctx, now: date("2026-11-04T08:00:00"))
+        XCTAssertEqual(try layout(ctx, .nearReview).progressText, "1 من 8")
+    }
+
+    /// ذ22: نصّ الإشعار.
+    func test_14_6_addedWithBookmarkToast() {
+        XCTAssertEqual(Phrase.addedWithBookmark(added: [4], moved: [], bookmark: 4, to: .nearReview),
+                       "أُضيف ح 4 · وفيه الآن موضع التوقّف")
+        XCTAssertEqual(Phrase.addedWithBookmark(added: [4, 5], moved: [], bookmark: 4, to: .nearReview),
+                       "أُضيف حزبان إلى مراجعة القريب · وفي ح 4 الآن موضع التوقّف")
+    }
 }

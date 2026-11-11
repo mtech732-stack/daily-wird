@@ -8,9 +8,9 @@ final class AddUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    private func launch(seed: String? = nil) -> XCUIApplication {
+    private func launch(seed: String? = nil, extra: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-ui-testing"] + (seed.map { ["-seed", $0] } ?? [])
+        app.launchArguments = ["-ui-testing"] + (seed.map { ["-seed", $0] } ?? []) + extra
         app.launch()
         return app
     }
@@ -221,5 +221,44 @@ final class AddUITests: XCTestCase {
         expectLabel(app.otherElements["track.farReview.quarterCount"], "40")
         expectLabel(app.otherElements["track.nearReview.quarterCount"], "4")
         shot(app, "15-moved-by-add")
+    }
+
+    /// يضيف أحزاباً إلى مسار من «⋯ ← إضافة».
+    private func addFromMenu(_ hizbs: [Int], to track: String, in app: XCUIApplication) {
+        let more = app.buttons["track.\(track).more"]
+        XCTAssertTrue(more.waitForExistence(timeout: 20))
+        more.tap()
+        let item = app.buttons["إضافة"]
+        XCTAssertTrue(item.waitForExistence(timeout: 20))
+        item.tap()
+        XCTAssertTrue(app.buttons["add.go"].waitForExistence(timeout: 20))
+        for hizb in hizbs { tapUntilSelected(app.buttons["add.hizb.\(hizb)"], in: app) }
+        tapEnabled(app.buttons["add.go"])
+    }
+
+    /// ش3 · المرحلة 4، §14.6 (ذ22): الحزب المضاف في منتصف الدورة يدخلها في مكانه ويزيد العدد:
+    /// بعد موضع التوقّف «2 من 8» تصير «2 من 12» والإشعار كما في §12.2؛ وقبله ينتقل إليه الموضع
+    /// والصفّ المطويّ، ويقول الإشعار «أُضيف ح 5 · وفيه الآن موضع التوقّف» (سيناريوا المعاين 10 و11).
+    func test_14_6_addMidCycle() {
+        let app = launch(seed: "farReview:1-3;nearReview:10-11",
+                         extra: ["-cycle", "farReview:20,nearReview:3", "-readings", "37:1,38:1"])
+        let progress = app.staticTexts["track.nearReview.progress"]
+        XCTAssertTrue(progress.waitForExistence(timeout: 20))
+        expectLabel(progress, "تقدّم الدورة: 2 من 8 ربعاً")
+
+        addFromMenu([12], to: "nearReview", in: app)
+        expectLabel(app.staticTexts["toast"], "أُضيف ح 12 إلى مراجعة القريب")
+        expectLabel(progress, "تقدّم الدورة: 2 من 12 ربعاً")
+        XCTAssertTrue(app.buttons["quarter.nearReview.39"].label.contains("موضع التوقّف"), "الموضع باقٍ على ح 10")
+        shot(app, "41-add-after")
+
+        addFromMenu([5], to: "nearReview", in: app)
+        expectLabel(app.staticTexts["toast"], "أُضيف ح 5 · وفيه الآن موضع التوقّف")
+        expectLabel(progress, "تقدّم الدورة: 2 من 16 ربعاً")
+        let q17 = app.buttons.matching(identifier: "quarter.nearReview.17").firstMatch
+        XCTAssertTrue(q17.waitForExistence(timeout: 20), "الصفّ المطويّ على ح 5")
+        XCTAssertTrue(q17.label.contains("موضع التوقّف"))
+        XCTAssertFalse(app.buttons["quarter.nearReview.39"].exists)
+        shot(app, "42-add-before")
     }
 }
