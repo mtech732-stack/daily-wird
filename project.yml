@@ -41,6 +41,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.mtech732.dailywird
         GENERATE_INFOPLIST_FILE: NO
+        # الأيقونة في المرحلة 4، فلا اسم لها هنا وفي الأصول صورة «عن التطبيق» وحدها.
+        ASSETCATALOG_COMPILER_APPICON_NAME: ""
   DailyWirdTests:
     type: bundle.unit-test
     platform: iOS
