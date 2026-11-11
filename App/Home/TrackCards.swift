@@ -10,6 +10,11 @@ struct TrackHeader: View {
     var onManage: ((ManageMode) -> Void)?
     /// عدد أرباع المسار، لاختبارات الواجهة وحدها ما دام تقدّم الدورة مخفيّاً (ذ10).
     var quarterCount: Int?
+    /// سطر الاكتمال مكان التقدّم: أيام الدورة التي اكتملت اليوم (§14.4، ذ19).
+    var completedDays: Int?
+    /// «ابدأ دورة جديدة» آخر القائمة (§14.5)، ومعطّل ما دام لم يُظلَّل في الدورة شيء.
+    var onNewCycle: (() -> Void)?
+    var canStartNewCycle = false
 
     private static let isUITesting = ProcessInfo.processInfo.arguments.contains("-ui-testing")
 
@@ -21,7 +26,9 @@ struct TrackHeader: View {
                 .foregroundStyle(Theme.ink)
                 .accessibilityAddTraits(.isHeader)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            if let progress {
+            if let days = completedDays {
+                CompletionLine(track: track, days: days)
+            } else if let progress {
                 Text(verbatim: progress)
                     .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
                     .foregroundStyle(Theme.muted)
@@ -45,6 +52,14 @@ struct TrackHeader: View {
                         Button { onManage(.move) } label: { Label("نقل", systemImage: "arrow.left.arrow.right") }
                         Button { onManage(.remove) } label: { Label("إزالة", systemImage: "trash") }
                     }
+                    if let onNewCycle {
+                        // بعد فاصل يميّزه عن بنود المحفوظ (ذ21).
+                        Divider()
+                        Button(action: onNewCycle) {
+                            Label("ابدأ دورة جديدة", systemImage: "arrow.counterclockwise")
+                        }
+                        .disabled(!canStartNewCycle)
+                    }
                 } label: {
                     Image(systemName: "ellipsis")
                         .font(.system(size: 17, weight: .semibold))
@@ -59,6 +74,39 @@ struct TrackHeader: View {
             }
         }
         .frame(minHeight: 30)
+    }
+}
+
+/// سطر الاكتمال في رأس البطاقة مكان التقدّم (§14.4، ذ19): «✓ اكتملت الدورة · 19 يوماً»،
+/// ويُقصر إلى «✓ اكتملت · 19 يوماً» إن لم يتّسع الرأس. ولقارئ الشاشة عنصر واحد.
+struct CompletionLine: View {
+    let track: Track
+    let days: Int
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            line("اكتملت الدورة")
+            line("اكتملت")
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: "اكتملت دورة \(track.title) في \(Phrase.days(days))"))
+        .accessibilityIdentifier("track.\(track.rawValue).completed")
+    }
+
+    private func line(_ text: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: "checkmark.circle")
+                .font(.system(size: 15))
+                .foregroundStyle(Theme.ink)
+            Text(verbatim: text)
+                .font(Theme.font(.semiBold, size: 13, relativeTo: .footnote))
+                .foregroundStyle(Theme.ink)
+            Text(verbatim: "· \(Phrase.days(days))")
+                .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
+                .foregroundStyle(Theme.muted)
+        }
+        .lineLimit(1)
+        .fixedSize()
     }
 }
 
@@ -136,13 +184,17 @@ struct ReviewTrackCard: View {
     var onAdd: () -> Void = {}
     /// «نقل» و«إزالة» من «⋯» (§12.4).
     var onManage: (ManageMode) -> Void = { _ in }
+    /// «ابدأ دورة جديدة» (§14.5).
+    var onNewCycle: () -> Void = {}
     /// موضع أسفل شريط «طيّ» في الشاشة المرئية، حين يكون الأرشيف مفتوحاً (م23).
     var onFoldBarMove: (CGFloat) -> Void = { _ in }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             TrackHeader(track: layout.track, progress: Slice.showsCycleProgress ? layout.progressText : nil,
-                        showsMenu: true, onAdd: onAdd, onManage: onManage, quarterCount: layout.quarters.count)
+                        showsMenu: true, onAdd: onAdd, onManage: onManage, quarterCount: layout.quarters.count,
+                        completedDays: layout.completedDays, onNewCycle: onNewCycle,
+                        canStartNewCycle: layout.doneCount > 0)
                 .padding(.horizontal, isOpen ? 8 : 0)
             if isOpen {
                 ArchiveView(layout: layout, menu: hizbMenu, shading: shading, onBookmarkRow: onBookmarkRow)
