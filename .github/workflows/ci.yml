@@ -1,7 +1,9 @@
 # البناء والاختبار واللقطات (القسم 10.3).
 # - كل طلب دمج: يبني للمحاكي، ويشغّل اختبارات الوحدة والواجهة على الهاتف الصغير نهاراً وحده،
 #   ويلتقط لقطاته (القرار 24). والفحص الكامل (المقاسان نهاراً وليلاً) بوسم full-check على الطلب،
-#   أو يدوياً من Actions، مرة في آخر كل شريحة قبل العرض على المالك.
+#   أو يدوياً من Actions، وفي كل دمج في main.
+# - الأوضاع الأربعة في الفحص الكامل مهامّ متوازية، كلّ على جهاز (قطع حدُّ الستين دقيقة الفحصَ
+#   متتابعاً في التشغيل 42940860983)، ثم تُجمع لقطاتها في مهمّة «screens» تبني صفحة اللقطات.
 # - كل دمج في main: الشيء نفسه، ثم ينشر صفحة اللقطات على GitHub Pages.
 # - وفي طلب الدمج تُرفع لقطاته إلى فرع previews (مجلّد pr-[رقم]) ليراها المالك قبل الدمج (القرار 11).
 # بيئة مثبّتة صراحة (ملاحظة المعاين م2): صورة macos-26، وXcode 26.6، ومحاكيات iOS 26.5 بأسمائها.
@@ -42,6 +44,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       app: ${{ steps.diff.outputs.app }}
+      full: ${{ steps.plan.outputs.full }}
+      matrix: ${{ steps.plan.outputs.matrix }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -63,6 +67,27 @@ jobs:
           if printf '%s\n' "$files" | grep -qvE '^(docs/|design/)|\.md$'; then app=true; else app=false; fi
           echo "يمسّ التطبيق: $app"
           echo "app=$app" >> "$GITHUB_OUTPUT"
+      - id: plan
+        name: الأوضاع التي تُفحص (القرار 24)
+        env:
+          EVENT: ${{ github.event_name }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+          INPUT_FULL: ${{ inputs.full }}
+        run: |
+          set -euo pipefail
+          # طلب الدمج: الصغير نهاراً وحده. والفحص الكامل بالأربعة: في main، وبوسم full-check، ويدوياً (افتراضيه كامل).
+          full=true
+          if [ "$EVENT" = "pull_request" ] && [[ ",$LABELS," != *",full-check,"* ]]; then full=false; fi
+          if [ "$EVENT" = "workflow_dispatch" ] && [ "$INPUT_FULL" = "false" ]; then full=false; fi
+          # «only» فارغ: كل الاختبارات (الوحدة والواجهة)؛ وإلا الواجهة وحدها للّقطات. والوحدة مرة واحدة في الفحص.
+          if [ "$full" = true ]; then
+            matrix='{"include":[{"key":"large","look":"light","only":""},{"key":"large","look":"dark","only":"DailyWirdUITests"},{"key":"small","look":"light","only":"DailyWirdUITests"},{"key":"small","look":"dark","only":"DailyWirdUITests"}]}'
+          else
+            matrix='{"include":[{"key":"small","look":"light","only":""}]}'
+          fi
+          echo "الفحص الكامل: $full"
+          echo "full=$full" >> "$GITHUB_OUTPUT"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
   docs-only:
     needs: changes
@@ -74,10 +99,17 @@ jobs:
   test:
     needs: changes
     if: needs.changes.outputs.app == 'true'
+    name: test (${{ matrix.key }}-${{ matrix.look }})
     runs-on: macos-26
-    timeout-minutes: 60 # أربع جولات واجهة: كانت 41 دقيقة قبل ش2 (main 11:44)، فـ 45 لا تتّسع لأي اختبار جديد
-    permissions:
-      contents: write # لرفع لقطات طلب الدمج إلى فرع previews وحده (القرار 11)
+    # وضع واحد في كل مهمّة: البناء وتهيئة المحاكي وجولة واحدة، نحو 25 دقيقة. والحدّ احتياط.
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.changes.outputs.matrix) }}
+    env:
+      KEY: ${{ matrix.key }}
+      LOOK: ${{ matrix.look }}
+      ONLY: ${{ matrix.only }}
     steps:
       - uses: actions/checkout@v5
 
@@ -99,21 +131,20 @@ jobs:
           xcodegen --version
           xcodegen generate
 
-      - name: تحديد المحاكيين
+      - name: تحديد المحاكي
         run: |
           set -euo pipefail
-          large=$(scripts/sim-udid.sh "$DEVICE_LARGE" "$IOS_VERSION")
-          small=$(scripts/sim-udid.sh "$DEVICE_SMALL" "$IOS_VERSION")
-          echo "$DEVICE_LARGE = $large · $DEVICE_SMALL = $small"
-          echo "UDID_LARGE=$large" >> "$GITHUB_ENV"
-          echo "UDID_SMALL=$small" >> "$GITHUB_ENV"
+          if [ "$KEY" = large ]; then device="$DEVICE_LARGE"; else device="$DEVICE_SMALL"; fi
+          udid=$(scripts/sim-udid.sh "$device" "$IOS_VERSION")
+          echo "$device = $udid"
+          echo "UDID=$udid" >> "$GITHUB_ENV"
 
       - name: البناء للاختبار
         run: |
           mkdir -p build
           xcodebuild build-for-testing \
             -project DailyWird.xcodeproj -scheme DailyWird \
-            -destination "id=$UDID_LARGE" \
+            -destination "id=$UDID" \
             -derivedDataPath build/dd \
             CODE_SIGNING_ALLOWED=NO > build/build.log 2>&1 || {
               # أخطاء الترجمة نفسها، لا آخر 40 سطراً وحدها (تُخفي سبب الفشل).
@@ -123,74 +154,80 @@ jobs:
             }
           tail -n 20 build/build.log
 
-      - name: الاختبارات واللقطات (الصغير نهاراً، أو الأربعة في الفحص الكامل · القرار 24)
-        env:
-          EVENT: ${{ github.event_name }}
-          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
-          INPUT_FULL: ${{ inputs.full }}
+      - name: تهيئة المحاكي
         run: |
-          set -euo pipefail
-          mkdir -p site/screens
-          run() { # $1 key  $2 udid  $3 appearance  $4 only-testing (اختياري)
-            local key=$1 udid=$2 look=$3 only=${4:-}
-            xcrun simctl boot "$udid" 2>/dev/null || true
-            xcrun simctl bootstatus "$udid" -b
-            xcrun simctl ui "$udid" appearance "$look"
-            xcrun simctl status_bar "$udid" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3
-            local rb="build/r-$key-$look.xcresult"
-            xcodebuild test-without-building \
-              -project DailyWird.xcodeproj -scheme DailyWird \
-              -destination "id=$udid" \
-              -derivedDataPath build/dd \
-              -resultBundlePath "$rb" \
-              ${only:+-only-testing:$only} \
-              CODE_SIGNING_ALLOWED=NO | grep -E "Test Case .*(passed|failed)|error:|\*\* TEST|تشخيص:"
-            rm -rf "build/x-$key-$look"
-            xcrun xcresulttool export attachments --path "$rb" --output-path "build/x-$key-$look"
-            python3 scripts/collect-shots.py "build/x-$key-$look" site/screens "$key" "$look"
-          }
           # تهيئة المحاكي قبل اختباراته (اعتمده المالك 10 نوفمبر 08:37): أول تشغيل بعد إقلاع بارد
           # كان أبطأ بمرّتين، فتتأخّر فيه الورقة وسمات الإتاحة عن مهل الاختبار (#38، #40، #42، #45).
           # فيُقلع المحاكي، ويُثبَّت التطبيق ويُشغَّل مرة، ثم يجري اختبار واجهة قصير لتهيئة أداة الاختبار.
           # نتيجة التهيئة لا تُحتسب؛ والاختبار نفسه يجري ثانية في الجولة الحقيقية ويُحتسب فيها.
-          warm() { # $1 udid
-            local udid=$1 app
-            xcrun simctl boot "$udid" 2>/dev/null || true
-            xcrun simctl bootstatus "$udid" -b
-            app=$(ls -d build/dd/Build/Products/*-iphonesimulator/DailyWird.app | head -n 1)
-            xcrun simctl install "$udid" "$app"
-            bundle=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist")
-            xcrun simctl launch "$udid" "$bundle" -ui-testing || true
-            sleep 20
-            xcrun simctl terminate "$udid" "$bundle" || true
-            xcodebuild test-without-building \
-              -project DailyWird.xcodeproj -scheme DailyWird \
-              -destination "id=$udid" \
-              -derivedDataPath build/dd \
-              -only-testing:DailyWirdUITests/HomeScreenUITests/test_7_1_firstLaunchShowsThreeEmptyTracks \
-              CODE_SIGNING_ALLOWED=NO > "build/warm-$udid.log" 2>&1 || echo "تهيئة: لم ينجح الاختبار التمهيدي (لا يُحتسب)"
-            echo "تهيئة $udid انتهت"
-          }
-          # القرار 24: طلب الدمج يُفحص على الهاتف الصغير نهاراً وحده (أكثر الخلل يظهر فيه)،
-          # والفحص الكامل بالأربعة في main، وبوسم full-check، ويدوياً (افتراضيه كامل).
-          full=true
-          if [ "$EVENT" = "pull_request" ] && [[ ",$LABELS," != *",full-check,"* ]]; then full=false; fi
-          if [ "$EVENT" = "workflow_dispatch" ] && [ "$INPUT_FULL" = "false" ]; then full=false; fi
-          echo "الفحص الكامل: $full"
-          echo "FULL=$full" >> "$GITHUB_ENV"
-          if [ "$full" = true ]; then
-            # الجولة الأولى تشغّل كل الاختبارات (الوحدة والواجهة)، والبقية الواجهة وحدها للّقطات.
-            warm "$UDID_LARGE"
-            run large "$UDID_LARGE" light
-            run large "$UDID_LARGE" dark  DailyWirdUITests
-            xcrun simctl shutdown "$UDID_LARGE" || true
-            warm "$UDID_SMALL"
-            run small "$UDID_SMALL" light DailyWirdUITests
-            run small "$UDID_SMALL" dark  DailyWirdUITests
-          else
-            warm "$UDID_SMALL"
-            run small "$UDID_SMALL" light
-          fi
+          set -euo pipefail
+          xcrun simctl boot "$UDID" 2>/dev/null || true
+          xcrun simctl bootstatus "$UDID" -b
+          app=$(ls -d build/dd/Build/Products/*-iphonesimulator/DailyWird.app | head -n 1)
+          xcrun simctl install "$UDID" "$app"
+          bundle=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist")
+          xcrun simctl launch "$UDID" "$bundle" -ui-testing || true
+          sleep 20
+          xcrun simctl terminate "$UDID" "$bundle" || true
+          xcodebuild test-without-building \
+            -project DailyWird.xcodeproj -scheme DailyWird \
+            -destination "id=$UDID" \
+            -derivedDataPath build/dd \
+            -only-testing:DailyWirdUITests/HomeScreenUITests/test_7_1_firstLaunchShowsThreeEmptyTracks \
+            CODE_SIGNING_ALLOWED=NO > build/warm.log 2>&1 || echo "تهيئة: لم ينجح الاختبار التمهيدي (لا يُحتسب)"
+          echo "تهيئة $UDID انتهت"
+
+      - name: الاختبارات واللقطات
+        run: |
+          set -euo pipefail
+          mkdir -p site/screens
+          xcrun simctl ui "$UDID" appearance "$LOOK"
+          xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3
+          rb="build/r-$KEY-$LOOK.xcresult"
+          xcodebuild test-without-building \
+            -project DailyWird.xcodeproj -scheme DailyWird \
+            -destination "id=$UDID" \
+            -derivedDataPath build/dd \
+            -resultBundlePath "$rb" \
+            ${ONLY:+-only-testing:$ONLY} \
+            CODE_SIGNING_ALLOWED=NO | grep -E "Test Case .*(passed|failed)|error:|\*\* TEST|تشخيص:"
+          xcrun xcresulttool export attachments --path "$rb" --output-path "build/x-$KEY-$LOOK"
+          python3 scripts/collect-shots.py "build/x-$KEY-$LOOK" site/screens "$KEY" "$LOOK"
+
+      - name: رفع لقطات هذا الوضع
+        uses: actions/upload-artifact@v4
+        with:
+          name: shots-${{ matrix.key }}-${{ matrix.look }}
+          path: site/screens
+          retention-days: 3
+
+      - name: رفع نتائج الاختبار عند الفشل
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcresults-${{ matrix.key }}-${{ matrix.look }}
+          path: build/*.xcresult
+          retention-days: 7
+
+  # تجمع لقطات الأوضاع كلها، ثم النسخ الرمادية وصفحة اللقطات ولقطات طلب الدمج (القرار 11).
+  screens:
+    needs: [changes, test]
+    if: needs.changes.outputs.app == 'true' && needs.test.result == 'success'
+    runs-on: macos-26
+    timeout-minutes: 20
+    permissions:
+      contents: write # لرفع لقطات طلب الدمج إلى فرع previews وحده (القرار 11)
+    env:
+      FULL: ${{ needs.changes.outputs.full }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: لقطات الأوضاع مجتمعة
+        uses: actions/download-artifact@v4
+        with:
+          pattern: shots-*
+          path: site/screens
+          merge-multiple: true
 
       - name: النسخ الرمادية وصفحة اللقطات
         run: |
@@ -241,14 +278,6 @@ jobs:
           done
           exit 1
 
-      - name: رفع نتائج الاختبار عند الفشل
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: xcresults
-          path: build/*.xcresult
-          retention-days: 7
-
       - name: رفع اللقطات (للمعاينة)
         uses: actions/upload-artifact@v4
         with:
@@ -263,8 +292,8 @@ jobs:
           path: site
 
   deploy:
-    if: github.ref == 'refs/heads/main' && needs.test.result == 'success'
-    needs: test
+    if: github.ref == 'refs/heads/main' && needs.screens.result == 'success'
+    needs: screens
     runs-on: ubuntu-latest
     permissions:
       pages: write
