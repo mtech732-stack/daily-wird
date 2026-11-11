@@ -15,7 +15,7 @@ final class NightUITests: XCTestCase {
     private func launch(dark: Bool = true, counter: Int = 34) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing", "-seed", Self.owner, "-counter", String(counter),
-                               "-readings", "37:0", "-pages", "112-116:3"] + (dark ? ["-dark"] : [])
+                               "-readings", "37:0", "-pages", "112-116:3"] + [dark ? "-dark" : "-light"]
         app.launch()
         return app
     }
@@ -50,7 +50,7 @@ final class NightUITests: XCTestCase {
         let c = color(app, at: point)
         let want = (r: hex >> 16 & 0xFF, g: hex >> 8 & 0xFF, b: hex & 0xFF)
         let near = abs(c.r - want.r) <= 12 && abs(c.g - want.g) <= 12 && abs(c.b - want.b) <= 12
-        XCTAssertTrue(near, "\(what): \(c) والمطلوب #\(String(hex, radix: 16, uppercase: true))", file: file, line: line)
+        XCTAssertTrue(near, "\(what): \(c) والمطلوب #\(String(format: "%06X", hex))", file: file, line: line)
     }
 
     private func circle(_ app: XCUIApplication) -> XCUIElement {

@@ -266,6 +266,7 @@ struct NewHizbLine: View {
                 .accessibilityIdentifier("hizb.new.\(hizb).line")
         }
         .frame(minHeight: 30, alignment: .leading)
+        .rowTypeSize()
     }
 }
 

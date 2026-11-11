@@ -720,19 +720,31 @@ struct HomeHeader: View {
     /// «الآن» من الشاشة، فيتحدّث التاريخ مع منتصف الليل كما تتحدّث الأرباع.
     var now: Date = WirdClock.now()
 
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     var body: some View {
-        HStack(alignment: .center) {
+        // من AX1 التاريخ تحت «الورد اليومي» لا بجانبه، والترس في أعلى الرأس (§17.4).
+        HStack(alignment: typeSize.isAccessibilitySize ? .top : .center) {
             TimelineView(.periodic(from: .now, by: 60)) { _ in
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(verbatim: AppInfo.name)
-                        .font(Theme.font(.semiBold, size: 22, relativeTo: .title2))
-                        .foregroundStyle(Theme.text)
-                        .accessibilityIdentifier("home.title")
-                        .accessibilityAddTraits(.isHeader)
-                    Text(verbatim: WirdDate.header(WirdClock.now()))
-                        .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
-                        .foregroundStyle(Theme.muted)
-                        .accessibilityIdentifier("home.date")
+                let title = Text(verbatim: AppInfo.name)
+                    .font(Theme.font(.semiBold, size: 22, relativeTo: .title2))
+                    .foregroundStyle(Theme.text)
+                    .accessibilityIdentifier("home.title")
+                    .accessibilityAddTraits(.isHeader)
+                let date = Text(verbatim: WirdDate.header(WirdClock.now()))
+                    .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
+                    .foregroundStyle(Theme.muted)
+                    .accessibilityIdentifier("home.date")
+                if typeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 2) {
+                        title.fixedSize(horizontal: false, vertical: true)
+                        date.fixedSize(horizontal: false, vertical: true)
+                    }
+                } else {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        title
+                        date
+                    }
                 }
             }
             Spacer(minLength: 8)
