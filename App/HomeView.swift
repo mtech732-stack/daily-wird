@@ -163,6 +163,11 @@ struct HomeView: View {
             .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.bottom } action: { safeBottom = $0 }
             .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { screenWidth = $0 }
             .onChange(of: counterMode, initial: true) { _, mode in isShort = mode == .row }
+            // اهتزاز خفيف مع كل ضغطة تزيد العدد (5.7، §16.3، ذ41)، ولا شيء غيره ولا صوت.
+            // ويتبع إعداد «اللمس» في الجهاز، ولا يُجرَّب على المحاكي.
+            .sensoryFeedback(trigger: count) { old, new in
+                new == old + 1 ? .impact(weight: .light) : nil
+            }
         }
         .background(Theme.background.ignoresSafeArea())
         // م18: ما جاءت به المزامنة من صفّين مفتوحين للحزب يُسوّى بإغلاق الأقدم، ولا يُحذف شيء.
