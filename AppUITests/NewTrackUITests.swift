@@ -301,10 +301,11 @@ final class NewTrackUITests: XCTestCase {
         shot(app, "53-new-page-old")
     }
 
+    /// المهلة 12 ث في الاختبار لا 0.8: استعلامات الشجرة على محاكي CI بطيئة، وبـ4 ث انقضت المهلة قبل الفحص.
     /// سيناريو المعاين 7 (ذ30): أتمّ 112–115، يضغط 116 ← في المهلة الصفّ 112–116 بلا إطار،
     /// وبعدها الصفّ 117–121 والإطار على 117.
     func test_5_6_rowStaysThenMoves() {
-        let app = launch(seed: "new:12", pages: "112-115:3", pinSeconds: 4)
+        let app = launch(seed: "new:12", pages: "112-115:3", pinSeconds: 12)
         expectBookmark(app, 116)
         tapPage(app, 116)
         expectLabel(page(app, 116), "الوجه 116، محفوظ، أتممته اليوم")
@@ -318,13 +319,13 @@ final class NewTrackUITests: XCTestCase {
 
     /// ذ30: التراجع في المهلة يُبقي الصفّ والإطار على الوجه نفسه.
     func test_5_6_undoWithinWindowKeepsRow() {
-        let app = launch(seed: "new:12", pages: "112-115:3", pinSeconds: 4)
+        let app = launch(seed: "new:12", pages: "112-115:3", pinSeconds: 12)
         tapPage(app, 116)
         expectLabel(page(app, 116), "الوجه 116، محفوظ، أتممته اليوم")
         tapPage(app, 116)
         expectBookmark(app, 116)
         // بعد انقضاء المهلة يبقى الصفّ كما هو.
-        _ = XCTWaiter().wait(for: [XCTestExpectation()], timeout: 6)
+        _ = XCTWaiter().wait(for: [XCTestExpectation()], timeout: 14)
         XCTAssertTrue(page(app, 112).exists)
         XCTAssertFalse(page(app, 117).exists)
         expectBookmark(app, 116)
