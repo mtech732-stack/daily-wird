@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ش6 · الصقل</title>
+<link rel="stylesheet" href="shared/ds.css">
+<link rel="stylesheet" href="shared/s1.css">
+<link rel="stylesheet" href="shared/s2.css">
+<link rel="stylesheet" href="shared/s3.css">
+<link rel="stylesheet" href="shared/s4.css">
+<link rel="stylesheet" href="shared/s5.css">
+<link rel="stylesheet" href="shared/s6.css">
+<link rel="stylesheet" href="shared/page.css">
+<style>
+h2.grp{font-size:20px;font-weight:600;margin:34px 0 4px}
+p.grp{margin:0 0 16px;color:var(--pg-muted);font-size:14.5px;max-width:80ch;line-height:1.75}
+table.ct{border-collapse:collapse;font-size:14px;margin:0 0 18px}
+table.ct td,table.ct th{border-bottom:1px solid #8884;padding:6px 12px;text-align:right}
+table.ct th{font-weight:600}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <h1>ش6 · الصقل: التصميم</h1>
+    <p>آخر لمسات قبل التجربة: الوضع الليلي في كل شاشة، لأن الورد كثيراً ما يكون قبل الضوء. وشاشة البداية من الأيقونة المعتمدة. وورقة الإعدادات و«عن التطبيق» (وفيها وحدها شعار المالك واسمه ومصدر البيانات). ورأس البطاقة بأكبر أحجام الخط (م46). والأيقونة بنسختها الملوّنة (Tinted) لتكتمل أوضاعها الثلاثة في iOS. المرجع المكتوب: <code>design/system.md</code> §17.</p>
+    <nav class="links"><a href="index.html">نظام التصميم</a><a href="main.html">الشاشة الرئيسية</a><a href="juz-amma.html">جزء عمّ</a><a href="s1.html">ش1 · المحفوظ</a><a href="s2.html">ش2 · التظليل والعمر</a><a href="s3.html">ش3 · موضع التوقّف</a><a href="s4.html">ش4 · المحفوظ الجديد</a><a href="s5.html">ش5 · العدّاد</a><a href="s6.html" aria-current="page">ش6 · الصقل</a><a href="mockups.html">النماذج المعتمدة</a></nav>
+  </header>
+  <div class="bar">
+    <button id="bGray">فحص الرمادي</button>
+    <button id="bDark">بدّل نهاراً/ليلاً</button>
+  </div>
+
+  <h2 class="grp">1 · الوضع الليلي كاملاً</h2>
+  <p class="grp">قيس تباين كل نصّ ظاهر في حالات ش1–ش5 كلها (122 حالة) نهاراً وليلاً آلياً، فلم يقلّ شيء عن 4.5:1 إلا الزرّين المعطّلين (وهما مستثنيان). فالألوان الليلية في §1 باقية. وتغيّر أمران: <b>العدّاد ليلاً حلقة لا قرص</b> (ذ45)، لأن قرصاً فاتحاً قطره 98 كان أسطع ما في الغرفة المظلمة قبل الفجر. و<b>ما يطفو فوق الشاشة</b> (القوائم، والصفّ المرفوع، والحوار) يأخذ ليلاً لوناً أفتح قليلاً <code>raised</code> (ذ46)، لأن الظلّ لا يُرى على الكحلي فكانت القائمة تذوب في البطاقة تحتها.</p>
+  <div class="gal" id="g1a"></div>
+  <table class="ct"><tr><th>ليلاً، على <code>raised</code> #22405F</th><th>التباين</th><th>الحدّ</th></tr>
+    <tr><td><code>ink</code> (نصّ القائمة والحوار)</td><td>9.15</td><td>4.5</td></tr>
+    <tr><td><code>muted</code> (رأس قائمة الحزب، وشرح الحوار)</td><td>5.28</td><td>4.5</td></tr>
+    <tr><td>مربّعات القريب <code>near</code> في الصفّ المرفوع</td><td>4.28</td><td>3</td></tr>
+    <tr><td>العدّاد: حلقة <code>ink</code> على <code>paper</code> · العدد <code>ink</code> على <code>card</code></td><td>12.84 · 10.88</td><td>3 · 4.5</td></tr></table>
+  <div class="gal" id="g1"></div>
+
+  <h2 class="grp">2 · شاشة البداية</h2>
+  <p class="grp">الأيقونة نفسها مبسوطة على الشاشة: شريط رأس السورة بنقشه ومسطرتيه في منتصفها، وشريط العلامة البرتقالي منسدل من أعلاها إلى ما بعد الشريط بقليل. فحين يكبر رمز التطبيق عند فتحه تستمرّ الصورة نفسها، ثم تحلّ الشاشة الرئيسية محلّها. لا نصّ ولا شعار (ذ47)، وليلاً بألوان الليل.</p>
+  <div class="gal" id="g2"></div>
+
+  <h2 class="grp">3 · الإعدادات و«عن التطبيق» (7.4)</h2>
+  <p class="grp">زرّ الترس في الرأس يفتح ورقة «الإعدادات» بما في الوثيقة وحده: حالة النسخ الاحتياطي (5.8)، والإصدار، و«عن التطبيق». ولا إعداد للورد (12: مؤجّل)، ولا اختيار للوضع الليلي (يتبع الجهاز). و«عن التطبيق» فيها وحدها شعار المالك واسمه (8.3)، ومصدر البيانات القرآنية بنسبته إلى «تنزيل» كما تشترط رخصته.</p>
+  <div class="gal" id="g3"></div>
+
+  <h2 class="grp">4 · أكبر أحجام الخط (م46)</h2>
+  <p class="grp">النصوص تكبر مع إعداد الجهاز، ومربّعات الأرباع والأوجه ثابتة لا تكبر حتى لا ينكسر صفّها (8.3). ومن أحجام إمكانية الوصول (AX1 فما فوق) ينزل سطر التقدّم أو سطر الاكتمال تحت عنوان البطاقة، كاملاً بلا اختصار، ويلتفّ العنوان إن ضاق، و«⋯» في مكانه. هذا حلّ م46.</p>
+  <div class="gal" id="g4"></div>
+
+  <h2 class="grp">5 · الأيقونة: الأوضاع الثلاثة</h2>
+  <p class="grp">الفاتحة والداكنة معتمدتان (القرار 13). وأضفت الثالثة التي يطلبها iOS 26: «الملوّنة» (Tinted)، رمادية على أسود فيلوّنها النظام بلون المستخدم (ذ48). أفتح ما فيها شريط العلامة، ثم المسطرتان، ثم النقش؛ فتبقى العلامة أوضح ما يُرى كما في الأصل.</p>
+  <div class="homes" id="g5"></div>
+</div>
+<script src="shared/quran.js"></script>
+<script src="shared/ds.js"></script>
+<script src="shared/s2.js"></script>
+<script src="shared/s3.js"></script>
+<script src="shared/s4.js"></script>
+<script src="shared/s5.js"></script>
+<script src="shared/s6.js"></script>
+<script>
+const {phone,fitAll,N}=WIRD,{make}=S4,{still}=S5;
+const G=id=>document.getElementById(id);
+const fig=(g,o)=>{const s=phone(G(g),o);s.classList.add('wl');s.dataset.id=o.id||'';if(o.dark)s.classList.add('wd');if(o.cls)s.classList.add(...o.cls.split(' '));return s;};
+/* محفوظ المالك كما في ش5 */
+const AGE=r=>r<=8?12:r<=19?3:r<=22?0:r<=30?41:r<=34?20:r<=36?null:r<=38?3:r<=40?9:r<=44?15:null;
+const PG={112:4,113:4,114:3,115:2,116:1};
+const mine=(o={})=>{const S=make(Object.assign({far:[1,2,3,4,5,6,7,8,9],near:[10,11],nw:[12],pg:PG,agesOf:AGE},o));S.count=o.count??33;return S;};
+const far57=[...Array(57)].map((_,i)=>i+1);
+const ح60=(o={})=>{const S=make(Object.assign({far:far57,near:[58,59],nw:[60],pg:{591:6,592:5,593:4,594:3,595:2,596:1},agesOf:AGE},o));S.count=o.count??33;return S;};
+const S_=a=>new Set(a);
+const toKeys=s=>{const sc=s.querySelector('.scroll'),c=s.querySelector('.s5c');sc.scrollTop=c.offsetTop-sc.offsetTop-40;};
+/* البعيد إلا ربعه الأخير، ثم ضغطة عليه: اكتملت الدورة (كما في ش3) */
+const completed=(o={})=>{const S=mine(Object.assign({agesOf:r=>r<=36?(r===36?30:r===35?1:r<=8?12:r<=19?3:r<=22?0:r<=30?10:6):AGE(r)},o));try{S3.tap(S,36,'far');}catch(e){console.warn(e);}return S;};
+
+/* 1 · الليل: قبل وبعد */
+still(fig('g1a',{id:'s6-n-counter-before',dark:true,cls:'legacy',title:'قبل · العدّاد في ش5',cap:'قرص فاتح قطره 98: أسطع ما في الشاشة، ويغلب على الأرباع.'}),mine());
+still(fig('g1a',{id:'s6-n-counter',dark:true,title:'بعد · حلقة (ذ45)',cap:'الدائرة بلون البطاقة، وحلقة فاتحة 1.5، والعدد فاتح. والضغط يفتح لونها قليلاً.'}),mine());
+still(fig('g1a',{id:'s6-n-menu',dark:true,title:'بعد · قائمة المسار ليلاً (ذ46)',cap:'القائمة <code>raised</code> فتنفصل عن البطاقة تحتها، وظلّها أعمق.'}),mine(),{s4:{ov:'tmenu',t:'near'}});
+
+/* 1 · الليل: كل سطح */
+still(fig('g1',{id:'s6-n-fold',dark:true,title:'1 · عند الفتح',cap:''}),mine());
+still(fig('g1',{id:'s6-n-far',dark:true,title:'2 · أرشيف البعيد',cap:'الدرجات الخمس وعلامة «اليوم» والإطار والزخرفة. والعدّاد شريط بحلقة.'}),mine({open:'far'}));
+still(fig('g1',{id:'s6-n-near',dark:true,title:'3 · أرشيف القريب',cap:''}),mine({open:'near'}));
+still(fig('g1',{id:'s6-n-new',dark:true,title:'4 · كل أوجه الحزب',cap:''}),mine({open:'new'}));
+still(fig('g1',{id:'s6-n-press',dark:true,title:'5 · لحظة الضغط على العدّاد',cap:'تفتح الدائرة إلى <code>raised</code> وتصغر 4%، بدل أن تخفت.'}),mine({count:34}),{press:true});
+still(fig('g1',{id:'s6-n-hold',dark:true,title:'6 · الإمساك للتصفير',cap:''}),mine(),{hold:.5});
+still(fig('g1',{id:'s6-n-details',dark:true,title:'7 · تفاصيل الربع',cap:''}),mine({open:'far'}),{s4:{ov:'qd',r:20,t:'far'}});
+still(fig('g1',{id:'s6-n-add',dark:true,title:'8 · ورقة الإضافة',cap:''}),mine(),{s4:{ov:'add',t:'near',sel:S_([12])}});
+still(fig('g1',{id:'s6-n-conflict',dark:true,title:'9 · سؤال التعارض',cap:'الحوار <code>raised</code> فوق التعتيم.'}),mine(),{s4:{ov:'conf',t:'far',sel:S_([10]),conf:[10]}});
+still(fig('g1',{id:'s6-n-hmenu',dark:true,title:'10 · قائمة الحزب',cap:'الصفّ المرفوع والقائمة <code>raised</code>.'}),mine(),{s4:{ov:'hmenu',t:'far',h:6}});
+still(fig('g1',{id:'s6-n-move',dark:true,title:'11 · النقل',cap:''}),mine(),{s4:{ov:'manage',mode:'move',t:'far',sel:S_([9])}});
+still(fig('g1',{id:'s6-n-remove',dark:true,title:'12 · تأكيد الإزالة',cap:''}),mine(),{s4:{ov:'rdlg',t:'near',sel:S_([11])}});
+still(fig('g1',{id:'s6-n-done',dark:true,title:'13 · اكتمل الحزب',cap:''}),mine(),{s4:{ov:'done',h:12}});
+still(fig('g1',{id:'s6-n-complete',dark:true,title:'14 · سطر اكتمال الدورة',cap:''}),completed());
+still(fig('g1',{id:'s6-n-toast',dark:true,title:'15 · إشعار عابر',cap:'في أعلى الشاشة تحت شريط الحالة، لا فوق الدائرة (ذ49). وهو فاتح على الكحلي كما كان: صغير وعابر.'}),mine(),{s4:{toast:'نُقل ح 9 إلى مراجعة القريب'}});
+still(fig('g1',{id:'s6-n-keys',dark:true,title:'16 · مفاتيح الرموز',cap:''}),mine(),{},toKeys);
+still(fig('g1',{id:'s6-n-empty',dark:true,title:'17 · المسارات فارغة',cap:''}),mine({far:[],near:[],nw:[],pg:{},count:0}));
+still(fig('g1',{id:'s6-n-375',dark:true,size:'s375',title:'18 · 375×667',cap:''}),mine());
+still(fig('g1',{id:'s6-n-440',dark:true,size:'s440',title:'19 · 440×956',cap:''}),mine());
+still(fig('g1',{id:'s6-n-stress',dark:true,title:'20 · أطول محتوى',cap:''}),ح60({open:'far'}));
+
+/* 2 · شاشة البداية */
+S6.launch(fig('g2',{id:'s6-launch',title:'21 · نهاراً',cap:'الورقي، والشريط في المنتصف، والعلامة من أعلى الشاشة.'}),{theme:'light'});
+S6.launch(fig('g2',{id:'s6-launch-dark',dark:true,title:'22 · ليلاً',cap:'الكحلي، والشريط أفتح منه قليلاً كما في الأيقونة الداكنة.'}),{theme:'dark'});
+S6.launch(fig('g2',{id:'s6-launch-375',size:'s375',title:'23 · 375×667',cap:'الشريط في المنتصف دائماً، ويُقصّ من الجانبين.'}),{theme:'light',w:375});
+S6.launch(fig('g2',{id:'s6-launch-440',size:'s440',dark:true,title:'24 · 440×956 ليلاً',cap:''}),{theme:'dark',w:440});
+
+/* 3 · الإعدادات */
+S6.settings(fig('g3',{id:'s6-settings',title:'25 · الإعدادات قبل ش7',cap:'iCloud لم يُفعَّل في البناء بعدُ (ش7): «سجلّك محفوظ في هذا الجهاز». الإصدار، ثم «عن التطبيق».'}),mine(),{cloud:'local'});
+S6.settings(fig('g3',{id:'s6-settings-on',title:'26 · بعد ش7: النسخ يعمل',cap:'دائرة ممتلئة فيها صحّ.'}),mine(),{cloud:'on'});
+S6.settings(fig('g3',{id:'s6-settings-off',title:'27 · iCloud غير مفعّل في الجهاز',cap:'سطر التنبيه الهادئ بنصّ 5.8، بدائرة فارغة وسحابة مشطوبة، ولا أحمر.'}),mine(),{cloud:'off'});
+S6.settings(fig('g3',{id:'s6-about',title:'28 · عن التطبيق',cap:'الشعار والاسم في الأعلى، ثم مصدر البيانات. ينتظر ملفّ الشعار والاسم كما يحبّ المالك أن يُكتب (س8).'}),mine(),{about:true});
+S6.settings(fig('g3',{id:'s6-settings-dark',dark:true,title:'29 · الإعدادات ليلاً',cap:''}),mine(),{cloud:'on'});
+S6.settings(fig('g3',{id:'s6-about-dark',dark:true,title:'30 · عن التطبيق ليلاً',cap:''}),mine(),{about:true});
+S6.settings(fig('g3',{id:'s6-about-375',size:'s375',title:'31 · عن التطبيق على 375×667',cap:''}),mine(),{about:true});
+
+/* 4 · أكبر الخطوط */
+still(fig('g4',{id:'s6-ax-default',title:'32 · الحجم الافتراضي',cap:'سطر الاكتمال مختصر بجانب العنوان كما في ش3.'}),completed());
+still(fig('g4',{id:'s6-ax1',cls:'ax',title:'33 · AX1',cap:'سطر التقدّم والاكتمال تحت العنوان، كاملاً.'}),completed());
+still(fig('g4',{id:'s6-ax5',cls:'ax ax5',title:'34 · AX5 أكبرها',cap:'العنوان يلتفّ، والأرباع بحجمها، والصفحة تتمرّر.'}),completed());
+
+/* 5 · الأيقونة */
+const icons=[['app-icon-light-1024.png','l','فاتح'],['app-icon-dark-1024.png','d','داكن'],['app-icon-tinted-1024.png','t','ملوّن (يلوّنه النظام)']];
+G('g5').innerHTML=icons.map(([f,c,n])=>`<div class="home ${c}">${[0,1,2,3,4,5,6,7].map(k=>k===5?`<div class="ap"><img src="icon/${f}" alt=""><span>الورد اليومي</span></div>`:'<div class="ap"><i></i><span>&nbsp;</span></div>').join('')}<div class="cap">${n}</div></div>`).join('');
+
+setTimeout(fitAll,60);fitAll();
+G('bGray').onclick=e=>{document.querySelectorAll('.phone').forEach(p=>p.classList.toggle('gray'));e.target.classList.toggle('on');};
+G('bDark').onclick=e=>{document.querySelectorAll('.scr').forEach(p=>p.classList.toggle('wd'));e.target.classList.toggle('on');};
+if(location.hash.includes('gray'))G('bGray').click();
+</script>
+</body>
+</html>

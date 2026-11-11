@@ -197,3 +197,19 @@
 .plain .sur>.sh{padding:0;margin-bottom:4px}.plain .sur>.sh:after{display:none}
 /* م-ب · علامة موضع التوقّف بشريط الشعار (فاصل عريض بشقّ عميق) */
 .bmk .b1{display:none}.plain .bmk .b1{display:inline}.plain .bmk .b2{display:none}
+
+/* ── ش6 · الوضع الليلي كاملاً (system.md §17.1) ── */
+/* raised: ما يطفو فوق الشاشة ليلاً (القوائم، والصفّ المرفوع، والحوار). نهاراً هو البطاقة كما كان، وتكفيه الظلال */
+.wl, :root{--raised:var(--card)}
+.wd, .wl.wd{--raised:#22405F}
+.wd .menu, .wd .row.lift, .wd .dlg{background:var(--raised)}
+.wd .row.lift{box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.wd .menu{box-shadow:0 10px 30px rgba(0,0,0,.45)}
+/* ذ45 · العدّاد ليلاً: حلقة لا قرص. الدائرة بلون البطاقة بحلقة فاتحة 1.5 والعدد فاتح، فلا يكون أسطع ما في الغرفة قبل الفجر */
+.wd .plus{background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.wd .s5c .plus.press{background:var(--raised);opacity:1}
+/* للمقارنة في صفحة ش6 وحدها: القرص الفاتح كما كان في ش5 */
+.wd.legacy .plus{background:var(--ink);color:var(--paper);box-shadow:none}
+/* ذ49 · الإشعار العابر والعدّاد كبير: يظهر في أعلى الشاشة تحت شريط الحالة (فوق رأس «الورد اليومي»)، لأن أسفلها كله للدائرة والإشارة فكان يغطّي أسفل الدائرة. وفي الشريط يبقى فوقه كما في §16.5 */
+.scr:not(.s5bar):has(.counter.big) .toast{bottom:auto;top:58px}
+.s375:not(.s5bar):has(.counter.big) .toast{top:24px}
