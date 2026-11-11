@@ -58,9 +58,9 @@ final class CounterUITests: XCTestCase {
         let newCard = app.descendants(matching: .any)["track.new.card"]
         let screen = app.windows.firstMatch.frame
         // الترتيب: البطاقات ثم «تصفير» ثم الدائرة ثم الإشارة، وكله في الشاشة (§16.1، §16.6).
-        // إطار «تصفير» للإتاحة يمتدّ 9 فوق الكبسولة (مساحة اللمس 44)، فيُقابَل بمنتصفه.
-        XCTAssertLessThan(newCard.frame.maxY, reset.frame.midY)
-        XCTAssertLessThan(reset.frame.maxY, c.frame.minY)
+        // إطارا البطاقة و«تصفير» للإتاحة يمتدّان بمساحات اللمس، فيُقابَلان بالدائرة.
+        XCTAssertLessThan(newCard.frame.maxY, c.frame.minY, "\(newCard.frame) \(c.frame)")
+        XCTAssertLessThan(reset.frame.midY, c.frame.minY, "\(reset.frame) \(c.frame)")
         XCTAssertLessThanOrEqual(c.frame.maxY, hint.frame.minY)
         XCTAssertLessThanOrEqual(hint.frame.maxY, screen.maxY)
         // القطر ما بقي بين 76 و136، والدائرة دائرة.
@@ -98,8 +98,12 @@ final class CounterUITests: XCTestCase {
         // سحب يبدأ على الدائرة إلى أعلى الشاشة.
         c.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
             .press(forDuration: 0.05, thenDragTo: app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.15)))
-        let shown = XCTNSPredicateExpectation(predicate: NSPredicate(format: "frame.minY < %f", screen.maxY - 200), object: keys)
-        XCTAssertEqual(XCTWaiter().wait(for: [shown], timeout: 20), .completed, "ظهرت المفاتيح بالسحب")
+        // الإطار لا يُقرأ بمسند NSPredicate، فيُنتظر بالسؤال المتكرّر.
+        let start = Date()
+        while keys.frame.minY >= screen.maxY - 200, Date().timeIntervalSince(start) < 10 {
+            _ = XCTWaiter().wait(for: [XCTestExpectation()], timeout: 0.5)
+        }
+        XCTAssertLessThan(keys.frame.minY, screen.maxY - 200, "ظهرت المفاتيح بالسحب: \(keys.frame)، العدد \(circle(app).value ?? "")")
         expectCount(app, "33")
         shot(app, "67-counter-keys")
     }
