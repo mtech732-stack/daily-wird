@@ -1,7 +1,8 @@
 import XCTest
 
 /// ش4 · المرحلة 1: اختيار الحزب الذي يُحفظ الآن، وأوجهه في البطاقة (5.6، design/system.md §15.1–15.2).
-/// سيناريوهات المعاين في docs/reports/ش4-التصميم.md §5: 1، 2، 3، 4، 15، 16.
+/// والمرحلة 2: إتمام الوجه والتراجع وموضع التوقّف (§15.3).
+/// سيناريوهات المعاين في docs/reports/ش4-التصميم.md §5: 1، 2، 3، 4، 5، 6، 7، 15، 16.
 @MainActor
 final class NewTrackUITests: XCTestCase {
 
@@ -9,9 +10,10 @@ final class NewTrackUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    private func launch(seed: String? = nil, pages: String? = nil) -> XCUIApplication {
+    private func launch(seed: String? = nil, pages: String? = nil, pinSeconds: Double? = nil) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing"] + (seed.map { ["-seed", $0] } ?? []) + (pages.map { ["-pages", $0] } ?? [])
+            + (pinSeconds.map { ["-pin-seconds", String($0)] } ?? [])
         app.launch()
         return app
     }
@@ -248,5 +250,81 @@ final class NewTrackUITests: XCTestCase {
         XCTAssertTrue(page(app, 604).exists)
         XCTAssertFalse(page(app, 599).exists)
         shot(app, "51-new-hizb60-last")
+    }
+
+    // MARK: المرحلة 2 (§15.3)
+
+    private func tapPage(_ app: XCUIApplication, _ n: Int, file: StaticString = #filePath, line: UInt = #line) {
+        let element = page(app, n)
+        XCTAssertTrue(element.waitForExistence(timeout: 20), "لم يظهر الوجه \(n)", file: file, line: line)
+        XCTAssertTrue(wait(element, "isHittable == true"), "لا يُضغط الوجه \(n)", file: file, line: line)
+        element.tap()
+    }
+
+    /// سيناريو المعاين 5: ضغطة على 117 ← «6 من 10» والإطار على 118 و«آخر إدخال اليوم» وعلامة «اليوم»؛
+    /// ضغطة ثانية ← «5 من 10» والإطار على 117.
+    func test_5_6_completeAndUndoPage() {
+        let app = launch(seed: "new:12", pages: "112-116:3")
+        expectBookmark(app, 117)
+        tapPage(app, 117)
+        expectProgress(app, "6 من 10")
+        expectBookmark(app, 118)
+        expectLabel(page(app, 117), "الوجه 117، محفوظ، أتممته اليوم")
+        let last = app.descendants(matching: .any)["track.new.lastEntry"]
+        XCTAssertTrue(wait(last, "label BEGINSWITH %@", "آخر إدخال اليوم"), last.label)
+        XCTAssertFalse(app.staticTexts["toast"].exists, "لا إشعار للإتمام (ذ11)")
+        shot(app, "52-new-page-done")
+
+        tapPage(app, 117)
+        expectProgress(app, "5 من 10")
+        expectBookmark(app, 117)
+        expectLabel(page(app, 117), "الوجه 117، لم يُحفظ، موضع التوقّف")
+        XCTAssertTrue(wait(last, "label BEGINSWITH %@", "آخر إدخال قبل 3 أيام"), last.label)
+    }
+
+    /// سيناريو المعاين 6 (ذ29): ضغطة على 113 وقد أُتمّ قبل ثلاثة أيام ← لا تغيير، وإشعار بتاريخ إتمامه.
+    func test_5_6_tapOldPageShowsDate() {
+        let app = launch(seed: "new:12", pages: "112-116:3")
+        let pull = app.buttons["track.new.pull"]
+        XCTAssertTrue(pull.waitForExistence(timeout: 20))
+        if !pull.isHittable { app.swipeUp() }
+        pull.tap()
+        tapPage(app, 113)
+        let toast = app.staticTexts["toast"]
+        XCTAssertTrue(toast.waitForExistence(timeout: 20))
+        XCTAssertTrue(toast.label.hasPrefix("أتممت الوجه 113 "), toast.label)
+        XCTAssertFalse(toast.label.contains("اليوم"), toast.label)
+        expectProgress(app, "5 من 10")
+        expectLabel(page(app, 113), "الوجه 113، محفوظ")
+        shot(app, "53-new-page-old")
+    }
+
+    /// سيناريو المعاين 7 (ذ30): أتمّ 112–115، يضغط 116 ← في المهلة الصفّ 112–116 بلا إطار،
+    /// وبعدها الصفّ 117–121 والإطار على 117.
+    func test_5_6_rowStaysThenMoves() {
+        let app = launch(seed: "new:12", pages: "112-115:3", pinSeconds: 4)
+        expectBookmark(app, 116)
+        tapPage(app, 116)
+        expectLabel(page(app, 116), "الوجه 116، محفوظ، أتممته اليوم")
+        XCTAssertFalse(page(app, 117).exists, "الصفّ باقٍ في المهلة")
+        XCTAssertFalse(app.descendants(matching: .any)["hizb.new.12"].label.contains("موضع التوقّف"), "بلا علامة في المهلة")
+        shot(app, "54-new-row-pin")
+        expectBookmark(app, 117)
+        XCTAssertTrue(wait(page(app, 112), "exists == false"), "انتقل الصفّ إلى 117–121")
+        shot(app, "55-new-row-after")
+    }
+
+    /// ذ30: التراجع في المهلة يُبقي الصفّ والإطار على الوجه نفسه.
+    func test_5_6_undoWithinWindowKeepsRow() {
+        let app = launch(seed: "new:12", pages: "112-115:3", pinSeconds: 4)
+        tapPage(app, 116)
+        expectLabel(page(app, 116), "الوجه 116، محفوظ، أتممته اليوم")
+        tapPage(app, 116)
+        expectBookmark(app, 116)
+        // بعد انقضاء المهلة يبقى الصفّ كما هو.
+        _ = XCTWaiter().wait(for: [XCTestExpectation()], timeout: 6)
+        XCTAssertTrue(page(app, 112).exists)
+        XCTAssertFalse(page(app, 117).exists)
+        expectBookmark(app, 116)
     }
 }

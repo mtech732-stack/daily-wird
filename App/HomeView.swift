@@ -51,6 +51,9 @@ struct HomeView: View {
     /// الصفّ المطويّ الباقي على حزبه بعد انتقال موضع التوقّف عنه، مدّة المهلة (§14.3، ذ20).
     @State private var pinned: [Track: Int] = [:]
     @State private var pinTasks: [Track: Task<Void, Never>] = [:]
+    /// صفّ الأوجه الباقي في المحفوظ الجديد بعد انتقال موضع التوقّف عنه، مدّة المهلة (§15.3، ذ30).
+    @State private var pinnedPages: FiveRow?
+    @State private var pinPagesTask: Task<Void, Never>?
     /// مهلة بقاء الصفّ 0.8 ث. وفي اختبارات الواجهة تطول بـ`-pin-seconds` ليُقرأ الصفّ فيها على محاكٍ بطيء.
     static let pinSeconds: Double = {
         let args = ProcessInfo.processInfo.arguments
@@ -363,7 +366,8 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     LastEntryLine(track: track, date: LastEntry.latest(inPages: layout.pages, completions: completions),
                                   now: now)
-                    NewTrackCard(layout: layout, isOpen: openTrack == track) {
+                    NewTrackCard(layout: layout, isOpen: openTrack == track, displayedRow: pinnedPages,
+                                 onPage: { completePage($0) }) {
                         toggle(track, proxy: proxy)
                     } onAdd: {
                         addTrack = track
@@ -377,8 +381,59 @@ struct HomeView: View {
         }
     }
 
+    /// ضغطة على الوجه (5.6، §15.3): أتممته الآن، وعلى ما أُتمّ اليوم تراجع، وعلى ما أُتمّ قبل اليوم إشعار
+    /// بتاريخ إتمامه ولا يتغيّر شيء (ذ29). ولا اهتزاز ولا إشعار للإتمام والتراجع (ذ11)، ويُعلَنان لقارئ الشاشة.
+    private func completePage(_ page: Int) {
+        let at = WirdClock.now()
+        now = at
+        let before = newLayout.foldedRow
+        do {
+            switch try Pages.tap(page: page, in: context, now: at) {
+            case .completed:
+                AccessibilityNotification.Announcement("أتممته اليوم").post()
+            case .undone:
+                AccessibilityNotification.Announcement("تراجعت").post()
+            case .completedBefore(let date):
+                show(Phrase.pageDoneBefore(page, on: date, now: at))
+                return
+            }
+            let fresh = (try? context.fetch(FetchDescriptor<PageCompletion>())) ?? completions
+            followPages(from: before, to: newLayout(completions: fresh).foldedRow)
+        } catch {
+            show("تعذّر التسجيل")
+        }
+    }
+
+    /// انتقال موضع التوقّف إلى صفّ أوجه آخر (ذ30): يبقى الصفّ 0.8 ث بما أُتمّ وعلامة «اليوم» بلا إطار،
+    /// ثم يتلاشى إلى صفّ الموضع في 0.25 ث، وفوراً مع «تقليل الحركة». والتراجع في المهلة يُبقيه (كما في م38).
+    private func followPages(from old: FiveRow?, to new: FiveRow?) {
+        guard openTrack != .newMemorization else { return }
+        let shown = pinnedPages ?? old
+        if new == shown {
+            pinPagesTask?.cancel()
+            pinPagesTask = nil
+            pinnedPages = nil
+            return
+        }
+        guard let shown, new != nil, pinnedPages == nil else { return }
+        pinnedPages = shown
+        pinPagesTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(Self.pinSeconds))
+            guard !Task.isCancelled else { return }
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
+                pinnedPages = nil
+            }
+            pinPagesTask = nil
+            if let page = newLayout.bookmarkPage {
+                AccessibilityNotification.Announcement("موضع التوقّف: الوجه \(Digits.en(page))").post()
+            }
+        }
+    }
+
     /// تخطيط المحفوظ الجديد: أحزابه، وأوجهه المتمّة، وما أُتمّ منها اليوم (§15.2).
-    private var newLayout: NewTrackLayout {
+    private var newLayout: NewTrackLayout { newLayout(completions: completions) }
+
+    private func newLayout(completions: [PageCompletion]) -> NewTrackLayout {
         let calendar = WirdDate.calendar()
         return NewTrackLayout(hizbs: Library.activeHizbs(in: .newMemorization, from: placements),
                               completed: Set(completions.map(\.page)),
@@ -469,6 +524,9 @@ struct HomeView: View {
     /// لا يُفتح إلا مسار واحد في وقت واحد؛ فتح مسار يطوي غيره (7.1).
     private func toggle(_ track: Track, proxy: ScrollViewProxy) {
         foldBar = FoldBarPosition()
+        pinPagesTask?.cancel()
+        pinPagesTask = nil
+        pinnedPages = nil
         if openTrack == track {
             openTrack = nil
             proxy.scrollTo("card.\(track.rawValue)", anchor: .top)

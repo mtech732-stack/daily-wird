@@ -148,4 +148,53 @@ final class NewTrackTests: XCTestCase {
         XCTAssertEqual(list.first?.daysAgo, 3)
         XCTAssertTrue(UITestSeed.parsePages("700:1").isEmpty)
     }
+
+    // MARK: المرحلة 2 (§15.3)
+
+    /// 5.6: ضغطة = أتممته الآن؛ ثانية في اليوم = تراجع يحذف إتمام اليوم وحده؛ وعلى ما أُتمّ قبل اليوم لا تغيير (ذ29).
+    func test_5_6_tapCompletesUndoesAndKeepsOld() throws {
+        let ctx = try context()
+        let cal = WirdDate.calendar()
+        let now = cal.date(from: DateComponents(year: 2026, month: 11, day: 11, hour: 5, minute: 12))!
+        let before = cal.date(byAdding: .day, value: -3, to: now)!
+        ctx.insert(PageCompletion(page: 113, completedAt: before))
+        try ctx.save()
+
+        XCTAssertEqual(try Pages.tap(page: 117, in: ctx, now: now, calendar: cal), .completed)
+        XCTAssertEqual(try ctx.fetch(FetchDescriptor<PageCompletion>()).filter { $0.page == 117 }.map(\.completedAt), [now])
+        XCTAssertEqual(try Pages.tap(page: 117, in: ctx, now: now.addingTimeInterval(60), calendar: cal), .undone)
+        XCTAssertTrue(try ctx.fetch(FetchDescriptor<PageCompletion>()).filter { $0.page == 117 }.isEmpty)
+
+        XCTAssertEqual(try Pages.tap(page: 113, in: ctx, now: now, calendar: cal), .completedBefore(before))
+        XCTAssertEqual(try ctx.fetch(FetchDescriptor<PageCompletion>()).count, 1, "ما أُتمّ قبل اليوم لا يتغيّر")
+    }
+
+    /// 5.6: التراجع يحذف إتمام اليوم وحده، ولو جاءت المزامنة بصفّين، ويبقى إتمام سابق للوجه نفسه.
+    func test_5_6_undoRemovesTodayOnly() throws {
+        let ctx = try context()
+        let cal = WirdDate.calendar()
+        let now = cal.date(from: DateComponents(year: 2026, month: 11, day: 11, hour: 22))!
+        let old = cal.date(byAdding: .day, value: -40, to: now)!
+        ctx.insert(PageCompletion(page: 200, completedAt: old))
+        ctx.insert(PageCompletion(page: 200, completedAt: now.addingTimeInterval(-3600)))
+        ctx.insert(PageCompletion(page: 200, completedAt: now.addingTimeInterval(-60)))
+        try ctx.save()
+        XCTAssertEqual(try Pages.tap(page: 200, in: ctx, now: now, calendar: cal), .undone)
+        XCTAssertEqual(try ctx.fetch(FetchDescriptor<PageCompletion>()).map(\.completedAt), [old])
+    }
+
+    /// ذ29: نصّ الإشعار.
+    func test_5_6_oldPageToast() {
+        let cal = WirdDate.calendar()
+        let now = cal.date(from: DateComponents(year: 2026, month: 11, day: 11, hour: 5))!
+        let thursday = cal.date(from: DateComponents(year: 2026, month: 11, day: 5, hour: 5))!
+        XCTAssertEqual(Phrase.pageDoneBefore(113, on: thursday, now: now), "أتممت الوجه 113 الخميس 5 نوفمبر")
+    }
+
+    /// ذ30: في المهلة يُعرض الصفّ بلا إطار، فتسميته بلا «موضع التوقّف».
+    func test_5_6_labelWithoutBookmarkInWindow() {
+        let layout = NewTrackLayout(hizbs: [12], completed: Set(112...115))
+        XCTAssertEqual(layout.pageLabel(116, showsBookmark: false), "الوجه 116، لم يُحفظ")
+        XCTAssertEqual(layout.pageLabel(116), "الوجه 116، لم يُحفظ، موضع التوقّف")
+    }
 }
