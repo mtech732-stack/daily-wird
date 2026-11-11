@@ -56,14 +56,15 @@ final class NewTrackTests: XCTestCase {
         XCTAssertNil(NewTrackLayout(hizbs: []).foldedRow)
     }
 
-    /// §15.3: كل أوجه الحزب صفوفاً خمسة خمسة.
+    /// §15.3 (م50): كل أوجه الحزب صفوفاً خمسة خمسة بلا تكرار، وآخرها ما بقي.
     func test_5_6_allRows() {
         XCTAssertEqual(NewTrackLayout.rows(ofHizb: 12), [Array(112...116), Array(117...121)])
-        XCTAssertEqual(NewTrackLayout.rows(ofHizb: 60), [Array(591...595), Array(596...600), Array(600...604)])
+        XCTAssertEqual(NewTrackLayout.rows(ofHizb: 60), [Array(591...595), Array(596...600), Array(601...604)])
+        XCTAssertEqual(NewTrackLayout.rows(ofHizb: 13), [Array(121...125), Array(126...130), [131]])
         for hizb in 1...Quran.hizbCount {
             let rows = NewTrackLayout.rows(ofHizb: hizb)
-            XCTAssertTrue(rows.allSatisfy { $0.count == 5 }, "ح \(hizb)")
-            XCTAssertEqual(Set(rows.joined()), Set(Quran.pages(ofHizb: hizb)), "ح \(hizb)")
+            XCTAssertTrue(rows.dropLast().allSatisfy { $0.count == 5 }, "ح \(hizb)")
+            XCTAssertEqual(Array(rows.joined()), Quran.pages(ofHizb: hizb), "ح \(hizb)")
         }
     }
 

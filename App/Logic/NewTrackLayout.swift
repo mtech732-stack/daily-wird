@@ -66,14 +66,11 @@ struct NewTrackLayout: Equatable, Sendable {
         max(0, min(index / 5 * 5, count - 5))
     }
 
-    /// أوجه الحزب كلها صفوفاً خمسة خمسة، في الأرشيف (§15.3): آخرها يُكمل من الذي قبله.
+    /// أوجه الحزب كلها صفوفاً خمسة خمسة، في الأرشيف (§15.3): بلا تكرار، وآخرها ما بقي (م50).
+    /// والإكمال إلى خمسة للصفّ المطويّ وحده (§15.2).
     static func rows(ofHizb hizb: Int) -> [[Int]] {
         let list = Quran.pages(ofHizb: hizb)
-        guard list.count > 5 else { return [list] }
-        return stride(from: 0, to: list.count, by: 5).map { i in
-            let start = rowStart(index: i, count: list.count)
-            return Array(list[start..<(start + 5)])
-        }
+        return stride(from: 0, to: list.count, by: 5).map { Array(list[$0..<min($0 + 5, list.count)]) }
     }
 
     /// سطر الحزب بعد «ح 12» (§15.2، ذ28): «· المائدة · الجزء 6». والسورتان بأسمائهما،
