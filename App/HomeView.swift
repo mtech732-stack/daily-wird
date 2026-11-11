@@ -6,7 +6,7 @@ import UIKit
 /// الشاشة الرئيسية «الورد اليومي» (7.1) كما تُبنى في ش1: المسارات الثلاثة بترتيب المالك،
 /// كل بطاقة مطويّة على موضع توقّفها، والأرشيف يُفتح من شريط الإسدال.
 /// وفي ش2: الضغطة على الربع تظلّله بتاريخه ووقته وعليه علامة «اليوم» (5.3، §13.1).
-/// ولا يظهر بعدُ: العدّاد (ش5).
+/// وفي ش5: العدّاد تحت البطاقات، وشريطاً أسفل الشاشة مع الأرشيف المفتوح (5.7، §16).
 struct HomeView: View {
     @Environment(\.modelContext) private var context
     @Query private var placements: [HizbPlacement]
@@ -65,6 +65,16 @@ struct HomeView: View {
         return 0.8
     }()
 
+    /// العدّاد (5.7، §16.8): في `UserDefaults` وحده، لا في SwiftData.
+    @AppStorage(CounterStore.key) private var count = 0
+    /// ارتفاع «تصفير» فوق الدائرة، لحساب القطر من المكان الباقي (§16.1).
+    @State private var resetHeight: CGFloat = 26
+    /// الشاشة القصيرة (ذ44): العدّاد صفّ أفقي، وتضيق ثلاث مسافات حتى يُرى كاملاً بلا تمرير.
+    @State private var isShort = false
+    /// حافّة الشاشة السفلى الآمنة، ليكون الشريط 88 من أسفل الشاشة والإشعار فوقه (§16.5).
+    @State private var safeBottom: CGFloat = 0
+    @State private var screenWidth: CGFloat = 393
+
     /// المسار الذي فُتح أرشيفه للتوّ، وينتظر قياس صفّ موضع التوقّف لينزل إليه (ذ18).
     @State private var pendingBookmark: Track?
 
@@ -76,26 +86,46 @@ struct HomeView: View {
             let margin: CGFloat = geo.size.width < 390 ? 16 : 20
             // عرض الصفّ داخل البطاقة المطويّة: الشاشة ناقص الهامشين وحشو البطاقة وحدّها.
             let narrow = geo.size.width - margin * 2 - 34 < 330
+            // الشريط مع الأرشيف المفتوح 88 من أسفل الشاشة، ويأخذ من التمرير ما فوق الحافّة الآمنة (§16.5).
+            let barInside = openTrack == nil ? 0 : max(0, CounterLayout.barHeight - geo.safeAreaInsets.bottom)
+            let viewport = geo.size.height - barInside
+            let counterMode = foldCounterMode(height: geo.size.height)
+            VStack(spacing: 0) {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         // الحالة المطويّة تملأ الشاشة، وفي أسفلها إشارة «اسحب للأعلى»، فلا تُرى المفاتيح
-                        // إلا بالسحب (§13.6). ومكان العدّاد (ش5) فراغ بلون الأرضية.
+                        // إلا بالسحب (§13.6). والعدّاد بين البطاقات والإشارة (§16.1، §16.6).
                         VStack(alignment: .leading, spacing: 0) {
-                            VStack(alignment: .leading, spacing: 8) {
+                            VStack(alignment: .leading, spacing: isShort && openTrack == nil ? 6 : 8) {
                                 HomeHeader(now: now)
                                     .padding(.bottom, 6)
                                 ForEach(Track.allCases, id: \.self) { track in
-                                    card(for: track, narrow: narrow, proxy: proxy, viewport: geo.size.height)
+                                    card(for: track, narrow: narrow, proxy: proxy, viewport: viewport)
                                         .id("card.\(track.rawValue)")
                                 }
                             }
                             .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { cardsHeight = $0 }
                             if openTrack == nil {
-                                Spacer(minLength: 0)
-                                // وإن لم يبقَ للإشارة مكان تحت البطاقات خفيت، والمفاتيح بالتمرير (§13.6).
-                                if geo.size.height - Self.topPadding - 6 - cardsHeight >= Self.hintHeight {
+                                // العدّاد مكان الفراغ تحت البطاقات (§16.1): كبيراً في وسط ما بقي والإشارة تحته،
+                                // أو صفّاً أفقياً بلا إشارة إن لم يتّسع للدائرة 76 (ذ44).
+                                switch counterMode {
+                                case .big:
+                                    Spacer(minLength: 8)
+                                    CounterView(mode: counterMode, count: count, onTap: increment)
+                                        .padding(.bottom, 4)
+                                        .onGeometryChange(for: CGFloat.self) { proxy in
+                                            proxy.size.height
+                                        } action: { height in
+                                            if case .big(let d) = counterMode { resetHeight = max(0, height - 4 - 6 - d) }
+                                        }
+                                    Spacer(minLength: 0)
                                     KeysHint()
+                                default:
+                                    CounterView(mode: .row, count: count, onTap: increment)
+                                        .padding(.top, 6)
+                                        .padding(.bottom, 4)
+                                    Spacer(minLength: 0)
                                 }
                             }
                         }
@@ -114,13 +144,25 @@ struct HomeView: View {
                 .coordinateSpace(.named(FoldBarPosition.space))
                 .overlay(alignment: .bottom) {
                     // الشريط في أسفل البطاقة، ولا يلتصق بأسفل الشاشة إلا حين يكون تحتها
-                    // والبطاقة ظاهرة، كالتصاق CSS sticky في التصميم (7.1، م23).
-                    if let open = openTrack, foldBar.isBelow(viewportHeight: geo.size.height) {
+                    // والبطاقة ظاهرة، كالتصاق CSS sticky في التصميم (7.1، م23). وفوق العدّاد مباشرة (§16.5).
+                    if let open = openTrack, foldBar.isBelow(viewportHeight: viewport) {
                         StickyFoldBar(track: open) { toggle(open, proxy: proxy) }
                             .padding(.horizontal, margin)
                     }
                 }
             }
+            if openTrack != nil {
+                // العدّاد شريطاً ملتصقاً بأسفل الشاشة خارج التمرير، بالعدد نفسه (§16.5).
+                Color.clear
+                    .frame(height: barInside)
+                    .overlay(alignment: .top) {
+                        CounterView(mode: .bar, count: count, onTap: increment)
+                    }
+            }
+            }
+            .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.bottom } action: { safeBottom = $0 }
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { screenWidth = $0 }
+            .onChange(of: counterMode, initial: true) { _, mode in isShort = mode == .row }
         }
         .background(Theme.background.ignoresSafeArea())
         // م18: ما جاءت به المزامنة من صفّين مفتوحين للحزب يُسوّى بإغلاق الأقدم، ولا يُحذف شيء.
@@ -161,8 +203,9 @@ struct HomeView: View {
         }
         .overlay(alignment: .bottom) {
             if let toast {
+                // ومع الشريط فوقه: أسفله 104 من أسفل الشاشة، و96 على 375 (§16.5).
                 ToastView(text: toast)
-                    .padding(.bottom, 42)
+                    .padding(.bottom, openTrack == nil ? 42 : max(42, (screenWidth < 390 ? 96 : 104) - safeBottom))
                     .transition(.opacity)
             }
         }
@@ -370,7 +413,7 @@ struct HomeView: View {
                 let menu = HizbMenu(track: track) { hizb, frame in
                     hizbMenu = HizbMenuRequest(track: track, hizb: hizb, labelFrame: frame)
                 }
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: isShort && openTrack == nil ? 2 : 4) {
                     LastEntryLine(track: track, date: LastEntry.latest(in: layout.quarters, readings: readings), now: now)
                     ReviewTrackCard(layout: layout, isOpen: openTrack == track, narrow: narrow, hizbMenu: menu,
                                     shading: shading, displayedHizb: pinned[track],
@@ -395,7 +438,7 @@ struct HomeView: View {
             if layout.isEmpty {
                 EmptyTrackCard(track: track) { addTrack = track }
             } else {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: isShort && openTrack == nil ? 2 : 4) {
                     LastEntryLine(track: track, date: LastEntry.latest(inPages: layout.pages, completions: completions),
                                   now: now)
                     NewTrackCard(layout: layout, isOpen: openTrack == track, displayedRow: pinnedPages,
@@ -573,6 +616,24 @@ struct HomeView: View {
             }
         }
     }
+
+    /// ضغطة على الدائرة تزيد العدد واحداً، ويُعلَن العدد الجديد لقارئ الشاشة (§16.2، §16.8).
+    private func increment() {
+        count += 1
+        AccessibilityNotification.Announcement(CounterLayout.text(count)).post()
+    }
+
+    /// حالة العدّاد في الشاشة المطويّة (§16.1، ذ44): القطر ما بقي بين البطاقات والإشارة بعد «تصفير»،
+    /// وإن قلّ عن 76 فصفّ أفقي. والمسافات الضيّقة في الصفّ تُضاف إلى الحساب حتى لا يتردّد بين الحالين.
+    private func foldCounterMode(height: CGFloat) -> CounterView.Mode {
+        let saved: CGFloat = isShort ? Self.shortSavings : 0
+        let room = height - Self.topPadding - 6 - (cardsHeight + saved) - 8 - Self.hintHeight - resetHeight - 6 - 4 - 8
+        if let d = CounterLayout.diameter(room: room) { return .big(d) }
+        return .row
+    }
+
+    /// ما تضيّقه الشاشة القصيرة (ذ44): بين البطاقات 6 بدل 8 (ثلاث)، وتحت «آخر إدخال» 2 بدل 4 (ثلاث).
+    private static let shortSavings: CGFloat = 12
 
     /// لا يُفتح إلا مسار واحد في وقت واحد؛ فتح مسار يطوي غيره (7.1).
     private func toggle(_ track: Track, proxy: ScrollViewProxy) {
