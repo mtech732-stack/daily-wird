@@ -123,7 +123,7 @@ struct SettingsSheet: View {
     }
 }
 
-/// «عن التطبيق» (§17.3): «‹ الإعدادات» للرجوع، والعنوان في الوسط، و«تمّ». ثم «الورد اليومي · الإصدار»،
+/// «عن التطبيق» (§17.3): «‹ الإعدادات» للرجوع، والعنوان في الوسط، و«تمّ». ثم أيقونة التطبيق واسمه وإصداره (ذ53)،
 /// ثم مصدر البيانات القرآنية بنسبته التي تشترطها الرخصة (`data/SOURCE.md`).
 /// ولا اسم للمالك ولا شعار: التطبيق عامّ (القرار 32).
 struct AboutPage: View {
@@ -163,7 +163,21 @@ struct AboutPage: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     VStack(spacing: 6) {
-                        Text(verbatim: "\(AppInfo.name) · الإصدار \(AppInfo.version)")
+                        // أيقونة التطبيق 76 بزاوية 17 وحدّ `line`: الفاتحة نهاراً والداكنة ليلاً (ذ53). زينة.
+                        Image("AboutIcon")
+                            .resizable()
+                            .frame(width: 76, height: 76)
+                            .clipShape(RoundedRectangle(cornerRadius: 17, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 17, style: .continuous).strokeBorder(Theme.line, lineWidth: 1))
+                            .accessibilityHidden(true)
+                            .accessibilityIdentifier("about.icon")
+                        Text(verbatim: AppInfo.name)
+                            .font(Theme.font(.semiBold, size: 20, relativeTo: .title3))
+                            .foregroundStyle(Theme.ink)
+                            .padding(.top, 8)
+                            .accessibilityAddTraits(.isHeader)
+                            .accessibilityIdentifier("about.name")
+                        Text(verbatim: "الإصدار \(AppInfo.version)")
                             .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
                             .foregroundStyle(Theme.muted)
                             .accessibilityIdentifier("about.app")
@@ -302,7 +316,7 @@ private struct BackupRow: View {
     }
 }
 
-/// الشارة 26 (ذ50): صحّ في دائرة ممتلئة · سحابة مشطوبة بحدّ `muted` · هاتف بحدّ `ink`. رموز النظام (م52).
+/// الشارة 26 (ذ50): صحّ في دائرة ممتلئة · سحابة مشطوبة بحدّ `muted` · هاتف بحدّ `ink`. رموز النظام 13 في مركزها (م52).
 private struct BackupBadge: View {
     let status: BackupStatus
 
@@ -310,19 +324,19 @@ private struct BackupBadge: View {
         switch status {
         case .iCloudOn:
             Image(systemName: "checkmark")
-                .font(.system(size: 12, weight: .bold))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(Theme.paper)
                 .frame(width: 26, height: 26)
                 .background(Circle().fill(Theme.ink))
         case .iCloudOff:
             Image(systemName: "icloud.slash")
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(Theme.muted)
                 .frame(width: 26, height: 26)
                 .overlay(Circle().strokeBorder(Theme.muted, lineWidth: 1.5))
         case .device:
             Image(systemName: "iphone")
-                .font(.system(size: 13, weight: .medium))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(Theme.ink)
                 .frame(width: 26, height: 26)
                 .overlay(Circle().strokeBorder(Theme.ink, lineWidth: 1.5))
