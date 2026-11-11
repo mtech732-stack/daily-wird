@@ -78,7 +78,7 @@ final class FrameBox: @unchecked Sendable {
 /// الضغط المطوّل (0.45 ث) على «ح [رقم]» يفتح قائمة الحزب المخصّصة (§12.5، م22). وليست قائمة
 /// النظام `contextMenu`، لأنها تفرض لون رأسها فلا يبلغ تباينه 4.5:1 (م32، القاعدة 8.3)،
 /// ولأن §12.5 ترفع الصفّ كلّه لا «ح» وحده.
-private struct HizbMenuModifier: ViewModifier {
+struct HizbMenuModifier: ViewModifier {
     let hizb: Int
     let menu: HizbMenu?
     @State private var frame = FrameBox()
@@ -111,13 +111,13 @@ struct HizbMenuRequest: Equatable {
     let labelFrame: CGRect
 }
 
-enum HizbMenuAction {
-    case move, remove
+enum HizbMenuAction: Equatable {
+    case move(Track), remove
 }
 
 /// قائمة الحزب كما في §12.5: تعتيم `scrim` يبقى الصفّ فوقه مرفوعاً (زاوية 14، يمتدّ 6 جانباً)،
 /// وتحته بـ 8 قائمة عرضها 252 (فوقه إن لم تتّسع)، حافّتها اليمنى عند حافّة الصفّ:
-/// رأس 12.5 `muted` «ح 10 · النساء · الجزء 5»، ثم «نقل إلى [المسار الآخر]»، ثم فاصل 6 `ghost`،
+/// رأس 12.5 `muted` «ح 10 · النساء · الجزء 5»، ثم «نقل إلى [مسار]» لكل مسار آخر (§15.6)، ثم فاصل 6 `ghost`،
 /// ثم «إزالة من المسار». الإزالة مفصولة بالفراغ وبرمزها لا باللون (ذ7).
 /// الضغط خارج القائمة يغلقها بلا فعل.
 struct HizbMenuOverlay: View {
@@ -169,7 +169,6 @@ struct HizbMenuOverlay: View {
     }
 
     private var card: some View {
-        let other = Library.otherReviewTrack(request.track)
         return VStack(alignment: .leading, spacing: 0) {
             Text(verbatim: Phrase.hizbMenuHeader(request.hizb))
                 .font(Theme.font(.regular, size: 12.5, relativeTo: .caption))
@@ -182,7 +181,11 @@ struct HizbMenuOverlay: View {
                 .accessibilityIdentifier("hizbmenu.header")
                 .accessibilityAddTraits(.isHeader)
             Rectangle().fill(Theme.line).frame(height: 1)
-            item(Phrase.hizbMenuMove(to: other), icon: "arrow.left.arrow.right", id: "hizbmenu.move") { done(.move) }
+            // «نقل إلى …» لكل مسار آخر، بترتيب §15.6 (ذ32).
+            ForEach(Library.destinations(from: request.track), id: \.self) { target in
+                item(Phrase.hizbMenuMove(to: target), icon: "arrow.left.arrow.right",
+                     id: "hizbmenu.move.\(target.rawValue)") { done(.move(target)) }
+            }
             Rectangle().fill(Theme.ghost).frame(height: 6)
                 .accessibilityHidden(true)
             item("إزالة من المسار", icon: "trash", id: "hizbmenu.remove") { done(.remove) }

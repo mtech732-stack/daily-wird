@@ -83,6 +83,30 @@ enum Library {
 
     // MARK: النقل والإزالة (5.1، 5.2، §12.5)
 
+    /// وجهتا النقل من كل مسار بترتيبهما في القائمة والورقة (§15.6، ذ32): الأقرب في طريق المالك أولاً،
+    /// الجديد ← القريب ← البعيد.
+    static func destinations(from track: Track) -> [Track] {
+        switch track {
+        case .farReview: [.nearReview, .newMemorization]
+        case .nearReview: [.farReview, .newMemorization]
+        case .newMemorization: [.nearReview, .farReview]
+        }
+    }
+
+    /// متى خرج كل ربع من المحفوظ الجديد آخر مرة، لأحزابه التي كانت فيه (م49): الحزب المرفوع يدخل دورة
+    /// المراجعة بأرباعه غير مظلّلة (5.6)، فلا يُعدّ في الدورة ما تُلي منه قبل خروجه من الجديد.
+    static func leftNew(from placements: [HizbPlacement]) -> [Int: Date] {
+        var hizbs: [Int: Date] = [:]
+        for p in placements where p.track == .newMemorization {
+            guard let end = p.removedAt else { continue }
+            if let at = hizbs[p.hizb], at >= end { continue }
+            hizbs[p.hizb] = end
+        }
+        var quarters: [Int: Date] = [:]
+        for (hizb, at) in hizbs { for q in Quran.quarters(ofHizb: hizb) { quarters[q] = at } }
+        return quarters
+    }
+
     /// المسار الآخر من مسارَي المراجعة. وفي ش1 «المسار الآخر» واحد؛ والجديد في ش4.
     static func otherReviewTrack(_ track: Track) -> Track {
         track == .farReview ? .nearReview : .farReview
@@ -94,14 +118,15 @@ enum Library {
     @discardableResult
     static func move(_ selection: [Int], from source: Track, to target: Track, in context: ModelContext,
                      now: Date = .now) throws -> [Int] {
-        precondition(source.isReview && target.isReview && source != target, "النقل بين مسارَي المراجعة في ش1")
+        precondition(source != target, "النقل إلى مسار آخر")
         let placements = try context.fetch(FetchDescriptor<HizbPlacement>())
         let current = trackOfHizb(from: placements)
         let list = Array(Set(selection)).sorted().filter { current[$0] == source }
         let set = Set(list)
         for p in placements where p.removedAt == nil && set.contains(p.hizb) { p.removedAt = now }
         for hizb in list { context.insert(HizbPlacement(hizb: hizb, track: target, addedAt: now)) }
-        if !list.isEmpty { try Cycles.startIfNeeded(target, in: context, now: now) }
+        // الدورة لمسارَي المراجعة وحدهما، والقريب الفارغ تبدأ دورته الأولى بالرفع (5.5، §15.5).
+        if !list.isEmpty && target.isReview { try Cycles.startIfNeeded(target, in: context, now: now) }
         try context.save()
         if !list.isEmpty { try settleReviews(in: context, now: now) }
         return list

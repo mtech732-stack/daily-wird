@@ -2,7 +2,8 @@ import XCTest
 
 /// ش4 · المرحلة 1: اختيار الحزب الذي يُحفظ الآن، وأوجهه في البطاقة (5.6، design/system.md §15.1–15.2).
 /// والمرحلة 2: إتمام الوجه والتراجع وموضع التوقّف (§15.3). والمرحلة 3: الوجه المشترك (§15.4).
-/// سيناريوهات المعاين في docs/reports/ش4-التصميم.md §5: 1–7، 11، 12، 15، 16، 17.
+/// والمرحلة 4: الاكتمال والرفع والنقل بين المسارات الثلاثة (§15.5–15.6).
+/// سيناريوهات المعاين في docs/reports/ش4-التصميم.md §5: 1–17.
 @MainActor
 final class NewTrackUITests: XCTestCase {
 
@@ -10,10 +11,11 @@ final class NewTrackUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    private func launch(seed: String? = nil, pages: String? = nil, pinSeconds: Double? = nil) -> XCUIApplication {
+    private func launch(seed: String? = nil, pages: String? = nil, pinSeconds: Double? = nil,
+                        extra: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing"] + (seed.map { ["-seed", $0] } ?? []) + (pages.map { ["-pages", $0] } ?? [])
-            + (pinSeconds.map { ["-pin-seconds", String($0)] } ?? [])
+            + (pinSeconds.map { ["-pin-seconds", String($0)] } ?? []) + extra
         app.launch()
         return app
     }
@@ -205,7 +207,7 @@ final class NewTrackUITests: XCTestCase {
         app.buttons["track.new.more"].tap()
         let item = app.buttons["إزالة"]
         XCTAssertTrue(item.waitForExistence(timeout: 20))
-        XCTAssertFalse(app.buttons["نقل"].exists, "النقل بين المسارات الثلاثة في المرحلة 4")
+        XCTAssertTrue(app.buttons["نقل"].exists, "«⋯» في الجديد: إضافة · نقل · إزالة (§15.6)")
         item.tap()
         expectLabel(app.staticTexts["manage.title"], "إزالة من المحفوظ الجديد")
         XCTAssertTrue(app.staticTexts["يبقى سجلّ حفظ ما تزيله محفوظاً."].exists)
@@ -378,5 +380,133 @@ final class NewTrackUITests: XCTestCase {
         expectLabel(page(app, 117), "الوجه 117، محفوظ، أتممته اليوم")
         expectLabel(page(app, 121), "الوجه 121، لم يُحفظ، مشترك مع الحزب 13")
         expectLabel(app.descendants(matching: .any)["hizb.new.12"], "الحزب 12، فيه موضع التوقّف")
+    }
+
+    // MARK: المرحلة 4 (§15.5–15.6)
+
+    /// يضغط «ح» ضغطة مطوّلة حتى تظهر قائمته، ويعيد بندها. ويعيد الضغط مرة إن لم تظهر.
+    private func pressHizb(_ app: XCUIApplication, _ track: String, _ hizb: Int, item: String,
+                           file: StaticString = #filePath, line: UInt = #line) -> XCUIElement {
+        let label = app.descendants(matching: .any)["hizb.\(track).\(hizb)"]
+        XCTAssertTrue(label.waitForExistence(timeout: 20), "لم يظهر ح \(hizb)", file: file, line: line)
+        XCTAssertTrue(wait(label, "isHittable == true"), "لا يُضغط ح \(hizb)", file: file, line: line)
+        let entry = app.buttons[item]
+        label.press(forDuration: 1.0)
+        if entry.waitForExistence(timeout: 20) { return entry }
+        print("تشخيص: لم تظهر قائمة ح \(hizb) بعد الضغط المطوّل، يُعاد مرة")
+        label.press(forDuration: 1.0)
+        XCTAssertTrue(entry.waitForExistence(timeout: 20), "لم تظهر قائمة ح \(hizb)", file: file, line: line)
+        return entry
+    }
+
+    private func expectNearProgress(_ app: XCUIApplication, _ text: String, file: StaticString = #filePath, line: UInt = #line) {
+        expectLabel(app.staticTexts["track.nearReview.progress"], "تقدّم الدورة: \(text) ربعاً", file: file, line: line)
+    }
+
+    /// سيناريو المعاين 8 (ذ33–ذ35): بقي 121 ← يضغطه ← يمتلئ ثم الحوار. «لاحقاً» ← «10 من 10» بلا إطار وزرّ الرفع.
+    /// ضغطة على 121 ← «9 من 10» ولا زرّ. ضغطة أخرى ← الحوار من جديد.
+    func test_5_6_completeDialogAndLater() {
+        let app = launch(seed: "new:12", pages: "112-120:3")
+        expectBookmark(app, 121)
+        tapPage(app, 121)
+        let title = app.staticTexts["complete.title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 20), "لم يظهر حوار الاكتمال")
+        expectLabel(title, "اكتمل الحزب 12")
+        expectLabel(app.staticTexts["complete.note"], "أتممت أوجهه كلها، من 112 إلى 121.\nأترفعه إلى مراجعة القريب؟")
+        expectLabel(app.buttons["complete.raise"], "ارفعه إلى مراجعة القريب")
+        shot(app, "59-new-complete-dialog")
+        app.buttons["complete.later"].tap()
+        XCTAssertTrue(wait(title, "exists == false"))
+        expectProgress(app, "10 من 10")
+        expectLabel(app.buttons["raise.12"], "ارفع ح 12 إلى مراجعة القريب")
+        XCTAssertFalse(page(app, 121).label.contains("موضع التوقّف"))
+        XCTAssertTrue(app.otherElements["track.nearReview.empty"].exists, "لا ينقل التطبيق شيئاً بنفسه")
+        shot(app, "60-new-later")
+
+        tapPage(app, 121)
+        expectProgress(app, "9 من 10")
+        XCTAssertTrue(wait(app.buttons["raise.12"], "exists == false"), "يذهب الزرّ بالتراجع")
+        tapPage(app, 121)
+        XCTAssertTrue(title.waitForExistence(timeout: 20), "الحوار من جديد")
+    }
+
+    /// سيناريو المعاين 9 (ذ36): «ارفعه» ← القريب «2 من 12» وموضعه لم يتغيّر، والجديد فارغ، والإشعار.
+    /// وسجلّ الأوجه باقٍ (اختبار الوحدة).
+    func test_5_6_raiseToNear() {
+        let app = launch(seed: "nearReview:10-11;new:12", pages: "112-120:3",
+                         extra: ["-readings", "37:1,38:1", "-cycle", "nearReview:3"])
+        expectNearProgress(app, "2 من 8")
+        tapPage(app, 121)
+        let raise = app.buttons["complete.raise"]
+        XCTAssertTrue(raise.waitForExistence(timeout: 20))
+        raise.tap()
+        expectLabel(app.staticTexts["toast"], "رُفع ح 12 إلى مراجعة القريب")
+        expectNearProgress(app, "2 من 12")
+        XCTAssertTrue(app.otherElements["track.new.empty"].waitForExistence(timeout: 20))
+        expectLabel(app.otherElements["track.nearReview.quarterCount"], "12")
+        shot(app, "61-new-raised")
+    }
+
+    /// سيناريوا المعاين 10 و13: حزب أوجهه متمّة من قبل ← مكتمل بزرّ الرفع بلا حوار. والقريب فارغ ← بعد الرفع
+    /// «0 من 4» والإطار على ربعه الأول.
+    func test_5_6_raiseCompleteHizbToEmptyNear() {
+        let app = launch(seed: "new:12", pages: "112-121:3")
+        expectProgress(app, "10 من 10")
+        let button = app.buttons["raise.12"]
+        XCTAssertTrue(button.waitForExistence(timeout: 20))
+        XCTAssertFalse(app.staticTexts["complete.title"].exists, "لا حوار بلا ضغطة")
+        button.tap()
+        expectLabel(app.staticTexts["toast"], "رُفع ح 12 إلى مراجعة القريب")
+        expectNearProgress(app, "0 من 4")
+        let q1 = app.buttons.matching(identifier: "quarter.nearReview.45").firstMatch
+        XCTAssertTrue(wait(q1, "label CONTAINS %@", "موضع التوقّف"), q1.label)
+        XCTAssertTrue(app.otherElements["track.new.empty"].exists)
+        shot(app, "62-new-raised-empty-near")
+    }
+
+    /// سيناريو المعاين 14 (§15.6، ذ32): قائمة ح 12 في الجديد: نقل إلى القريب ثم البعيد ثم الإزالة؛
+    /// ومن البعيد: القريب ثم الجديد. و«⋯ ← نقل» ورقة بمقطعَي الوجهة والأول مختار.
+    func test_5_6_menusMoveAcrossThreeTracks() {
+        let app = launch(seed: "farReview:1-2;new:12", pages: "112-114:3")
+        let near = pressHizb(app, "new", 12, item: "hizbmenu.move.nearReview")
+        expectLabel(near, "نقل إلى مراجعة القريب")
+        expectLabel(app.buttons["hizbmenu.move.farReview"], "نقل إلى مراجعة البعيد")
+        XCTAssertTrue(app.buttons["hizbmenu.remove"].exists)
+        XCTAssertLessThan(near.frame.minY, app.buttons["hizbmenu.move.farReview"].frame.minY, "القريب أولاً")
+        shot(app, "63-new-hizb-menu")
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.06)).tap()
+        XCTAssertTrue(wait(near, "exists == false"))
+
+        let toNear = pressHizb(app, "farReview", 1, item: "hizbmenu.move.nearReview")
+        let toNew = app.buttons["hizbmenu.move.new"]
+        expectLabel(toNew, "نقل إلى المحفوظ الجديد")
+        XCTAssertLessThan(toNear.frame.minY, toNew.frame.minY, "القريب ثم الجديد")
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.06)).tap()
+        XCTAssertTrue(wait(toNew, "exists == false"))
+
+        app.buttons["track.new.more"].tap()
+        let item = app.buttons["نقل"]
+        XCTAssertTrue(item.waitForExistence(timeout: 20))
+        item.tap()
+        expectLabel(app.staticTexts["manage.title"], "نقل من المحفوظ الجديد")
+        XCTAssertTrue(app.buttons["manage.to.nearReview"].waitForExistence(timeout: 20))
+        XCTAssertTrue(wait(app.buttons["manage.to.nearReview"], "isSelected == true"), "الأول مختار")
+        tapSelecting(app.buttons["manage.hizb.12"])
+        expectLabel(app.buttons["manage.go"], "انقل الحزب 12 إلى مراجعة القريب")
+        shot(app, "64-new-move-sheet")
+        app.buttons["manage.to.farReview"].tap()
+        expectLabel(app.buttons["manage.go"], "انقل الحزب 12 إلى مراجعة البعيد")
+        tapEnabled(app.buttons["manage.go"])
+        expectLabel(app.staticTexts["toast"], "نُقل ح 12 إلى مراجعة البعيد")
+        XCTAssertTrue(app.otherElements["track.new.empty"].waitForExistence(timeout: 20))
+        expectLabel(app.otherElements["track.farReview.quarterCount"], "12")
+    }
+
+    /// م48: نقل حزب لم يكتمل من الجديد إلى القريب «نُقل» لا «رُفع».
+    func test_5_6_moveIncompleteToNearSaysMoved() {
+        let app = launch(seed: "new:12", pages: "112-114:3")
+        pressHizb(app, "new", 12, item: "hizbmenu.move.nearReview").tap()
+        expectLabel(app.staticTexts["toast"], "نُقل ح 12 إلى مراجعة القريب")
+        expectNearProgress(app, "0 من 4")
     }
 }

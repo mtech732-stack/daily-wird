@@ -38,6 +38,12 @@ struct NewTrackLayout: Equatable, Sendable {
     }
 
     var bookmarkPage: Int? { bookmark?.page }
+
+    /// أُتمّت أوجه الحزب كلها (§15.5): تحت أوجهه زرّ الرفع إلى القريب.
+    func isComplete(_ hizb: Int) -> Bool { Quran.pages(ofHizb: hizb).allSatisfy(completed.contains) }
+
+    /// أحزاب الجديد المكتملة.
+    var completeHizbs: [Int] { hizbs.filter(isComplete) }
     var bookmarkHizb: Int? { bookmark?.hizb }
 
     /// الحزب الذي تُطوى عليه البطاقة: حزب موضع التوقّف، وإلا أول حزب.

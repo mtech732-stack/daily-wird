@@ -13,11 +13,14 @@ enum Cycles {
     /// أرباع المسار المظلّلة في الدورة: لها تظليل بعد بدايتها (وإلى نهايتها إن انتهت).
     /// والحدّ صارم: التظليل الذي أتمّ دورة في لحظة بداية التالية، فهو للمنتهية وحدها (§14.4، م40).
     /// والربع المشترك ربع واحد برقمه، فلا يُعدّ مرتين.
-    static func done(quarters: [Int], readings: [QuarterReading], since start: Date?, until end: Date? = nil) -> Set<Int> {
+    /// و`floors` لكل ربع خرج حزبه من المحفوظ الجديد: لا يُعدّ ما تُلي منه قبل خروجه (م49).
+    static func done(quarters: [Int], readings: [QuarterReading], since start: Date?, until end: Date? = nil,
+                     floors: [Int: Date] = [:]) -> Set<Int> {
         guard let start else { return [] }
         let set = Set(quarters)
         return Set(readings.lazy.filter { reading in
             set.contains(reading.quarter) && reading.readAt > start && (end.map { reading.readAt <= $0 } ?? true)
+                && (floors[reading.quarter].map { reading.readAt > $0 } ?? true)
         }.map(\.quarter))
     }
 
@@ -91,16 +94,17 @@ enum Cycles {
         }
         let quarters = hizbs.flatMap(Quran.quarters(ofHizb:))
         let readings = try context.fetch(FetchDescriptor<QuarterReading>())
+        let floors = Library.leftNew(from: placements)
         if !undone.isEmpty, let previous = justCompleted(track, in: cycles, now: now, calendar: calendar),
            let end = previous.endedAt, undone.contains(where: { $0 > previous.startedAt && $0 <= end }),
-           done(quarters: quarters, readings: readings, since: previous.startedAt, until: end).count < quarters.count {
+           done(quarters: quarters, readings: readings, since: previous.startedAt, until: end, floors: floors).count < quarters.count {
             context.delete(current)
             previous.endedAt = nil
             previous.endReasonRaw = nil
             try context.save()
             return .restored
         }
-        guard done(quarters: quarters, readings: readings, since: current.startedAt).count == quarters.count else {
+        guard done(quarters: quarters, readings: readings, since: current.startedAt, floors: floors).count == quarters.count else {
             return .none
         }
         current.endedAt = now

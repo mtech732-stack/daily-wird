@@ -17,6 +17,28 @@ enum Phrase {
         "أتممت الوجه \(Digits.en(page)) \(WirdDate.long(date, now: now))"
     }
 
+    // MARK: اكتمال الحزب والرفع (§15.5)
+
+    /// «اكتمل الحزب 12»
+    static func hizbCompleteTitle(_ hizb: Int) -> String { "اكتمل الحزب \(Digits.en(hizb))" }
+
+    /// «أتممت أوجهه كلها، من 112 إلى 121.» (ذ35)
+    static func hizbCompleteNote(_ hizb: Int) -> String {
+        let pages = Quran.pages(ofHizb: hizb)
+        return "أتممت أوجهه كلها، من \(Digits.en(pages[0])) إلى \(Digits.en(pages[pages.count - 1]))."
+    }
+
+    static var raiseQuestion: String { "أترفعه إلى \(Track.nearReview.title)؟" }
+    static var raiseAnswer: String { "ارفعه إلى \(Track.nearReview.title)" }
+
+    /// زرّ الرفع تحت أوجه حزب اكتمل (ذ33): «ارفع ح 12 إلى مراجعة القريب».
+    static func raiseButton(_ hizb: Int) -> String { "ارفع \(Digits.hizbLabel(hizb)) إلى \(Track.nearReview.title)" }
+
+    /// إشعار الرفع (ذ36): «رُفع ح 12 إلى مراجعة القريب»، و«… · وفيه الآن موضع التوقّف» (ذ22).
+    static func raisedToast(_ hizb: Int, bookmark: Bool) -> String {
+        "رُفع \(Digits.hizbLabel(hizb)) إلى \(Track.nearReview.title)" + (bookmark ? " · وفيه الآن موضع التوقّف" : "")
+    }
+
     /// سؤال «ابدأ دورة جديدة» وإشعارها (§14.5، ذ21).
     static func newCycleQuestion(_ track: Track) -> String { "أتبدأ دورة جديدة في \(track.title)؟" }
     static let newCycleNote = "يعود موضع التوقّف إلى أول المسار، وتُعدّ الأرباع من جديد. وسجلّ التلاوة كما هو."

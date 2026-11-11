@@ -229,4 +229,100 @@ final class NewTrackTests: XCTestCase {
         XCTAssertEqual(two.progressText, "10 من 20")
         XCTAssertEqual(two.pageLabel(121, inHizb: 12), "الوجه 121، محفوظ، أتممته اليوم، مشترك مع الحزب 13")
     }
+
+    // MARK: المرحلة 4 (§15.5–15.6)
+
+    /// §15.6 (ذ32): وجهتا النقل من كل مسار بترتيبهما.
+    func test_5_6_destinations() {
+        XCTAssertEqual(Library.destinations(from: .newMemorization), [.nearReview, .farReview])
+        XCTAssertEqual(Library.destinations(from: .farReview), [.nearReview, .newMemorization])
+        XCTAssertEqual(Library.destinations(from: .nearReview), [.farReview, .newMemorization])
+    }
+
+    /// §15.5: الرفع يُغلق صفّ الجديد ويفتح صفّاً في القريب، ويبدأ دورة القريب الفارغ (5.5)،
+    /// وسجلّ الأوجه باقٍ تاريخاً للحفظ.
+    func test_5_6_raiseKeepsPagesAndStartsNearCycle() throws {
+        let ctx = try context()
+        let t0 = Date(timeIntervalSince1970: 1_794_000_000)
+        try Library.add([12], to: .newMemorization, in: ctx, now: t0)
+        for page in 112...121 { ctx.insert(PageCompletion(page: page, completedAt: t0)) }
+        try ctx.save()
+        XCTAssertEqual(try Library.move([12], from: .newMemorization, to: .nearReview, in: ctx, now: t0.addingTimeInterval(60)), [12])
+        let rows = try ctx.fetch(FetchDescriptor<HizbPlacement>())
+        XCTAssertEqual(Library.activeHizbs(in: .nearReview, from: rows), [12])
+        XCTAssertTrue(Library.activeHizbs(in: .newMemorization, from: rows).isEmpty)
+        XCTAssertEqual(rows.count, 2, "يُغلق الصفّ ولا يُحذف")
+        XCTAssertEqual(try ctx.fetch(FetchDescriptor<PageCompletion>()).count, 10, "سجلّ الأوجه باقٍ")
+        let cycles = try ctx.fetch(FetchDescriptor<ReviewCycle>())
+        XCTAssertEqual(Cycles.current(.nearReview, in: cycles)?.startedAt, t0.addingTimeInterval(60))
+        XCTAssertNil(Cycles.current(.newMemorization, in: cycles))
+    }
+
+    /// م49: الحزب المرفوع يدخل القريب بأرباعه الأربعة غير مظلّلة (5.6)، ولو تُلي فيه في الدورة الجارية
+    /// قبل نقله إلى الجديد. وما يُتلى منه بعد الرفع يُعدّ كالعادة.
+    func test_5_6_raisedHizbEntersUnshaded_m49() throws {
+        let ctx = try context()
+        let t0 = Date(timeIntervalSince1970: 1_794_000_000)
+        try Library.add([10, 12], to: .nearReview, in: ctx, now: t0)
+        // تُلي ح 12 كله في دورة القريب الجارية، وح 10 ربعه الأول.
+        for q in Quran.quarters(ofHizb: 12) + [37] { ctx.insert(QuarterReading(quarter: q, readAt: t0.addingTimeInterval(3600))) }
+        try ctx.save()
+        try Library.move([12], from: .nearReview, to: .newMemorization, in: ctx, now: t0.addingTimeInterval(7200))
+        try Library.move([12], from: .newMemorization, to: .nearReview, in: ctx, now: t0.addingTimeInterval(9000))
+
+        let rows = try ctx.fetch(FetchDescriptor<HizbPlacement>())
+        let cycles = try ctx.fetch(FetchDescriptor<ReviewCycle>())
+        let readings = try ctx.fetch(FetchDescriptor<QuarterReading>())
+        let start = Cycles.current(.nearReview, in: cycles)?.startedAt
+        XCTAssertEqual(start, t0, "الدورة نفسها لم تكتمل ولم تنتهِ")
+        let quarters = Library.activeHizbs(in: .nearReview, from: rows).flatMap(Quran.quarters(ofHizb:))
+        let floors = Library.leftNew(from: rows)
+        XCTAssertEqual(Cycles.done(quarters: quarters, readings: readings, since: start, floors: floors), [37],
+                       "أرباع ح 12 غير مظلّلة في الدورة")
+        // وبلا الحدّ كانت تُعدّ (س7)، فهذا ما يغيّره م49 وحده.
+        XCTAssertEqual(Cycles.done(quarters: quarters, readings: readings, since: start).count, 5)
+
+        // ما يُتلى بعد الرفع يُعدّ.
+        ctx.insert(QuarterReading(quarter: 45, readAt: t0.addingTimeInterval(10_000)))
+        try ctx.save()
+        XCTAssertEqual(Cycles.done(quarters: quarters, readings: try ctx.fetch(FetchDescriptor<QuarterReading>()),
+                                   since: start, floors: floors), [37, 45])
+    }
+
+    /// م49 مع الاكتمال: لا تكتمل دورة القريب بأرباع حزب تُليت قبل رفعه.
+    func test_5_6_raisedHizbDoesNotCompleteCycle_m49() throws {
+        let ctx = try context()
+        let t0 = Date(timeIntervalSince1970: 1_794_000_000)
+        try Library.add([10, 12], to: .nearReview, in: ctx, now: t0)
+        for q in Quran.quarters(ofHizb: 12).prefix(3) { ctx.insert(QuarterReading(quarter: q, readAt: t0.addingTimeInterval(60))) }
+        try ctx.save()
+        try Library.move([12], from: .nearReview, to: .newMemorization, in: ctx, now: t0.addingTimeInterval(120))
+        try Library.move([12], from: .newMemorization, to: .nearReview, in: ctx, now: t0.addingTimeInterval(180))
+        for q in Quran.quarters(ofHizb: 10) + [48] {
+            _ = try Cycles.tap(quarter: q, track: .nearReview, in: ctx, now: t0.addingTimeInterval(240))
+        }
+        let cycles = try ctx.fetch(FetchDescriptor<ReviewCycle>())
+        XCTAssertFalse(cycles.contains { $0.track == .nearReview && $0.endReasonRaw == CycleEnd.completed.rawValue },
+                       "ثلاثة أرباع من ح 12 تُليت قبل رفعه فلا تُعدّ")
+    }
+
+    /// §15.5: نصوص الحوار والزرّ والإشعار.
+    func test_5_6_raisePhrases() {
+        XCTAssertEqual(Phrase.hizbCompleteTitle(12), "اكتمل الحزب 12")
+        XCTAssertEqual(Phrase.hizbCompleteNote(12), "أتممت أوجهه كلها، من 112 إلى 121.")
+        XCTAssertEqual(Phrase.raiseQuestion, "أترفعه إلى مراجعة القريب؟")
+        XCTAssertEqual(Phrase.raiseAnswer, "ارفعه إلى مراجعة القريب")
+        XCTAssertEqual(Phrase.raiseButton(12), "ارفع ح 12 إلى مراجعة القريب")
+        XCTAssertEqual(Phrase.raisedToast(12, bookmark: false), "رُفع ح 12 إلى مراجعة القريب")
+        XCTAssertEqual(Phrase.raisedToast(4, bookmark: true), "رُفع ح 4 إلى مراجعة القريب · وفيه الآن موضع التوقّف")
+        XCTAssertEqual(Phrase.hizbMenuMove(to: .newMemorization), "نقل إلى المحفوظ الجديد")
+    }
+
+    /// §15.5: الحزب مكتمل ما دامت أوجهه كلها متمّة.
+    func test_5_6_isComplete() {
+        let layout = NewTrackLayout(hizbs: [12, 13], completed: Set(112...121))
+        XCTAssertTrue(layout.isComplete(12))
+        XCTAssertFalse(layout.isComplete(13))
+        XCTAssertEqual(layout.completeHizbs, [12])
+    }
 }
