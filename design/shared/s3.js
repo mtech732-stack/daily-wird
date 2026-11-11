@@ -19,11 +19,11 @@ const days=n=>n===1?'يوم واحد':n===2?'يومان':n<=10?`${N(n)} أيام
 
 /* ── الدورة ──
    S.cs[t] بداية الدورة الحالية: {d: قبل كم يوماً, seq: ترتيب الإدخال}. والتظليل في الدورة إن كان بعد بدايتها.
-   S.ended[t] آخر اكتمال تلقائي: {d, days, prev, seq, gone}، لسطر الاكتمال وللتراجع عنه في يومه. */
+   S.ended[t] آخر اكتمال تلقائي: {d, days, prev, seq}، لسطر الاكتمال وللتراجع عنه في يومه. */
 const after=(e,c)=>e.d<c.d||(e.d===c.d&&(e.seq||0)>c.seq);
 function sync(S){
   ['far','near'].forEach(t=>{const c=S.cs[t];S.cyc[t]=new Set(W.trackQuarters(S,t).filter(r=>{const e=(S.hist[r]||[])[0];return e&&after(e,c);}));
-    const x=S.ended[t];if(x&&S.cyc[t].size)x.gone=true;});
+  });
 }
 function make(o){
   const S=S2.make(Object.assign({hideMeta:false,hideBm:false},o));
@@ -49,7 +49,8 @@ function restart(S,t){S.cs[t]={d:0,seq:++S.seq};delete S.ended[t];sync(S);}
 function advance(S,n){S2.advance(S,n);['far','near'].forEach(t=>{S.cs[t].d+=n;if(S.ended[t])S.ended[t].d+=n;});sync(S);}
 /* إضافة حزب في منتصف الدورة: يدخل الدورة الحالية بأرباعه، ولا يُعدّ منها إلا ما ظُلّل بعد بدايتها */
 function add(S,t,h){if(!S[t].includes(h))S[t].push(h);S[t].sort((a,b)=>a-b);W.quartersOf(h).forEach(r=>{if(!S.hist[r])S.hist[r]=[];});sync(S);}
-const lineOn=(S,t)=>{const x=S.ended[t];return !!(x&&x.d===0&&!x.gone);};
+/* يظهر في يوم الاكتمال ما دامت الدورة الجديدة بلا تظليل، ويعود إن تُراجع عن أول تظليل فيها (ذ25) */
+const lineOn=(S,t)=>{const x=S.ended[t];return !!(x&&x.d===0&&!S.cyc[t].size);};
 
 /* ── الشاشة ── */
 function trackMenu(S,ui){
