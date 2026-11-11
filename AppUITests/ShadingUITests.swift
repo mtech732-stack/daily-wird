@@ -304,6 +304,7 @@ final class ShadingUITests: XCTestCase {
         let before = q5.frame.minY
 
         q5.swipeUp()
+        settle(q5)
         XCTAssertLessThan(q5.frame.minY, before - 100, "مرّت الشاشة")
         XCTAssertEqual(q5.value as? String, "لم يُتلَ", "السحب لا يظلّل")
         XCTAssertFalse(app.descendants(matching: .any)["details.title"].exists, "السحب لا يفتح التفاصيل")
@@ -316,8 +317,22 @@ final class ShadingUITests: XCTestCase {
         guard let start = visible else { return XCTFail("لا ربع ظاهر في وسط الشاشة") }
         let mid = start.frame.minY
         start.swipeDown()
+        settle(start)
         XCTAssertGreaterThan(start.frame.minY, mid + 100, "ومرّت إلى الأسفل")
         XCTAssertEqual(start.value as? String, "لم يُتلَ")
         XCTAssertFalse(app.descendants(matching: .any)["details.title"].exists)
+    }
+
+    /// ينتظر حتى يتوقّف انزلاق التمرير (موضع العنصر ثابت بين قراءتين بينهما 0.3 ث)، فالسحب
+    /// يترك الشاشة منزلقة، وقراءة الموضع أثناءها تُفسد المقارنة (فشل متقطّع في الصغير الليلي).
+    private func settle(_ element: XCUIElement) {
+        var last = element.frame.minY
+        for _ in 0..<15 {
+            Thread.sleep(forTimeInterval: 0.3)
+            let now = element.frame.minY
+            if now == last { return }
+            last = now
+        }
+        print("تشخيص: لم يتوقّف انزلاق التمرير خلال 4.5 ث")
     }
 }

@@ -162,8 +162,14 @@ final class ManageUITests: XCTestCase {
     /// 5.1: الإزالة من قائمة الحزب تسأل أولاً، و«إلغاء» لا يزيل شيئاً.
     func test_5_1_removeFromHizbMenuCanBeCancelled() {
         let app = launch()
-        pressHizb(app, "farReview", 1, item: "hizbmenu.remove").tap()
+        let remove = pressHizb(app, "farReview", 1, item: "hizbmenu.remove")
         let question = app.staticTexts["remove.question"]
+        remove.tap()
+        // ضغطة تضيع على المحاكي (#43) تُعاد مرة على البند إن بقيت القائمة مفتوحة بلا سؤال.
+        if !question.waitForExistence(timeout: 10) {
+            print("تشخيص: لم يظهر سؤال الإزالة بعد «hizbmenu.remove»، تُعاد الضغطة مرة")
+            if remove.exists && remove.isHittable { remove.tap() }
+        }
         XCTAssertTrue(question.waitForExistence(timeout: 20))
         expectLabel(question, "أتزيل الحزب 1 من مراجعة البعيد؟")
         app.buttons["remove.cancel"].tap()
