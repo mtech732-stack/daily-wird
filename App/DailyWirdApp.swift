@@ -24,7 +24,9 @@ struct DailyWirdApp: App {
 
     private static var testScheme: ColorScheme? {
         let args = ProcessInfo.processInfo.arguments
-        return args.contains("-ui-testing") && args.contains("-dark") ? .dark : nil
+        guard args.contains("-ui-testing") else { return nil }
+        // `-light` لما يُقرأ لونه نهاراً، فلا يتبع مظهر المحاكي في أوضاع الفحص الليلية.
+        return args.contains("-dark") ? .dark : args.contains("-light") ? .light : nil
     }
 
     var body: some Scene {
