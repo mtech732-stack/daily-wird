@@ -34,6 +34,8 @@ struct SymbolKeys: View {
             row(columns: 4, [
                 Key(kind: .age(.full, .newMemorization), text: "وجه محفوظ"),
                 Key(kind: .age(.empty, .newMemorization), text: "لم يُحفظ"),
+                // الوجه الذي يبدأ في منتصفه حزب (§15.4، ذ31).
+                Key(kind: .sharedPage, text: "بين حزبين"),
             ])
 
             Text(verbatim: "ضغطة: تلوته أو تراجع · ضغطة مطوّلة: التفاصيل")
@@ -78,7 +80,7 @@ struct SymbolKeys: View {
 private struct Key: View {
     enum Kind {
         case age(AgeLevel, Track)
-        case today, bookmark, shared
+        case today, bookmark, shared, sharedPage
     }
 
     let kind: Kind
@@ -118,6 +120,10 @@ private struct Key: View {
             }
         case .shared:
             ghost.overlay { CutCorner().fill(Theme.card) }
+        case .sharedPage:
+            AgeFace(level: .empty, color: Theme.trackColor(.newMemorization), ink: Theme.tileInk(.newMemorization),
+                    on: Theme.onTrack(.newMemorization), under: Theme.card, number: "3")
+                .overlay { CutCorner().fill(Theme.card) }
         }
     }
 

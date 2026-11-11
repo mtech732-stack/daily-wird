@@ -77,6 +77,16 @@ enum Quran {
         Array(quarter((hizb - 1) * 4 + 1).firstPage...quarter(hizb * 4).lastPage)
     }
 
+    /// الحزب الآخر الذي يشارك الحزبَ في الوجه (5.6، §15.4): أول وجه في الحزب وهو آخر وجه في الذي قبله،
+    /// أو آخر وجه فيه وهو أول وجه في الذي بعده. و`nil` لغيره.
+    static func sharingHizb(page: Int, inHizb hizb: Int) -> Int? {
+        let first = quarter((hizb - 1) * 4 + 1).firstPage
+        let last = quarter(hizb * 4).lastPage
+        if hizb > 1, page == first, quarter((hizb - 1) * 4).lastPage == page { return hizb - 1 }
+        if hizb < hizbCount, page == last, quarter(hizb * 4 + 1).firstPage == page { return hizb + 1 }
+        return nil
+    }
+
     /// سور الحزب مرتّبة بلا تكرار، من أرباعه الأربعة.
     static func suras(ofHizb hizb: Int) -> [Int] {
         var list: [Int] = []

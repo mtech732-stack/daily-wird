@@ -1,8 +1,8 @@
 import XCTest
 
 /// ش4 · المرحلة 1: اختيار الحزب الذي يُحفظ الآن، وأوجهه في البطاقة (5.6، design/system.md §15.1–15.2).
-/// والمرحلة 2: إتمام الوجه والتراجع وموضع التوقّف (§15.3).
-/// سيناريوهات المعاين في docs/reports/ش4-التصميم.md §5: 1، 2، 3، 4، 5، 6، 7، 15، 16.
+/// والمرحلة 2: إتمام الوجه والتراجع وموضع التوقّف (§15.3). والمرحلة 3: الوجه المشترك (§15.4).
+/// سيناريوهات المعاين في docs/reports/ش4-التصميم.md §5: 1–7، 11، 12، 15، 16، 17.
 @MainActor
 final class NewTrackUITests: XCTestCase {
 
@@ -181,7 +181,7 @@ final class NewTrackUITests: XCTestCase {
         // عنصراً مستقلّاً (#101، والقسم ظاهر على الشاشة). فيُتحقّق من الأرشيف ومن أوجه الحزب كلها.
         XCTAssertTrue(app.otherElements["track.new.archive"].waitForExistence(timeout: 20), "لم تُفتح البطاقة")
         XCTAssertTrue(page(app, 112).waitForExistence(timeout: 20))
-        expectLabel(page(app, 112), "الوجه 112، محفوظ")
+        expectLabel(page(app, 112), "الوجه 112، محفوظ، مشترك مع الحزب 11")
         expectLabel(page(app, 117), "الوجه 117، لم يُحفظ، موضع التوقّف")
         XCTAssertTrue(page(app, 121).exists)
         shot(app, "48-new-all-pages")
@@ -327,5 +327,57 @@ final class NewTrackUITests: XCTestCase {
         XCTAssertTrue(page(app, 112).exists)
         XCTAssertFalse(page(app, 117).exists)
         expectBookmark(app, 116)
+    }
+
+    // MARK: المرحلة 3 (§15.4)
+
+    /// سيناريو المعاين 11: الحزب الآخر حُفظ من قبل وأُتمّ فيه 121 ← يظهر ممتلئاً من أول يوم بزاويته المقطوعة،
+    /// و«1 من 11»، والإطار على 122. ومفتاح «بين حزبين» في مجموعة المحفوظ الجديد (ذ31).
+    func test_5_6_sharedPageAlreadyDone() {
+        let app = launch(seed: "new:13", pages: "121:5")
+        expectProgress(app, "1 من 11")
+        expectBookmark(app, 122)
+        expectLabel(page(app, 121), "الوجه 121، محفوظ، مشترك مع الحزب 12")
+        shot(app, "56-new-shared-done")
+        app.swipeUp()
+        let key = app.otherElements["keys"].descendants(matching: .any)["بين حزبين"]
+        XCTAssertTrue(key.waitForExistence(timeout: 20), "مفتاح «بين حزبين»")
+    }
+
+    /// سيناريو المعاين 12 (ذ37): ح 12 وح 13 معاً ← التقدّم من 20 لا 21، والبطاقة على أول حزب بقي فيه وجه.
+    /// إتمام 121 مرة ← يمتلئ في القسمين، وينتقل الموضع إلى 122 في ح 13.
+    func test_5_6_twoHizbsSharedPage() {
+        let app = launch(seed: "new:12-13", pages: "112-120:2")
+        expectProgress(app, "9 من 20")
+        expectBookmark(app, 121)
+        expectLabel(page(app, 121), "الوجه 121، لم يُحفظ، موضع التوقّف، مشترك مع الحزب 13")
+        shot(app, "57-new-two-hizbs")
+        tapPage(app, 121)
+        expectProgress(app, "10 من 20")
+        expectBookmark(app, 122)
+
+        let pull = app.buttons["track.new.pull"]
+        if !pull.isHittable { app.swipeUp() }
+        pull.tap()
+        XCTAssertTrue(app.otherElements["section.new.13"].waitForExistence(timeout: 20)
+                      || app.descendants(matching: .any)["section.new.13"].waitForExistence(timeout: 5))
+        let both = app.descendants(matching: .any).matching(identifier: "page.121")
+        XCTAssertTrue(wait(both.element(boundBy: 1), "exists == true"), "121 في القسمين")
+        XCTAssertEqual(both.count, 2)
+        for i in 0..<2 {
+            XCTAssertTrue(both.element(boundBy: i).label.hasPrefix("الوجه 121، محفوظ، أتممته اليوم، مشترك مع الحزب"),
+                          both.element(boundBy: i).label)
+        }
+        shot(app, "58-new-shared-open")
+    }
+
+    /// سيناريو المعاين 17: قارئ الشاشة يقرأ الوجه وحاله، و«ح» بموضع التوقّف.
+    func test_5_6_voiceOverLabels() {
+        let app = launch(seed: "new:12", pages: "112-116:3")
+        expectLabel(page(app, 117), "الوجه 117، لم يُحفظ، موضع التوقّف")
+        tapPage(app, 117)
+        expectLabel(page(app, 117), "الوجه 117، محفوظ، أتممته اليوم")
+        expectLabel(page(app, 121), "الوجه 121، لم يُحفظ، مشترك مع الحزب 13")
+        expectLabel(app.descendants(matching: .any)["hizb.new.12"], "الحزب 12، فيه موضع التوقّف")
     }
 }
