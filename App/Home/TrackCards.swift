@@ -8,6 +8,8 @@ struct TrackHeader: View {
     var onAdd: () -> Void = {}
     /// «نقل» و«إزالة» تفتحان ورقة الإدارة (§12.4). ولا تظهران في مسار فارغ (م21).
     var onManage: ((ManageMode) -> Void)?
+    /// بنود الإدارة في القائمة. وفي المحفوظ الجديد «إزالة» وحدها حتى يُبنى النقل بين المسارات الثلاثة (§15.6).
+    var manageModes: [ManageMode] = [.move, .remove]
     /// عدد أرباع المسار، لاختبارات الواجهة وحدها ما دام تقدّم الدورة مخفيّاً (ذ10).
     var quarterCount: Int?
     /// سطر الاكتمال مكان التقدّم: أيام الدورة التي اكتملت اليوم (§14.4، ذ19).
@@ -36,7 +38,7 @@ struct TrackHeader: View {
                 Text(verbatim: progress)
                     .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
                     .foregroundStyle(Theme.muted)
-                    .accessibilityLabel(Text(verbatim: "تقدّم الدورة: \(progress) ربعاً"))
+                    .accessibilityLabel(Text(verbatim: track.isReview ? "تقدّم الدورة: \(progress) ربعاً" : "الأوجه المحفوظة: \(progress)"))
                     .accessibilityIdentifier("track.\(track.rawValue).progress")
             }
             if showsMenu {
@@ -44,8 +46,12 @@ struct TrackHeader: View {
                 Menu {
                     Button(action: onAdd) { Label("إضافة", systemImage: "plus.circle") }
                     if let onManage {
-                        Button { onManage(.move) } label: { Label("نقل", systemImage: "arrow.left.arrow.right") }
-                        Button { onManage(.remove) } label: { Label("إزالة", systemImage: "trash") }
+                        if manageModes.contains(.move) {
+                            Button { onManage(.move) } label: { Label("نقل", systemImage: "arrow.left.arrow.right") }
+                        }
+                        if manageModes.contains(.remove) {
+                            Button { onManage(.remove) } label: { Label("إزالة", systemImage: "trash") }
+                        }
                     }
                     if let onNewCycle {
                         // بعد فاصل يميّزه عن بنود المحفوظ (ذ21).
@@ -123,7 +129,8 @@ struct EmptyTrackCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            TrackHeader(track: track, progress: nil, showsMenu: track.isReview, onAdd: onAdd)
+            // في الفارغ «⋯» فيها «إضافة» وحدها (م21، ذ26).
+            TrackHeader(track: track, progress: nil, showsMenu: true, onAdd: onAdd)
             VStack(alignment: .leading, spacing: 12) {
                 Text(verbatim: track.isReview ? "لم تُضف إليه شيئاً بعد." : "لم تحدّد بعدُ الحزب الذي تحفظه.")
                     .font(Theme.font(.regular, size: 14, relativeTo: .subheadline))
@@ -131,19 +138,17 @@ struct EmptyTrackCard: View {
                     .lineSpacing(4)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("track.\(track.rawValue).emptyText")
-                if track.isReview {
-                    // يفتح ورقة الإضافة على هذا المسار. ولا زرّ في الجديد حتى ش4.
-                    Button(action: onAdd) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "plus")
-                                .font(.system(size: 15, weight: .semibold))
-                                .accessibilityHidden(true)
-                            Text(verbatim: "أضف جزءاً أو حزباً")
-                        }
+                // يفتح ورقة الإضافة على هذا المسار، وفي الجديد ورقة «الحزب الذي تحفظه» (§15.1).
+                Button(action: onAdd) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 15, weight: .semibold))
+                            .accessibilityHidden(true)
+                        Text(verbatim: track.isReview ? "أضف جزءاً أو حزباً" : "اختر الحزب الذي تحفظه")
                     }
-                    .buttonStyle(SecondaryButtonStyle())
-                    .accessibilityIdentifier("track.\(track.rawValue).add")
                 }
+                .buttonStyle(SecondaryButtonStyle())
+                .accessibilityIdentifier("track.\(track.rawValue).add")
             }
             .padding(.top, 6)
         }

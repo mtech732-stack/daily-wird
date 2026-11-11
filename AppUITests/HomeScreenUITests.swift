@@ -44,7 +44,8 @@ final class HomeScreenUITests: XCTestCase {
         }
         XCTAssertTrue(app.buttons["track.farReview.add"].exists)
         XCTAssertTrue(app.buttons["track.nearReview.add"].exists)
-        XCTAssertFalse(app.buttons["track.new.add"].exists)
+        // ش4 (§15.1): للمحفوظ الجديد زرّ «اختر الحزب الذي تحفظه».
+        XCTAssertTrue(app.buttons["track.new.add"].exists)
 
         // الترتيب من أعلى: البعيد ثم القريب ثم الجديد.
         let far = app.otherElements["track.farReview.empty"].frame.minY

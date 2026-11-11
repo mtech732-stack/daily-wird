@@ -6,6 +6,7 @@ extension Track: Identifiable {
 }
 
 /// ورقة الإضافة (7.2، §12.2): المسار، ثم صفّ لكل جزء من 30 بدائرته وخانتي حزبيه.
+/// وعلى المحفوظ الجديد هي ورقة «الحزب الذي تحفظه» (§15.1، ذ27): بلا اختيار مسار، والجزء نصّ بلا دائرة.
 struct AddSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var selection: AddSelection
@@ -22,6 +23,9 @@ struct AddSheet: View {
         _selection = State(initialValue: AddSelection(track: track, trackOf: trackOf))
         self.onAdd = onAdd
     }
+
+    /// ورقة اختيار الحزب الذي يُحفظ في المحفوظ الجديد (5.6).
+    private var picking: Bool { !selection.track.isReview }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -70,7 +74,7 @@ struct AddSheet: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text(verbatim: "إضافة محفوظ")
+                Text(verbatim: picking ? "الحزب الذي تحفظه" : "إضافة محفوظ")
                     .font(Theme.font(.semiBold, size: 21, relativeTo: .title3))
                     .foregroundStyle(Theme.ink)
                     .accessibilityAddTraits(.isHeader)
@@ -85,10 +89,24 @@ struct AddSheet: View {
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("add.cancel")
             }
-            TrackSegments(selection: $selection)
-            Text(verbatim: "اختر الجزء كلّه بدائرته، أو حزباً منه.")
+            if picking {
+                // سطر الوجهة: شريط الجديد 4×18 واسمه 15/600 (§15.1).
+                HStack(spacing: 8) {
+                    TrackMark(track: selection.track, width: 4, height: 18)
+                    Text(verbatim: selection.track.title)
+                        .font(Theme.font(.semiBold, size: 15, relativeTo: .subheadline))
+                        .foregroundStyle(Theme.ink)
+                }
+                .padding(.top, 4)
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("add.target")
+            } else {
+                TrackSegments(selection: $selection)
+            }
+            Text(verbatim: picking ? "اختر الحزب الذي تحفظ فيه الآن، فتظهر أوجهه في البطاقة." : "اختر الجزء كلّه بدائرته، أو حزباً منه.")
                 .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
                 .foregroundStyle(Theme.muted)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.horizontal, 22)
         .padding(.top, 22)
@@ -172,41 +190,53 @@ private struct JuzRow: View {
         let can = !selection.pickable(inJuz: juz).isEmpty
         let full = selection.isJuzSelected(juz)
         HStack(spacing: 8) {
-            Button { noteTap(); selection.toggleJuz(juz) } label: {
-                HStack(spacing: 8) {
-                    ZStack {
-                        Circle()
-                            .fill(full ? Theme.ink : Color.clear)
-                        Circle()
-                            .strokeBorder(full ? Theme.ink : Theme.ink.opacity(0.6), lineWidth: 1.5)
-                        if full {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 11, weight: .bold))
-                                .foregroundStyle(Theme.paper)
+            if !selection.track.isReview {
+                // في اختيار الحزب الذي يُحفظ لا دائرة للجزء: حزب واحد في وقت واحد (القرار 5، ذ27).
+                Text(verbatim: "الجزء \(Digits.en(juz))")
+                    .font(Theme.font(.medium, size: 14, relativeTo: .subheadline))
+                    .foregroundStyle(Theme.muted)
+                    .lineLimit(1)
+                    .fixedSize()
+                    .frame(width: 72, height: 52, alignment: .leading)
+                    .accessibilityIdentifier("add.juz.\(juz)")
+            } else {
+                Button { noteTap(); selection.toggleJuz(juz) } label: {
+                    HStack(spacing: 8) {
+                        ZStack {
+                            Circle()
+                                .fill(full ? Theme.ink : Color.clear)
+                            Circle()
+                                .strokeBorder(full ? Theme.ink : Theme.ink.opacity(0.6), lineWidth: 1.5)
+                            if full {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(Theme.paper)
+                            }
                         }
+                        .frame(width: 22, height: 22)
+                        // م27: في الجزء الذي لم يبقَ فيه ما يُختار تختفي الدائرة وحدها، ويبقى اسمه هادئاً.
+                        .opacity(can ? 1 : 0)
+                        Text(verbatim: "الجزء \(Digits.en(juz))")
+                            .font(Theme.font(.semiBold, size: 14, relativeTo: .subheadline))
+                            .foregroundStyle(can ? Theme.ink : Theme.muted)
+                            .lineLimit(1)
+                            .fixedSize()
                     }
-                    .frame(width: 22, height: 22)
-                    // م27: في الجزء الذي لم يبقَ فيه ما يُختار تختفي الدائرة وحدها، ويبقى اسمه هادئاً.
-                    .opacity(can ? 1 : 0)
-                    Text(verbatim: "الجزء \(Digits.en(juz))")
-                        .font(Theme.font(.semiBold, size: 14, relativeTo: .subheadline))
-                        .foregroundStyle(can ? Theme.ink : Theme.muted)
-                        .lineLimit(1)
-                        .fixedSize()
+                    .frame(width: 92, height: 52, alignment: .leading)
+                    .contentShape(Rectangle())
                 }
-                .frame(width: 92, height: 52, alignment: .leading)
-                .contentShape(Rectangle())
+                .buttonStyle(.plain)
+                // لا `.disabled`: يخفّت النصّ دون التباين المطلوب (م25). والضغط لا يفعل شيئاً حين لا يُختار.
+                .allowsHitTesting(can)
+                .accessibilityRemoveTraits(can ? [] : .isButton)
+                .accessibilityLabel(Text(verbatim: can ? "الجزء \(Digits.en(juz)) كاملاً" : "الجزء \(Digits.en(juz))"))
+                .accessibilityAddTraits(full ? .isSelected : [])
+                .accessibilityIdentifier("add.juz.\(juz)")
             }
-            .buttonStyle(.plain)
-            // لا `.disabled`: يخفّت النصّ دون التباين المطلوب (م25). والضغط لا يفعل شيئاً حين لا يُختار.
-            .allowsHitTesting(can)
-            .accessibilityRemoveTraits(can ? [] : .isButton)
-            .accessibilityLabel(Text(verbatim: can ? "الجزء \(Digits.en(juz)) كاملاً" : "الجزء \(Digits.en(juz))"))
-            .accessibilityAddTraits(full ? .isSelected : [])
-            .accessibilityIdentifier("add.juz.\(juz)")
 
             ForEach(hizbs, id: \.self) { hizb in
-                HizbChip(hizb: hizb, state: selection.state(of: hizb), pickable: selection.isPickable(hizb)) {
+                HizbChip(hizb: hizb, state: selection.state(of: hizb), pickable: selection.isPickable(hizb),
+                         hereText: Phrase.inThisTrack(selection.track)) {
                     noteTap()
                     selection.toggle(hizb)
                 }
@@ -223,6 +253,8 @@ struct HizbChip: View {
     let state: HizbChipState
     let pickable: Bool
     var idPrefix = "add"
+    /// «في هذا المسار»، وفي المحفوظ الجديد «تحفظه الآن» (§15.1).
+    var hereText = "في هذا المسار"
     let action: () -> Void
 
     var body: some View {
@@ -260,7 +292,7 @@ struct HizbChip: View {
     @ViewBuilder private var subtitle: some View {
         switch state {
         case .here:
-            Text(verbatim: "في هذا المسار")
+            Text(verbatim: hereText)
         case .other(let track):
             HStack(spacing: 4) {
                 RoundedRectangle(cornerRadius: 1.5, style: .continuous)
@@ -319,7 +351,7 @@ private struct ConflictDialog: View {
                     .foregroundStyle(Theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("conflict.question")
-                Text(verbatim: Phrase.conflictNote(conflicts.count, hasOthers: hasOthers))
+                Text(verbatim: Phrase.conflictNote(conflicts.count, hasOthers: hasOthers, from: from))
                     .font(Theme.font(.regular, size: 14.5, relativeTo: .subheadline))
                     .foregroundStyle(Theme.muted)
                     .fixedSize(horizontal: false, vertical: true)

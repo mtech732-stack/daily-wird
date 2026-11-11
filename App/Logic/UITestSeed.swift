@@ -12,6 +12,9 @@ struct UITestSeed: Equatable {
     var readings: [Reading] = []
     /// كم يوماً مضى على بداية دورة كل مسار (§14.1).
     var cycles: [Track: Int] = [:]
+    /// أوجه متمّة في المحفوظ الجديد (5.6): `-pages "112-116:3,117:0@05:00"`، الوجه أو مداه ثم كم يوماً مضى.
+    /// و`quarter` فيها رقم الوجه.
+    var pages: [Reading] = []
 
     /// تظليل سابق: الربع، وكم يوماً مضى عليه، والساعة والدقيقة (إن لم تُذكر: قبل دقيقة إن كان اليوم،
     /// وإلا 9:00 ص).
@@ -28,6 +31,9 @@ struct UITestSeed: Equatable {
         if let i = arguments.firstIndex(of: "-seed"), i + 1 < arguments.count { seed = parse(arguments[i + 1]) }
         if let i = arguments.firstIndex(of: "-readings"), i + 1 < arguments.count {
             seed.readings = parseReadings(arguments[i + 1])
+        }
+        if let i = arguments.firstIndex(of: "-pages"), i + 1 < arguments.count {
+            seed.pages = parsePages(arguments[i + 1])
         }
         if let i = arguments.firstIndex(of: "-cycle"), i + 1 < arguments.count {
             for part in arguments[i + 1].split(separator: ",") {
@@ -54,6 +60,26 @@ struct UITestSeed: Equatable {
                 reading.minute = hm[1]
             }
             return reading
+        }
+    }
+
+    /// «112-116:3,117:0@05:00» → الأوجه 112–116 قبل ثلاثة أيام، والوجه 117 اليوم في 5:00 ص.
+    static func parsePages(_ text: String) -> [Reading] {
+        text.split(separator: ",").flatMap { item -> [Reading] in
+            let parts = item.split(separator: "@", maxSplits: 1)
+            let pd = parts[0].split(separator: ":")
+            guard pd.count == 2, let days = Int(pd[1]), days >= 0 else { return [] }
+            let ends = pd[0].split(separator: "-").compactMap { Int($0) }
+            guard let first = ends.first, let last = ends.last, first <= last, first >= 1, last <= 604 else { return [] }
+            var hour: Int?
+            var minute = 0
+            if parts.count == 2 {
+                let hm = parts[1].split(separator: ":").compactMap { Int($0) }
+                guard hm.count == 2 else { return [] }
+                hour = hm[0]
+                minute = hm[1]
+            }
+            return (first...last).map { Reading(quarter: $0, daysAgo: days, hour: hour, minute: minute) }
         }
     }
 
@@ -91,6 +117,9 @@ struct UITestSeed: Equatable {
         let now = WirdClock.now()
         for reading in readings {
             context.insert(QuarterReading(quarter: reading.quarter, readAt: Self.date(of: reading, now: now)))
+        }
+        for page in pages {
+            context.insert(PageCompletion(page: page.quarter, completedAt: Self.date(of: page, now: now)))
         }
         let calendar = WirdDate.calendar()
         for track in hizbs.keys where track.isReview {

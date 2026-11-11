@@ -13,6 +13,8 @@ struct HomeView: View {
     @Query private var readings: [QuarterReading]
     /// دورات مسارَي المراجعة (5.5، §14.1).
     @Query private var cycles: [ReviewCycle]
+    /// إتمام الأوجه في المحفوظ الجديد (5.6).
+    @Query private var completions: [PageCompletion]
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
 
@@ -202,7 +204,7 @@ struct HomeView: View {
             if let removal {
                 ChoiceDialog(
                     title: Phrase.removeQuestion(removal.hizbs, from: removal.track),
-                    note: Phrase.removeNote(removal.hizbs.count),
+                    note: Phrase.removeNote(removal.hizbs.count, from: removal.track),
                     primary: Phrase.removeAnswer(removal.hizbs.count), primaryID: "remove.confirm",
                     quiet: "إلغاء", quietID: "remove.cancel",
                     titleID: "remove.question"
@@ -280,7 +282,7 @@ struct HomeView: View {
     private func add(_ hizbs: [Int], to track: Track, moving: Bool) {
         do {
             let before = Library.trackOfHizb(from: placements)
-            let bookmarkBefore = reviewLayout(for: track).bookmarkHizb
+            let bookmarkBefore = track.isReview ? reviewLayout(for: track).bookmarkHizb : nil
             let changed = try Library.add(hizbs, to: track, in: context, moving: moving, now: WirdClock.now())
             // ما كان في مسار آخر قد نُقل، وما سواه أُضيف جديداً.
             let moved = changed.filter { before[$0] != nil && before[$0] != track }
@@ -353,9 +355,34 @@ struct HomeView: View {
                 }
             }
         } else {
-            // اختيار الحزب الذي يُحفظ في المحفوظ الجديد في ش4.
-            EmptyTrackCard(track: track)
+            // المحفوظ الجديد (§15.1–15.2): فارغاً حتى يختار المالك الحزب الذي يحفظه، ثم أوجهه.
+            let layout = newLayout
+            if layout.isEmpty {
+                EmptyTrackCard(track: track) { addTrack = track }
+            } else {
+                VStack(alignment: .leading, spacing: 4) {
+                    LastEntryLine(track: track, date: LastEntry.latest(inPages: layout.pages, completions: completions),
+                                  now: now)
+                    NewTrackCard(layout: layout, isOpen: openTrack == track) {
+                        toggle(track, proxy: proxy)
+                    } onAdd: {
+                        addTrack = track
+                    } onManage: { mode in
+                        manage = ManageRequest(track: track, mode: mode)
+                    } onFoldBarMove: { maxY in
+                        foldBar.barMaxY = maxY
+                    }
+                }
+            }
         }
+    }
+
+    /// تخطيط المحفوظ الجديد: أحزابه، وأوجهه المتمّة، وما أُتمّ منها اليوم (§15.2).
+    private var newLayout: NewTrackLayout {
+        let calendar = WirdDate.calendar()
+        return NewTrackLayout(hizbs: Library.activeHizbs(in: .newMemorization, from: placements),
+                              completed: Set(completions.map(\.page)),
+                              today: Set(completions.filter { calendar.isDate($0.completedAt, inSameDayAs: now) }.map(\.page)))
     }
 
     /// تخطيط مسار المراجعة بأرباعه المظلّلة في دورته الحالية (§14.1–14.2).
@@ -448,7 +475,8 @@ struct HomeView: View {
         } else {
             openTrack = track
             // يُعرض من أعلى البطاقة، ثم ينزل إلى موضع التوقّف حين يُقاس صفّه (ذ18).
-            pendingBookmark = track
+            // ولا نزول في المحفوظ الجديد (§15.3).
+            pendingBookmark = track.isReview ? track : nil
             proxy.scrollTo("card.\(track.rawValue)", anchor: .top)
         }
     }

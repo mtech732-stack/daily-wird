@@ -509,6 +509,8 @@ struct PullBar: View {
     let track: Track
     let isOpen: Bool
     var identifier: String?
+    /// نصّ الشريط مطويّاً: «عرض كامل المراجعة»، وفي المحفوظ الجديد «عرض كل أوجه الحزب» (§15.2).
+    var closedTitle = "عرض كامل المراجعة"
     let action: () -> Void
 
     var body: some View {
@@ -516,7 +518,7 @@ struct PullBar: View {
             VStack(spacing: 0) {
                 Rectangle().fill(Theme.line).frame(height: 1)
                 HStack(spacing: 6) {
-                    Text(verbatim: isOpen ? "طيّ" : "عرض كامل المراجعة")
+                    Text(verbatim: isOpen ? "طيّ" : closedTitle)
                         .font(Theme.font(.medium, size: 13.5, relativeTo: .footnote))
                         .foregroundStyle(Theme.ink)
                     Image(systemName: "chevron.down")

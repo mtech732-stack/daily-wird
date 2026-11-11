@@ -70,6 +70,19 @@ enum Quran {
 
     /// السورة التي يبدأ بها الحزب (من أول ربع فيه)، عوناً على ربط الحزب بسورته (ذ3).
     static func firstSura(ofHizb hizb: Int) -> Int { quarter((hizb - 1) * 4 + 1).suras[0] }
+
+    /// أوجه الحزب (5.6، §15.8): من أول وجه في ربعه الأول إلى آخر وجه في ربعه الرابع.
+    /// والوجه الذي يبدأ فيه الحزب أو ينتهي في منتصفه يُعدّ في الحزبين.
+    static func pages(ofHizb hizb: Int) -> [Int] {
+        Array(quarter((hizb - 1) * 4 + 1).firstPage...quarter(hizb * 4).lastPage)
+    }
+
+    /// سور الحزب مرتّبة بلا تكرار، من أرباعه الأربعة.
+    static func suras(ofHizb hizb: Int) -> [Int] {
+        var list: [Int] = []
+        for q in quarters(ofHizb: hizb) { for s in quarter(q).suras where !list.contains(s) { list.append(s) } }
+        return list
+    }
 }
 
 private final class BundleToken {}

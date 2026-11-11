@@ -41,14 +41,14 @@ enum Library {
         }
     }
 
-    /// يضيف إلى مسار مراجعة الأحزاب المختارة (جزء كامل = حزباه، أو حزب واحد) (5.1).
+    /// يضيف إلى مسار الأحزاب المختارة (جزء كامل = حزباه، أو حزب واحد) (5.1)،
+    /// أو إلى المحفوظ الجديد الحزب الذي يُحفظ الآن (5.6، §15.1).
     /// كل حزب صفّ مفتوح بتاريخ الإضافة ووقتها. وما كان في مسار آخر لا يُنقل إلا إن كان `moving`:
     /// فيُغلق صفّه هناك (لا يُحذف) ويُفتح صفّ هنا، وسجلّ تظليلاته باقٍ لأنه بالربع لا بالمسار (5.2).
     /// ويعيد ما أُضيف أو نُقل.
     @discardableResult
     static func add(_ selection: [Int], to track: Track, in context: ModelContext,
                     moving: Bool = false, now: Date = .now) throws -> [Int] {
-        precondition(track.isReview, "الإضافة بالجزء أو الحزب لمسارَي المراجعة (5.1)")
         let placements = try context.fetch(FetchDescriptor<HizbPlacement>())
         let list = hizbsToAdd(selection, to: track, placements: placements, moving: moving)
         let set = Set(list)
@@ -56,7 +56,8 @@ enum Library {
             p.removedAt = now
         }
         for hizb in list { context.insert(HizbPlacement(hizb: hizb, track: track, addedAt: now)) }
-        if !list.isEmpty { try Cycles.startIfNeeded(track, in: context, now: now) }
+        // الدورة لمسارَي المراجعة وحدهما (5.5).
+        if !list.isEmpty && track.isReview { try Cycles.startIfNeeded(track, in: context, now: now) }
         try context.save()
         // ما نُقل من مسار آخر قد يفرغه أو يتمّ دورته (§14.4، §14.6).
         if !list.isEmpty { try settleReviews(in: context, now: now) }
