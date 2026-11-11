@@ -123,8 +123,9 @@ struct SettingsSheet: View {
     }
 }
 
-/// «عن التطبيق» (§17.3): «‹ الإعدادات» للرجوع، والعنوان في الوسط، و«تمّ». ثم موضع شعار المالك واسمه،
-/// ثم «الورد اليومي · الإصدار»، ثم مصدر البيانات القرآنية بنسبته التي تشترطها الرخصة (`data/SOURCE.md`).
+/// «عن التطبيق» (§17.3): «‹ الإعدادات» للرجوع، والعنوان في الوسط، و«تمّ». ثم «الورد اليومي · الإصدار»،
+/// ثم مصدر البيانات القرآنية بنسبته التي تشترطها الرخصة (`data/SOURCE.md`).
+/// ولا اسم للمالك ولا شعار: التطبيق عامّ (القرار 32).
 struct AboutPage: View {
     @Environment(\.dismiss) private var pop
     let done: () -> Void
@@ -162,21 +163,6 @@ struct AboutPage: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     VStack(spacing: 6) {
-                        // موضع شعار المالك 96 بزاوية 24، واسمه 20/600 (س8). لا يُرسمان حتى يصلا.
-                        if let logo = AppInfo.ownerLogo {
-                            Image(logo)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 96, height: 96)
-                                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                                .accessibilityLabel(Text(verbatim: "شعار \(AppInfo.ownerName ?? "")"))
-                        }
-                        if let name = AppInfo.ownerName {
-                            Text(verbatim: name)
-                                .font(Theme.font(.semiBold, size: 20, relativeTo: .title3))
-                                .foregroundStyle(Theme.ink)
-                                .padding(.top, 8)
-                        }
                         Text(verbatim: "\(AppInfo.name) · الإصدار \(AppInfo.version)")
                             .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
                             .foregroundStyle(Theme.muted)
