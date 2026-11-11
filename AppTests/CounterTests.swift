@@ -64,4 +64,12 @@ final class CounterTests: XCTestCase {
         CounterStore.prepareForUITesting(["-ui-testing"], defaults: defaults)
         XCTAssertEqual(defaults.integer(forKey: CounterStore.key), 0)
     }
+
+    /// §16.3 (ذ41): اهتزاز خفيف مع كل ضغطة تزيد العدد، ولا يقع مع التصفير ولا مع غيره.
+    func test_5_7_lightHapticOnEachTap() {
+        XCTAssertEqual(CounterLayout.feedback(from: 0, to: 1), .impact(weight: .light))
+        XCTAssertEqual(CounterLayout.feedback(from: 9999, to: 10000), .impact(weight: .light))
+        XCTAssertNil(CounterLayout.feedback(from: 38, to: 0), "التصفير له اهتزازه الأوضح وحده")
+        XCTAssertNil(CounterLayout.feedback(from: 5, to: 5))
+    }
 }
