@@ -175,7 +175,13 @@ final class NewTrackUITests: XCTestCase {
         expectLabel(pull, "عرض كل أوجه الحزب")
         if !pull.isHittable { app.swipeUp() }
         pull.tap()
-        XCTAssertTrue(app.descendants(matching: .any)["section.new.12"].waitForExistence(timeout: 20))
+        // فشل مرة هنا بلا تفصيل (#101)، فتُطبع الشجرة إن لم يظهر الوجه 112 أو قسم الحزب.
+        if !page(app, 112).waitForExistence(timeout: 20) {
+            XCTFail("لم تُفتح البطاقة: \(app.debugDescription.replacingOccurrences(of: "\n", with: " ¦ "))")
+        }
+        if !app.descendants(matching: .any)["section.new.12"].waitForExistence(timeout: 5) {
+            XCTFail("لا قسم لـ ح 12: \(app.debugDescription.replacingOccurrences(of: "\n", with: " ¦ "))")
+        }
         expectLabel(page(app, 112), "الوجه 112، محفوظ")
         expectLabel(page(app, 117), "الوجه 117، لم يُحفظ، موضع التوقّف")
         XCTAssertTrue(page(app, 121).exists)
