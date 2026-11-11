@@ -170,6 +170,8 @@ struct HizbCompleteDialog: View {
                         .stroke(Theme.onTrack(.newMemorization),
                                 style: StrokeStyle(lineWidth: 2.6, lineCap: .round, lineJoin: .round))
                         .frame(width: 28, height: 28)
+                        // علامة الصحّ لا تنعكس في العربية (م51).
+                        .environment(\.layoutDirection, .leftToRight)
                 }
                 .frame(width: 58, height: 58)
                 .padding(.bottom, 2)
