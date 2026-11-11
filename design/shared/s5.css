@@ -1,0 +1,30 @@
+/* ش5 · العدّاد · design/system.md §16 */
+
+/* حجم الرقم بنسبة من القطر بحسب عدد خاناته (ذ39) */
+.counter.s5c .plus b{font-size:calc(var(--plus,64px) * var(--r,.39));font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.counter.s5c .plus span{font-size:calc(var(--plus,64px) * .18)}
+.counter.s5c:not(.big) .plus b{font-size:calc(64px * var(--r,.39) * .96)}
+.counter.s5c:not(.big) .plus span{font-size:14px}
+/* الضغطة: الدائرة تخفت إلى 86% وتصغر إلى 0.96 ما دام الإصبع عليها (ذ40) */
+.s5c .plus{transition:transform .08s ease-out,opacity .08s ease-out;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.s5c .plus.press{transform:scale(.96);opacity:.86}
+
+/* «تصفير»: كبسولة فيها تعبئة تمتلئ من اليمين بالإمساك (5.7، ذ42) */
+.s5c .reset{overflow:visible;isolation:isolate;touch-action:none;user-select:none;-webkit-user-select:none}
+@property --k{syntax:'<number>';inherits:false;initial-value:0}
+.s5c .reset i{position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;
+  background:linear-gradient(to left,color-mix(in srgb,var(--ink) 20%,transparent) calc(var(--k) * 100%),transparent calc(var(--k) * 100%))}
+.s5c .reset i.back{transition:--k .2s ease-out}
+.s5c .reset span{position:relative}
+.s5c .reset.holding{border-color:var(--ink)}
+/* والعدد صفر: يبقى في مكانه هادئاً ولا يعمل (ذ43) */
+.s5c .reset.idle{color:var(--muted);cursor:default}
+
+/* الشريط عند فتح الأرشيف: تحت التمرير، والإشعار فوقه */
+.s5bar .toast{bottom:104px}
+.s375.s5bar .toast{bottom:96px}
+
+/* الشاشة القصيرة (ذ44): بين البطاقات 6 بدل 8، وتحت سطر «آخر إدخال» 2 بدل 4، والصفّ الأفقي بلا حشو أعلى، فيُرى العدّاد كاملاً */
+.s5short .fold .track{margin-bottom:6px}
+.s5short .fold .stamp{margin-bottom:2px}
+.s5short .counter.big.tight{padding:0 0 4px}
