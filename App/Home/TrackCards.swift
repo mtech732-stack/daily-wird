@@ -20,58 +20,45 @@ struct TrackHeader: View {
 
     private static let isUITesting = ProcessInfo.processInfo.arguments.contains("-ui-testing")
 
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     var body: some View {
-        HStack(spacing: 10) {
-            TrackMark(track: track)
-            Text(verbatim: track.title)
-                .font(Theme.font(.semiBold, size: 19, relativeTo: .headline))
-                .foregroundStyle(Theme.ink)
-                .accessibilityAddTraits(.isHeader)
-                // مع سطر الاكتمال لا يلتفّ العنوان، فلا يزيد الرأس ارتفاعاً، ويأخذ السطر ما بقي (م43).
-                .fixedSize(horizontal: completedDays != nil, vertical: false)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            if let days = completedDays {
-                // يُقدَّم على العنوان في توزيع العرض، فيُعرض بصيغته الكاملة ما اتّسع الرأس لها (م43).
-                CompletionLine(track: track, days: days)
-                    .layoutPriority(1)
-            } else if let progress {
-                Text(verbatim: progress)
-                    .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
-                    .foregroundStyle(Theme.muted)
-                    .accessibilityLabel(Text(verbatim: track.isReview ? "تقدّم الدورة: \(progress) ربعاً" : "الأوجه المحفوظة: \(progress)"))
-                    .accessibilityIdentifier("track.\(track.rawValue).progress")
-            }
-            if showsMenu {
-                // قائمة المسار (7.1.1، §12.4). في مسار فارغ «إضافة» وحدها (م21).
-                Menu {
-                    Button(action: onAdd) { Label("إضافة", systemImage: "plus.circle") }
-                    if let onManage {
-                        if manageModes.contains(.move) {
-                            Button { onManage(.move) } label: { Label("نقل", systemImage: "arrow.left.arrow.right") }
-                        }
-                        if manageModes.contains(.remove) {
-                            Button { onManage(.remove) } label: { Label("إزالة", systemImage: "trash") }
+        Group {
+            if typeSize.isAccessibilitySize {
+                // من AX1 فما فوق (§17.4، م46): سطران. [الشريط · العنوان · «⋯»] ثم سطر التقدّم أو الاكتمال
+                // تحت العنوان بمحاذاته، بصيغته الكاملة يلتفّ ولا يُختصر. والعنوان يلتفّ ولا يُقطع.
+                HStack(alignment: .top, spacing: 10) {
+                    TrackMark(track: track)
+                        .padding(.top, 6)
+                    VStack(alignment: .leading, spacing: 4) {
+                        title
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        if let days = completedDays {
+                            CompletionLine(track: track, days: days, wraps: true)
+                        } else if let progress {
+                            progressText(progress)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                     }
-                    if let onNewCycle {
-                        // بعد فاصل يميّزه عن بنود المحفوظ (ذ21).
-                        Divider()
-                        Button(action: onNewCycle) {
-                            Label("ابدأ دورة جديدة", systemImage: "arrow.counterclockwise")
-                        }
-                        .disabled(!canStartNewCycle)
-                    }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(Theme.muted)
-                        .frame(width: Theme.Size.touch, height: Theme.Size.touch)
-                        .contentShape(Rectangle())
+                    if showsMenu { menu }
                 }
-                .padding(.vertical, -7)
-                .padding(.trailing, -12)
-                .accessibilityLabel(Text(verbatim: "قائمة \(track.title)"))
-                .accessibilityIdentifier("track.\(track.rawValue).more")
+            } else {
+                HStack(spacing: 10) {
+                    TrackMark(track: track)
+                    title
+                        // مع سطر الاكتمال لا يلتفّ العنوان، فلا يزيد الرأس ارتفاعاً، ويأخذ السطر ما بقي (م43).
+                        .fixedSize(horizontal: completedDays != nil, vertical: false)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    if let days = completedDays {
+                        // يُقدَّم على العنوان في توزيع العرض، فيُعرض بصيغته الكاملة ما اتّسع الرأس لها (م43).
+                        CompletionLine(track: track, days: days)
+                            .layoutPriority(1)
+                    } else if let progress {
+                        progressText(progress)
+                    }
+                    if showsMenu { menu }
+                }
             }
         }
         .frame(minHeight: 30)
@@ -87,6 +74,54 @@ struct TrackHeader: View {
             }
         }
     }
+
+    private var title: some View {
+        Text(verbatim: track.title)
+            .font(Theme.font(.semiBold, size: 19, relativeTo: .headline))
+            .foregroundStyle(Theme.ink)
+            .accessibilityAddTraits(.isHeader)
+    }
+
+    private func progressText(_ progress: String) -> some View {
+        Text(verbatim: progress)
+            .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
+            .foregroundStyle(Theme.muted)
+            .accessibilityLabel(Text(verbatim: track.isReview ? "تقدّم الدورة: \(progress) ربعاً" : "الأوجه المحفوظة: \(progress)"))
+            .accessibilityIdentifier("track.\(track.rawValue).progress")
+    }
+
+    /// قائمة المسار (7.1.1، §12.4). في مسار فارغ «إضافة» وحدها (م21). و«⋯» يبقى 44 في أعلى الرأس.
+    private var menu: some View {
+        Menu {
+            Button(action: onAdd) { Label("إضافة", systemImage: "plus.circle") }
+            if let onManage {
+                if manageModes.contains(.move) {
+                    Button { onManage(.move) } label: { Label("نقل", systemImage: "arrow.left.arrow.right") }
+                }
+                if manageModes.contains(.remove) {
+                    Button { onManage(.remove) } label: { Label("إزالة", systemImage: "trash") }
+                }
+            }
+            if let onNewCycle {
+                // بعد فاصل يميّزه عن بنود المحفوظ (ذ21).
+                Divider()
+                Button(action: onNewCycle) {
+                    Label("ابدأ دورة جديدة", systemImage: "arrow.counterclockwise")
+                }
+                .disabled(!canStartNewCycle)
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(Theme.muted)
+                .frame(width: Theme.Size.touch, height: Theme.Size.touch)
+                .contentShape(Rectangle())
+        }
+        .padding(.vertical, -7)
+        .padding(.trailing, -12)
+        .accessibilityLabel(Text(verbatim: "قائمة \(track.title)"))
+        .accessibilityIdentifier("track.\(track.rawValue).more")
+    }
 }
 
 /// سطر الاكتمال في رأس البطاقة مكان التقدّم (§14.4، ذ19): «✓ اكتملت الدورة · 19 يوماً»،
@@ -94,22 +129,44 @@ struct TrackHeader: View {
 struct CompletionLine: View {
     let track: Track
     let days: Int
+    /// من AX1 (§17.4): الصيغة الكاملة وحدها، فإن لم تتّسع التفّت فصار الفاصل «·» كسرَ سطر (م54).
+    var wraps = false
 
     var body: some View {
         ViewThatFits(in: .horizontal) {
             line("اكتملت الدورة")
-            line("اكتملت")
+            if wraps {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        check
+                        Text(verbatim: "اكتملت الدورة")
+                            .font(Theme.font(.semiBold, size: 13, relativeTo: .footnote))
+                            .foregroundStyle(Theme.ink)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Text(verbatim: Phrase.days(days))
+                        .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
+                        .foregroundStyle(Theme.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            } else {
+                line("اكتملت")
+            }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(verbatim: "اكتملت دورة \(track.title) في \(Phrase.days(days))"))
         .accessibilityIdentifier("track.\(track.rawValue).completed")
     }
 
+    private var check: some View {
+        Image(systemName: "checkmark.circle")
+            .font(.system(size: 15))
+            .foregroundStyle(Theme.ink)
+    }
+
     private func line(_ text: String) -> some View {
         HStack(spacing: 4) {
-            Image(systemName: "checkmark.circle")
-                .font(.system(size: 15))
-                .foregroundStyle(Theme.ink)
+            check
             Text(verbatim: text)
                 .font(Theme.font(.semiBold, size: 13, relativeTo: .footnote))
                 .foregroundStyle(Theme.ink)
@@ -482,8 +539,19 @@ struct LastEntryLine: View {
             if typeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: 2) {
                     heading(title)
-                    Text(verbatim: stamp)
-                        .foregroundStyle(Theme.muted)
+                    // إن لم يتّسع التاريخ والوقت لسطر صار الفاصل «·» كسرَ سطر، فلا يبدأ سطر به (م54).
+                    ViewThatFits(in: .horizontal) {
+                        Text(verbatim: stamp)
+                            .lineLimit(1)
+                            .fixedSize()
+                        VStack(alignment: .leading, spacing: 2) {
+                            ForEach(Array(stamp.components(separatedBy: " · ").enumerated()), id: \.offset) { _, part in
+                                Text(verbatim: part)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
+                    .foregroundStyle(Theme.muted)
                 }
             } else {
                 HStack(spacing: 5) {
