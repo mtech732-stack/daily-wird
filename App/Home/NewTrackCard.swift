@@ -202,7 +202,7 @@ struct HizbCompleteDialog: View {
             .padding(.top, 26)
             .padding(.horizontal, 22)
             .padding(.bottom, 18)
-            .background(RoundedRectangle(cornerRadius: Theme.Radius.dialog, style: .continuous).fill(Theme.paper))
+            .background(RoundedRectangle(cornerRadius: Theme.Radius.dialog, style: .continuous).fill(Theme.dialog))
             .padding(.horizontal, 28)
             // لقارئ الشاشة حوار تنبيه (§15.8): يُحصر فيه، ويُغلق بإيماءة الخروج على «لاحقاً».
             .accessibilityElement(children: .contain)

@@ -87,10 +87,8 @@ struct CounterCircle: View {
                     .font(Theme.fixedFont(.regular, size: CounterLayout.plusSize(diameter: diameter, isBar: isBar)))
                     .opacity(0.8)
             }
-            .foregroundStyle(Theme.paper)
             .environment(\.layoutDirection, .leftToRight)
             .frame(width: diameter, height: diameter)
-            .background(Circle().fill(Theme.ink))
             .contentShape(Circle())
         }
         .buttonStyle(CounterPressStyle())
@@ -104,15 +102,26 @@ struct CounterCircle: View {
     }
 }
 
-/// ما دام الإصبع على الدائرة تصغر إلى 0.96 وتخفت إلى 86% في 0.08 ث، والرقم ساكن (ذ40).
+/// نهاراً قرص `ink` والعدد `paper` (§16.1). وليلاً حلقة لا قرص (§17.1، ذ45): الدائرة `card` وحلقتها `ink` 1.5
+/// للداخل، والعدد و«+» `ink`، فلا تكون أسطع ما في الغرفة.
+/// وما دام الإصبع عليها تصغر إلى 0.96 في 0.08 ث والرقم ساكن (ذ40): نهاراً تخفت إلى 86%،
+/// وليلاً تصير `raised` بلا خفوت (§17.1).
 struct CounterPressStyle: ButtonStyle {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorScheme) private var scheme
 
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.96 : 1)
-            .opacity(configuration.isPressed ? 0.86 : 1)
-            .animation(.easeOut(duration: 0.08), value: configuration.isPressed)
+        let night = scheme == .dark
+        let pressed = configuration.isPressed
+        return configuration.label
+            .foregroundStyle(night ? Theme.ink : Theme.paper)
+            .background(Circle().fill(night ? (pressed ? Theme.raised : Theme.card) : Theme.ink))
+            .overlay {
+                if night { Circle().strokeBorder(Theme.ink, lineWidth: 1.5) }
+            }
+            .scaleEffect(pressed && !reduceMotion ? 0.96 : 1)
+            .opacity(pressed && !night ? 0.86 : 1)
+            .animation(.easeOut(duration: 0.08), value: pressed)
     }
 }
 

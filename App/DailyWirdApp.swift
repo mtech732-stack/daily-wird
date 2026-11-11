@@ -22,10 +22,18 @@ struct DailyWirdApp: App {
         }
     }
 
+    private static var testScheme: ColorScheme? {
+        let args = ProcessInfo.processInfo.arguments
+        return args.contains("-ui-testing") && args.contains("-dark") ? .dark : nil
+    }
+
     var body: some Scene {
         WindowGroup {
             HomeView()
                 .environment(\.layoutDirection, .rightToLeft)
+                // اختبارات الواجهة وحدها: `-dark` يفرض الليل، لأن فحص طلب الدمج نهاريّ (القرار 24).
+                // وفي التطبيق يتبع الجهاز ولا اختيار له (§1، §17.3).
+                .preferredColorScheme(Self.testScheme)
         }
         .modelContainer(container)
     }
