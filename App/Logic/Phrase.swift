@@ -48,7 +48,9 @@ enum Phrase {
 
     /// زرّ ورقة الإضافة (§12.2).
     static func addButton(_ list: [Int], to track: Track) -> String {
-        list.isEmpty ? "اختر جزءاً أو حزباً" : "أضف \(hizbsAccusative(list)) إلى \(track.title)"
+        // واختيار الحزب الذي يُحفظ بلا دائرة جزء، فزرّه المعطّل «اختر حزباً» (§15.1).
+        if list.isEmpty { return track.isReview ? "اختر جزءاً أو حزباً" : "اختر حزباً" }
+        return "أضف \(hizbsAccusative(list)) إلى \(track.title)"
     }
 
     /// الإشعار بعد الإضافة (§12.2، §12.6).
@@ -110,9 +112,16 @@ enum Phrase {
     }
 
     /// «يبقى سجلّ تلاوته محفوظاً، فإن أعدته ظهر عمره كما كان.»
-    static func removeNote(_ count: Int) -> String {
+    /// وفي المحفوظ الجديد (§15.6): «يبقى سجلّ حفظه محفوظاً، فإن أعدته ظهرت أوجهه كما كانت.»
+    static func removeNote(_ count: Int, from track: Track = .farReview) -> String {
         let p = pronoun(count)
+        if !track.isReview { return "يبقى سجلّ حفظ\(p) محفوظاً، فإن أعدت\(p) ظهرت أوجه\(p) كما كانت." }
         return "يبقى سجلّ تلاوت\(p) محفوظاً، فإن أعدت\(p) ظهر عمر\(p) كما كان."
+    }
+
+    /// السطر تحت عنوان ورقة الإزالة (§12.5، §15.6).
+    static func removeSheetNote(_ track: Track) -> String {
+        track.isReview ? "يبقى سجلّ تلاوة ما تزيله محفوظاً." : "يبقى سجلّ حفظ ما تزيله محفوظاً."
     }
 
     /// «أزله» · «أزلهما» · «أزلها»
@@ -127,6 +136,11 @@ enum Phrase {
     /// رأس قائمة الحزب: «ح 10 · النساء · الجزء 5».
     static func hizbMenuHeader(_ hizb: Int) -> String {
         "\(Digits.hizbLabel(hizb)) · \(Quran.suraName(Quran.firstSura(ofHizb: hizb))) · الجزء \(Digits.en(Quran.juz(ofHizb: hizb)))"
+    }
+
+    /// تحت خانة الحزب الذي في المسار نفسه: «في هذا المسار»، وفي الجديد «تحفظه الآن» (§15.1).
+    static func inThisTrack(_ track: Track) -> String {
+        track.isReview ? "في هذا المسار" : "تحفظه الآن"
     }
 
     /// «في البعيد» · «في القريب» تحت خانة الحزب الذي في مسار آخر (§12.2).
@@ -152,9 +166,11 @@ enum Phrase {
     }
 
     /// «سجلّ تلاوته ينتقل معه كما هو.» ويُضاف إن كان في الاختيار غيره: «ويُضاف ما سواه في الحالين.»
-    static func conflictNote(_ count: Int, hasOthers: Bool) -> String {
+    /// وما في المحفوظ الجديد سجلّه أوجه لا تنتقل: «سجلّ حفظه يبقى كما هو.» (§15.1)
+    static func conflictNote(_ count: Int, hasOthers: Bool, from track: Track = .farReview) -> String {
         let p = pronoun(count)
-        return "سجلّ تلاوت\(p) ينتقل مع\(p) كما هو." + (hasOthers ? " ويُضاف ما سوا\(p) في الحالين." : "")
+        let record = track.isReview ? "سجلّ تلاوت\(p) ينتقل مع\(p) كما هو." : "سجلّ حفظ\(p) يبقى كما هو."
+        return record + (hasOthers ? " ويُضاف ما سوا\(p) في الحالين." : "")
     }
 
     /// «انقله إلى مراجعة البعيد»

@@ -9,6 +9,12 @@ enum LastEntry {
         return readings.lazy.filter { set.contains($0.quarter) }.map(\.readAt).max()
     }
 
+    /// أحدث إتمام لأيّ وجه من أوجه أحزاب المحفوظ الجديد الآن (§15.2)، أو `nil` قبل أول إتمام (ذ17).
+    static func latest(inPages pages: [Int], completions: [PageCompletion]) -> Date? {
+        let set = Set(pages)
+        return completions.lazy.filter { set.contains($0.page) }.map(\.completedAt).max()
+    }
+
     /// صيغة المدّة بالأيام التقويمية (7.1.2): اليوم · أمس · قبل يومين · قبل 3–6 أيام · قبل أسبوع (7–13)
     /// · قبل أسبوعين (14–20) · قبل 3 أسابيع (21–29) · قبل شهر (30–59) · قبل شهرين (60–89)
     /// · ثم «قبل [ش] أشهر» حيث ش = الأيام ÷ 30 بلا كسر، و«شهراً» من 11 فما فوق.

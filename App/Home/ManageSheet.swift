@@ -51,7 +51,7 @@ struct ManageSheet: View {
             if confirming {
                 ChoiceDialog(
                     title: Phrase.removeQuestion(list, from: request.track),
-                    note: Phrase.removeNote(list.count),
+                    note: Phrase.removeNote(list.count, from: request.track),
                     primary: Phrase.removeAnswer(list.count), primaryID: "remove.confirm",
                     quiet: "إلغاء", quietID: "remove.cancel",
                     titleID: "remove.question"
@@ -91,7 +91,7 @@ struct ManageSheet: View {
                 .accessibilityIdentifier("manage.cancel")
             }
             if removing {
-                Text(verbatim: "يبقى سجلّ تلاوة ما تزيله محفوظاً.")
+                Text(verbatim: Phrase.removeSheetNote(request.track))
                     .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
                     .foregroundStyle(Theme.muted)
             } else {
