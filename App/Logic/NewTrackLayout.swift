@@ -79,15 +79,15 @@ struct NewTrackLayout: Equatable, Sendable {
     }
 
     /// تسمية الوجه لقارئ الشاشة (§15.8): «الوجه 117، لم يُحفظ، موضع التوقّف».
-    func pageLabel(_ page: Int) -> String {
+    func pageLabel(_ page: Int, showsBookmark: Bool = true) -> String {
         "الوجه \(Digits.en(page))، " + (completed.contains(page) ? "محفوظ" : "لم يُحفظ")
             + (today.contains(page) ? "، أتممته اليوم" : "")
-            + (page == bookmarkPage && Slice.showsBookmark ? "، موضع التوقّف" : "")
+            + (showsBookmark && page == bookmarkPage && Slice.showsBookmark ? "، موضع التوقّف" : "")
     }
 }
 
 /// صفّ أوجه خمسة من حزب، أو أقلّ إن قلّت أوجهه.
-struct FiveRow: Equatable, Sendable {
+struct FiveRow: Hashable, Sendable {
     let hizb: Int
     let pages: [Int]
 }

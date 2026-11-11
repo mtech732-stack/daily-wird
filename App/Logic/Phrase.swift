@@ -12,6 +12,11 @@ enum Phrase {
         }
     }
 
+    /// الضغطة على وجه أُتمّ قبل اليوم (§15.3، ذ29): «أتممت الوجه 113 الخميس 5 نوفمبر».
+    static func pageDoneBefore(_ page: Int, on date: Date, now: Date) -> String {
+        "أتممت الوجه \(Digits.en(page)) \(WirdDate.long(date, now: now))"
+    }
+
     /// سؤال «ابدأ دورة جديدة» وإشعارها (§14.5، ذ21).
     static func newCycleQuestion(_ track: Track) -> String { "أتبدأ دورة جديدة في \(track.title)؟" }
     static let newCycleNote = "يعود موضع التوقّف إلى أول المسار، وتُعدّ الأرباع من جديد. وسجلّ التلاوة كما هو."
