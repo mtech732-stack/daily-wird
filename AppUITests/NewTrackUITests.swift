@@ -355,6 +355,11 @@ final class NewTrackUITests: XCTestCase {
         expectLabel(page(app, 121), "الوجه 121، لم يُحفظ، موضع التوقّف، مشترك مع الحزب 13")
         shot(app, "57-new-two-hizbs")
         tapPage(app, 121)
+        // اكتمل ح 12 بالوجه 121 فيظهر حوار الاكتمال (§15.5): «لاحقاً».
+        let later = app.buttons["complete.later"]
+        XCTAssertTrue(later.waitForExistence(timeout: 20), "حوار اكتمال ح 12")
+        later.tap()
+        XCTAssertTrue(wait(later, "exists == false"))
         expectProgress(app, "10 من 20")
         expectBookmark(app, 122)
 
