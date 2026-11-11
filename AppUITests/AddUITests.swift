@@ -253,13 +253,18 @@ final class AddUITests: XCTestCase {
         item.tap()
         XCTAssertTrue(app.buttons["add.go"].waitForExistence(timeout: 20))
         for hizb in hizbs { tapUntilSelected(app.buttons["add.hizb.\(hizb)"], in: app) }
-        tapEnabled(app.buttons["add.go"])
+        let go = app.buttons["add.go"]
+        tapEnabled(go)
+        // لا يُسأل التطبيق عن شيء آخر حتى تُغلق الورقة: الاستعلام أثناء حركة الإغلاق يثقل خدمة الإتاحة.
+        let closed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: go)
+        XCTAssertEqual(XCTWaiter().wait(for: [closed], timeout: 20), .completed, "لم تُغلق ورقة الإضافة")
     }
 
-    /// ش3 · المرحلة 4، §14.6 (ذ22): الحزب المضاف في منتصف الدورة يدخلها في مكانه ويزيد العدد:
-    /// بعد موضع التوقّف «2 من 8» تصير «2 من 12» والإشعار كما في §12.2؛ وقبله ينتقل إليه الموضع
-    /// والصفّ المطويّ، ويقول الإشعار «أُضيف ح 5 · وفيه الآن موضع التوقّف» (سيناريوا المعاين 10 و11).
-    func test_14_6_addMidCycle() {
+    /// ش3 · المرحلة 4، §14.6 (ذ22): الحزب المضاف في منتصف الدورة بعد موضع التوقّف يدخلها في مكانه
+    /// ويزيد العدد: «2 من 8» تصير «2 من 12»، والإشعار كما في §12.2 (سيناريو المعاين 10).
+    /// وكانت هذه والتي بعدها اختباراً واحداً بإضافتين، يفشل أحياناً بمهلة kAXErrorIPCTimeout
+    /// (main: 43012852418، 43111899475)، ففُصلتا ليبدأ كلٌّ بتطبيق جديد وشجرة إتاحة أصغر.
+    func test_14_6_addAfterBookmark() {
         let app = launch(seed: "farReview:1-3;nearReview:10-11",
                          extra: ["-cycle", "farReview:20,nearReview:3", "-readings", "37:1,38:1"])
         let progress = app.staticTexts["track.nearReview.progress"]
@@ -271,6 +276,17 @@ final class AddUITests: XCTestCase {
         expectLabel(progress, "تقدّم الدورة: 2 من 12 ربعاً")
         XCTAssertTrue(app.buttons["quarter.nearReview.39"].label.contains("موضع التوقّف"), "الموضع باقٍ على ح 10")
         shot(app, "41-add-after")
+    }
+
+    /// §14.6 (ذ22): والمضاف قبل موضع التوقّف ينتقل إليه الموضع والصفّ المطويّ، ويقول الإشعار
+    /// «أُضيف ح 5 · وفيه الآن موضع التوقّف» (سيناريو المعاين 11). يبدأ من القريب 10–12، وهو
+    /// ما ينتهي إليه الاختبار السابق.
+    func test_14_6_addBeforeBookmark() {
+        let app = launch(seed: "farReview:1-3;nearReview:10-12",
+                         extra: ["-cycle", "farReview:20,nearReview:3", "-readings", "37:1,38:1"])
+        let progress = app.staticTexts["track.nearReview.progress"]
+        XCTAssertTrue(progress.waitForExistence(timeout: 20))
+        expectLabel(progress, "تقدّم الدورة: 2 من 12 ربعاً")
 
         addFromMenu([5], to: "nearReview", in: app)
         expectLabel(app.staticTexts["toast"], "أُضيف ح 5 · وفيه الآن موضع التوقّف")
