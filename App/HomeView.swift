@@ -91,7 +91,10 @@ struct HomeView: View {
             // الشريط مع الأرشيف المفتوح 88 من أسفل الشاشة، ويأخذ من التمرير ما فوق الحافّة الآمنة (§16.5).
             let barInside = openTrack == nil ? 0 : max(0, CounterLayout.barHeight - geo.safeAreaInsets.bottom)
             let viewport = geo.size.height - barInside
-            let counterMode = foldCounterMode(height: geo.size.height)
+            // مطويّاً تمتدّ الصفحة تحت الحافّة الآمنة السفلى حتى 10 من أسفل الشاشة، كما في المرجع
+            // (s5-fold: الإشارة أسفلها 22 من أسفل الشاشة)، فيأخذ العدّاد ما بقي كلّه (§16.1).
+            let foldHeight = geo.size.height + max(0, geo.safeAreaInsets.bottom - 10)
+            let counterMode = foldCounterMode(height: foldHeight)
             VStack(spacing: 0) {
             ScrollViewReader { proxy in
                 ScrollView {
@@ -131,18 +134,19 @@ struct HomeView: View {
                                 }
                             }
                         }
-                        .frame(minHeight: openTrack == nil ? geo.size.height - Self.topPadding - 6 : nil, alignment: .top)
+                        .frame(minHeight: openTrack == nil ? foldHeight - Self.topPadding - 6 : nil, alignment: .top)
                         SymbolKeys()
                             .padding(.top, openTrack == nil ? 6 : 14)
                             .padding(.bottom, 10)
                     }
                     .padding(.horizontal, margin)
                     .padding(.top, Self.topPadding)
-                    .padding(.bottom, 24)
+                    .padding(.bottom, 24 + (openTrack == nil ? geo.safeAreaInsets.bottom : 0))
                 }
                 .scrollIndicators(.hidden)
                 // لا يمرّ المحتوى تحت شريط الحالة عند التمرير.
                 .clipped()
+                .ignoresSafeArea(.container, edges: openTrack == nil ? .bottom : [])
                 .coordinateSpace(.named(FoldBarPosition.space))
                 .overlay(alignment: .bottom) {
                     // الشريط في أسفل البطاقة، ولا يلتصق بأسفل الشاشة إلا حين يكون تحتها
