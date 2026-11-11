@@ -2,6 +2,21 @@ import Foundation
 
 /// صياغة العدد مع المعدود في الإشعارات والأزرار والحوارات (§12.5، م20). الأرقام إنجليزية.
 enum Phrase {
+    /// عدد الأيام (ذ23): «يوم واحد» · «يومان» · «3 أيام» … «10 أيام» · «11 يوماً» فأكثر.
+    static func days(_ n: Int) -> String {
+        switch n {
+        case ...1: "يوم واحد"
+        case 2: "يومان"
+        case 3...10: "\(Digits.en(n)) أيام"
+        default: "\(Digits.en(n)) يوماً"
+        }
+    }
+
+    /// سؤال «ابدأ دورة جديدة» وإشعارها (§14.5، ذ21).
+    static func newCycleQuestion(_ track: Track) -> String { "أتبدأ دورة جديدة في \(track.title)؟" }
+    static let newCycleNote = "يعود موضع التوقّف إلى أول المسار، وتُعدّ الأرباع من جديد. وسجلّ التلاوة كما هو."
+    static func newCycleToast(_ track: Track) -> String { "بدأت دورة جديدة في \(track.title)" }
+
     /// منصوب، في الأزرار: «الحزب 9» · «حزبين» · «3 أحزاب» · «11 حزباً».
     static func hizbsAccusative(_ list: [Int]) -> String {
         switch list.count {

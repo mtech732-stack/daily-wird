@@ -9,10 +9,14 @@ struct ReviewTrackLayout: Equatable, Sendable {
     /// أرباع المسار المظلّلة في الدورة الحالية (5.5، §14.1).
     let done: Set<Int>
 
-    init(track: Track, hizbs: [Int], done: Set<Int> = []) {
+    /// أيام الدورة التي اكتملت اليوم، ما دام سطر الاكتمال ظاهراً مكان التقدّم (§14.4، ذ19).
+    let completedDays: Int?
+
+    init(track: Track, hizbs: [Int], done: Set<Int> = [], completedDays: Int? = nil) {
         self.track = track
         self.hizbs = Array(Set(hizbs)).sorted()
         self.done = done
+        self.completedDays = completedDays
     }
 
     var isEmpty: Bool { hizbs.isEmpty }
@@ -21,7 +25,7 @@ struct ReviewTrackLayout: Equatable, Sendable {
     var quarters: [Int] { hizbs.flatMap(Quran.quarters(ofHizb:)) }
 
     /// موضع التوقّف (5.5، §14.2): أول ربع بترتيب أرقام الأرباع لم يُظلَّل في الدورة الحالية.
-    /// وإن ظُلّلت كلها فأول المسار (اكتمال الدورة في المرحلة 3).
+    /// وإن ظُلّلت كلها فأول المسار (والدورة تكتمل حينئذ، §14.4).
     var bookmarkQuarter: Int? { quarters.first { !done.contains($0) } ?? quarters.first }
 
     /// الحزب الذي فيه موضع التوقّف: تُطوى عليه البطاقة (7.1).

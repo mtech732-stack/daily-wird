@@ -30,6 +30,8 @@ struct HomeView: View {
     @State private var manage: ManageRequest?
     /// تأكيد إزالة حزب من قائمته (5.1: بتأكيد صريح).
     @State private var removal: Removal?
+    /// تأكيد «ابدأ دورة جديدة» (§14.5، ذ21).
+    @State private var newCycle: Track?
     /// قائمة الحزب المفتوحة بالضغط المطوّل (§12.5).
     @State private var hizbMenu: HizbMenuRequest?
 
@@ -210,13 +212,28 @@ struct HomeView: View {
                 }
             }
         }
+        .overlay {
+            // تأكيد «ابدأ دورة جديدة»، لأن ما تقدّم من الدورة لا يعود بالتراجع (ذ21).
+            if let track = newCycle {
+                ChoiceDialog(
+                    title: Phrase.newCycleQuestion(track),
+                    note: Phrase.newCycleNote,
+                    primary: "ابدأ دورة جديدة", primaryID: "newcycle.confirm",
+                    quiet: "إلغاء", quietID: "newcycle.cancel",
+                    titleID: "newcycle.question"
+                ) { confirmed in
+                    newCycle = nil
+                    if confirmed { restartCycle(track) }
+                }
+            }
+        }
     }
 
     /// ينقل إلى المسار الآخر فوراً بلا سؤال، لأن النقل لا يمحو شيئاً (ذ6)، ثم يؤكّده بإشعار.
     private func move(_ hizbs: [Int], from track: Track) {
         let target = Library.otherReviewTrack(track)
         do {
-            let moved = try Library.move(hizbs, from: track, to: target, in: context)
+            let moved = try Library.move(hizbs, from: track, to: target, in: context, now: WirdClock.now())
             foldIfEmptied(track, removing: moved)
             if !moved.isEmpty { show(Phrase.movedToast(moved, to: target)) }
         } catch {
@@ -224,10 +241,23 @@ struct HomeView: View {
         }
     }
 
+    /// تنتهي الدورة بيد المالك وتبدأ غيرها: «0 من 36»، والإطار على أول ربع، والصفّ على أول حزب (§14.5).
+    private func restartCycle(_ track: Track) {
+        pinTasks[track]?.cancel()
+        pinTasks[track] = nil
+        pinned[track] = nil
+        do {
+            try Cycles.restart(track, in: context, now: WirdClock.now())
+            show(Phrase.newCycleToast(track))
+        } catch {
+            show("تعذّر بدء دورة جديدة")
+        }
+    }
+
     /// يزيل بعد التأكيد، ويبقى سجلّ التلاوة محفوظاً (5.1)، ثم يؤكّده بإشعار.
     private func remove(_ hizbs: [Int], from track: Track) {
         do {
-            let removed = try Library.remove(hizbs, from: track, in: context)
+            let removed = try Library.remove(hizbs, from: track, in: context, now: WirdClock.now())
             foldIfEmptied(track, removing: removed)
             if !removed.isEmpty { show(Phrase.removedToast(removed)) }
         } catch {
@@ -250,7 +280,7 @@ struct HomeView: View {
     private func add(_ hizbs: [Int], to track: Track, moving: Bool) {
         do {
             let before = Library.trackOfHizb(from: placements)
-            let changed = try Library.add(hizbs, to: track, in: context, moving: moving)
+            let changed = try Library.add(hizbs, to: track, in: context, moving: moving, now: WirdClock.now())
             // ما كان في مسار آخر قد نُقل، وما سواه أُضيف جديداً.
             let moved = changed.filter { before[$0] != nil && before[$0] != track }
             let added = changed.filter { !moved.contains($0) }
@@ -300,6 +330,8 @@ struct HomeView: View {
                         addTrack = track
                     } onManage: { mode in
                         manage = ManageRequest(track: track, mode: mode)
+                    } onNewCycle: {
+                        newCycle = track
                     } onFoldBarMove: { maxY in
                         foldBar.barMaxY = maxY
                     }
@@ -312,12 +344,17 @@ struct HomeView: View {
     }
 
     /// تخطيط مسار المراجعة بأرباعه المظلّلة في دورته الحالية (§14.1–14.2).
-    private func reviewLayout(for track: Track, readings: [QuarterReading]? = nil) -> ReviewTrackLayout {
-        let hizbs = Library.activeHizbs(in: track, from: placements)
+    private func reviewLayout(for track: Track, readings: [QuarterReading]? = nil,
+                              cycles: [ReviewCycle]? = nil, placements: [HizbPlacement]? = nil) -> ReviewTrackLayout {
+        let readings = readings ?? self.readings
+        let cycles = cycles ?? self.cycles
+        let hizbs = Library.activeHizbs(in: track, from: placements ?? self.placements)
         let quarters = hizbs.flatMap(Quran.quarters(ofHizb:))
         let start = Cycles.current(track, in: cycles)?.startedAt
         return ReviewTrackLayout(track: track, hizbs: hizbs,
-                                 done: Cycles.done(quarters: quarters, readings: readings ?? self.readings, since: start))
+                                 done: Cycles.done(quarters: quarters, readings: readings, since: start),
+                                 completedDays: Cycles.completedDays(track, quarters: quarters, cycles: cycles,
+                                                                     readings: readings, now: now))
     }
 
     /// حالة التظليل في الشاشة كلها: الربع واحد في السجلّ، فيظهر مظلّلاً حيث ظهر (7.1.1).
@@ -337,11 +374,20 @@ struct HomeView: View {
         let reviews = Track.allCases.filter(\.isReview)
         let before = Dictionary(uniqueKeysWithValues: reviews.map { ($0, reviewLayout(for: $0).bookmarkHizb) })
         do {
-            let result = try Shading.tap(quarter: quarter, track: track, in: context, now: at)
-            AccessibilityNotification.Announcement(result == .shaded ? "تلوته اليوم" : "تراجعت").post()
-            let fresh = (try? context.fetch(FetchDescriptor<QuarterReading>())) ?? readings
+            let (result, changes) = try Cycles.tap(quarter: quarter, track: track, in: context, now: at)
+            var announcement = result == .shaded ? "تلوته اليوم" : "تراجعت"
             for review in reviews {
-                follow(review, from: before[review] ?? nil, to: reviewLayout(for: review, readings: fresh).bookmarkHizb)
+                if case .completed(let days) = changes[review] {
+                    // §14.4: يُعلَن الاكتمال، وعودة الموضع إلى أول المسار.
+                    announcement += "، اكتملت دورة \(review.title) في \(Phrase.days(days))، وعاد موضع التوقّف إلى أول المسار"
+                }
+            }
+            AccessibilityNotification.Announcement(announcement).post()
+            let freshReadings = (try? context.fetch(FetchDescriptor<QuarterReading>())) ?? readings
+            let freshCycles = (try? context.fetch(FetchDescriptor<ReviewCycle>())) ?? cycles
+            for review in reviews {
+                follow(review, from: before[review] ?? nil,
+                       to: reviewLayout(for: review, readings: freshReadings, cycles: freshCycles).bookmarkHizb)
             }
         } catch {
             show("تعذّر التسجيل")

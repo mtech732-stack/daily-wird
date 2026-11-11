@@ -10,6 +10,11 @@ struct TrackHeader: View {
     var onManage: ((ManageMode) -> Void)?
     /// عدد أرباع المسار، لاختبارات الواجهة وحدها ما دام تقدّم الدورة مخفيّاً (ذ10).
     var quarterCount: Int?
+    /// سطر الاكتمال مكان التقدّم: أيام الدورة التي اكتملت اليوم (§14.4، ذ19).
+    var completedDays: Int?
+    /// «ابدأ دورة جديدة» آخر القائمة (§14.5)، ومعطّل ما دام لم يُظلَّل في الدورة شيء.
+    var onNewCycle: (() -> Void)?
+    var canStartNewCycle = false
 
     private static let isUITesting = ProcessInfo.processInfo.arguments.contains("-ui-testing")
 
@@ -20,22 +25,19 @@ struct TrackHeader: View {
                 .font(Theme.font(.semiBold, size: 19, relativeTo: .headline))
                 .foregroundStyle(Theme.ink)
                 .accessibilityAddTraits(.isHeader)
+                // مع سطر الاكتمال لا يلتفّ العنوان، فلا يزيد الرأس ارتفاعاً، ويأخذ السطر ما بقي (م43).
+                .fixedSize(horizontal: completedDays != nil, vertical: false)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            if let progress {
+            if let days = completedDays {
+                // يُقدَّم على العنوان في توزيع العرض، فيُعرض بصيغته الكاملة ما اتّسع الرأس لها (م43).
+                CompletionLine(track: track, days: days)
+                    .layoutPriority(1)
+            } else if let progress {
                 Text(verbatim: progress)
                     .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
                     .foregroundStyle(Theme.muted)
                     .accessibilityLabel(Text(verbatim: "تقدّم الدورة: \(progress) ربعاً"))
                     .accessibilityIdentifier("track.\(track.rawValue).progress")
-            }
-            if Self.isUITesting, let quarterCount {
-                // لا يُرى ولا يُلمس: تقرؤه اختبارات الواجهة لتتحقّق من الإضافة والنقل والإزالة.
-                Color.clear
-                    .frame(width: 1, height: 1)
-                    .accessibilityElement()
-                    .accessibilityLabel(Text(verbatim: Digits.en(quarterCount)))
-                    .accessibilityIdentifier("track.\(track.rawValue).quarterCount")
-                    .allowsHitTesting(false)
             }
             if showsMenu {
                 // قائمة المسار (7.1.1، §12.4). في مسار فارغ «إضافة» وحدها (م21).
@@ -44,6 +46,14 @@ struct TrackHeader: View {
                     if let onManage {
                         Button { onManage(.move) } label: { Label("نقل", systemImage: "arrow.left.arrow.right") }
                         Button { onManage(.remove) } label: { Label("إزالة", systemImage: "trash") }
+                    }
+                    if let onNewCycle {
+                        // بعد فاصل يميّزه عن بنود المحفوظ (ذ21).
+                        Divider()
+                        Button(action: onNewCycle) {
+                            Label("ابدأ دورة جديدة", systemImage: "arrow.counterclockwise")
+                        }
+                        .disabled(!canStartNewCycle)
                     }
                 } label: {
                     Image(systemName: "ellipsis")
@@ -59,6 +69,50 @@ struct TrackHeader: View {
             }
         }
         .frame(minHeight: 30)
+        .background(alignment: .topLeading) {
+            if Self.isUITesting, let quarterCount {
+                // لا يُرى ولا يُلمس ولا يأخذ من عرض الرأس: تقرؤه اختبارات الواجهة لتتحقّق من الإضافة والنقل والإزالة.
+                Color.clear
+                    .frame(width: 1, height: 1)
+                    .accessibilityElement()
+                    .accessibilityLabel(Text(verbatim: Digits.en(quarterCount)))
+                    .accessibilityIdentifier("track.\(track.rawValue).quarterCount")
+                    .allowsHitTesting(false)
+            }
+        }
+    }
+}
+
+/// سطر الاكتمال في رأس البطاقة مكان التقدّم (§14.4، ذ19): «✓ اكتملت الدورة · 19 يوماً»،
+/// ويُقصر إلى «✓ اكتملت · 19 يوماً» إن لم يتّسع الرأس. ولقارئ الشاشة عنصر واحد.
+struct CompletionLine: View {
+    let track: Track
+    let days: Int
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            line("اكتملت الدورة")
+            line("اكتملت")
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: "اكتملت دورة \(track.title) في \(Phrase.days(days))"))
+        .accessibilityIdentifier("track.\(track.rawValue).completed")
+    }
+
+    private func line(_ text: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: "checkmark.circle")
+                .font(.system(size: 15))
+                .foregroundStyle(Theme.ink)
+            Text(verbatim: text)
+                .font(Theme.font(.semiBold, size: 13, relativeTo: .footnote))
+                .foregroundStyle(Theme.ink)
+            Text(verbatim: "· \(Phrase.days(days))")
+                .font(Theme.font(.regular, size: 13, relativeTo: .footnote))
+                .foregroundStyle(Theme.muted)
+        }
+        .lineLimit(1)
+        .fixedSize()
     }
 }
 
@@ -136,13 +190,17 @@ struct ReviewTrackCard: View {
     var onAdd: () -> Void = {}
     /// «نقل» و«إزالة» من «⋯» (§12.4).
     var onManage: (ManageMode) -> Void = { _ in }
+    /// «ابدأ دورة جديدة» (§14.5).
+    var onNewCycle: () -> Void = {}
     /// موضع أسفل شريط «طيّ» في الشاشة المرئية، حين يكون الأرشيف مفتوحاً (م23).
     var onFoldBarMove: (CGFloat) -> Void = { _ in }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             TrackHeader(track: layout.track, progress: Slice.showsCycleProgress ? layout.progressText : nil,
-                        showsMenu: true, onAdd: onAdd, onManage: onManage, quarterCount: layout.quarters.count)
+                        showsMenu: true, onAdd: onAdd, onManage: onManage, quarterCount: layout.quarters.count,
+                        completedDays: layout.completedDays, onNewCycle: onNewCycle,
+                        canStartNewCycle: layout.doneCount > 0)
                 .padding(.horizontal, isOpen ? 8 : 0)
             if isOpen {
                 ArchiveView(layout: layout, menu: hizbMenu, shading: shading, onBookmarkRow: onBookmarkRow)

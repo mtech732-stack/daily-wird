@@ -97,6 +97,7 @@ enum SchemaV1: VersionedSchema {
     enum CycleEnd: String, Sendable {
         case completed   // ظُلّل كل ربع في المسار
         case manual      // «ابدأ دورة جديدة»
+        case emptied     // فرغ المسار بالإزالة أو النقل، فلا اكتمال (م40)
     }
 }
 

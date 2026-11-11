@@ -58,6 +58,8 @@ enum Library {
         for hizb in list { context.insert(HizbPlacement(hizb: hizb, track: track, addedAt: now)) }
         if !list.isEmpty { try Cycles.startIfNeeded(track, in: context, now: now) }
         try context.save()
+        // ما نُقل من مسار آخر قد يفرغه أو يتمّ دورته (§14.4، §14.6).
+        if !list.isEmpty { try settleReviews(in: context, now: now) }
         return list
     }
 
@@ -100,6 +102,7 @@ enum Library {
         for hizb in list { context.insert(HizbPlacement(hizb: hizb, track: target, addedAt: now)) }
         if !list.isEmpty { try Cycles.startIfNeeded(target, in: context, now: now) }
         try context.save()
+        if !list.isEmpty { try settleReviews(in: context, now: now) }
         return list
     }
 
@@ -115,6 +118,14 @@ enum Library {
         let set = Set(list)
         for p in placements where p.removedAt == nil && set.contains(p.hizb) { p.removedAt = now }
         try context.save()
+        if !list.isEmpty { try settleReviews(in: context, now: now) }
         return list
+    }
+
+    /// بعد الإضافة والنقل والإزالة: إن فرغ المسار انتهت دورته، وإن خرج منه آخر ما لم يُظلَّل اكتملت (§14.4).
+    private static func settleReviews(in context: ModelContext, now: Date) throws {
+        for track in Track.allCases where track.isReview {
+            try Cycles.settle(track, in: context, now: now)
+        }
     }
 }

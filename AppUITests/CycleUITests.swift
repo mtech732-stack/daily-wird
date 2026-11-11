@@ -17,9 +17,10 @@ final class CycleUITests: XCTestCase {
         quarters.map { "\($0):5" }.joined(separator: ",")
     }
 
-    private func launch(readings: String, pinSeconds: Double? = nil) -> XCUIApplication {
+    private func launch(readings: String, pinSeconds: Double? = nil, seed: String = CycleUITests.seed,
+                        cycle: String = "farReview:20,nearReview:3") -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-ui-testing", "-seed", Self.seed, "-cycle", "farReview:20,nearReview:3",
+        app.launchArguments = ["-ui-testing", "-seed", seed, "-cycle", cycle,
                                "-readings", readings]
             + (pinSeconds.map { ["-pin-seconds", String($0)] } ?? [])
         app.launch()
@@ -205,5 +206,84 @@ final class CycleUITests: XCTestCase {
         XCTAssertTrue(app.otherElements["track.farReview.archive"].waitForExistence(timeout: 20))
         XCTAssertTrue(card.frame.minY >= 0, "البطاقة من أعلاها: \(card.frame.minY)")
         expectBookmark(app, 1)
+    }
+
+    // MARK: المرحلة 3: اكتمال الدورة و«ابدأ دورة جديدة» (§14.4، §14.5)
+
+    private func expectLabel(_ element: XCUIElement, _ text: String, file: StaticString = #filePath, line: UInt = #line) {
+        if !wait(element, "label == %@", text) {
+            XCTAssertEqual(element.exists ? element.label : "(لا عنصر)", text, file: file, line: line)
+        }
+    }
+
+    private func expectGone(_ element: XCUIElement, _ message: String, file: StaticString = #filePath, line: UInt = #line) {
+        let gone = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: element)
+        XCTAssertEqual(XCTWaiter().wait(for: [gone], timeout: 20), .completed, message, file: file, line: line)
+    }
+
+    /// §14.4 (ذ19، ذ23): تظليل آخر ربع في القريب يتمّ دورته: سطر «✓ اكتملت الدورة · 19 يوماً» مكان التقدّم،
+    /// والإطار على أول المسار؛ وأول تظليل في الجديدة يُذهبه «1 من 4». ثم §14.5 (ذ21): «ابدأ دورة جديدة»
+    /// بعد فاصل، بتأكيد، ثم «0 من 4» وإشعار، ومعطّل إن لم يُظلَّل في الدورة شيء.
+    func test_14_4_completionLineAndNewCycle() {
+        let app = launch(readings: "37:5,38:5,39:5", seed: "farReview:1-9;nearReview:10", cycle: "farReview:20,nearReview:18")
+        let q40 = app.buttons["quarter.nearReview.40"]
+        XCTAssertTrue(q40.waitForExistence(timeout: 20))
+        q40.tap()
+        expectValue(q40, "تلوته اليوم")
+        let done = app.descendants(matching: .any)["track.nearReview.completed"]
+        expectLabel(done, "اكتملت دورة مراجعة القريب في 19 يوماً")
+        XCTAssertFalse(app.staticTexts["track.nearReview.progress"].exists, "السطر مكان التقدّم")
+        let q37 = app.buttons["quarter.nearReview.37"]
+        if !wait(q37, "label CONTAINS %@", "موضع التوقّف") { XCTFail("الإطار ليس على أول المسار: \(q37.label)") }
+        shot(app, "37-complete")
+
+        q37.tap()
+        expectValue(q37, "تلوته اليوم")
+        expectGone(done, "أول تظليل في الدورة الجديدة يُذهب سطر الاكتمال")
+        expectLabel(app.staticTexts["track.nearReview.progress"], "تقدّم الدورة: 1 من 4 ربعاً")
+
+        app.buttons["track.nearReview.more"].tap()
+        let item = app.buttons["ابدأ دورة جديدة"]
+        XCTAssertTrue(item.waitForExistence(timeout: 20))
+        XCTAssertTrue(item.isEnabled)
+        item.tap()
+        let question = app.staticTexts["newcycle.question"]
+        expectLabel(question, "أتبدأ دورة جديدة في مراجعة القريب؟")
+        shot(app, "38-new-cycle-confirm")
+        app.buttons["newcycle.confirm"].tap()
+        expectLabel(app.staticTexts["toast"], "بدأت دورة جديدة في مراجعة القريب")
+        expectLabel(app.staticTexts["track.nearReview.progress"], "تقدّم الدورة: 0 من 4 ربعاً")
+        XCTAssertFalse(done.exists, "لا سطر اكتمال لدورة لم تكتمل")
+        XCTAssertTrue(q37.label.contains("موضع التوقّف"))
+        XCTAssertEqual(q37.value as? String, "تلوته اليوم", "وسجلّ التلاوة كما هو")
+        shot(app, "39-restarted")
+
+        app.buttons["track.nearReview.more"].tap()
+        XCTAssertTrue(item.waitForExistence(timeout: 20))
+        XCTAssertFalse(item.isEnabled, "معطّل ما دام لم يُظلَّل في الدورة شيء")
+    }
+
+    /// §14.4 (s3-complete-small، م39): حزب واحد تُليت أرباعه اليوم: بعد الاكتمال الإطار وعلامة «اليوم»
+    /// على الربع 1، وضغطه اليوم تراجع يعيد الدورة المكتملة: «3 من 4» بلا سطر اكتمال، والإطار على الربع 1.
+    func test_14_4_completeSmallUndo() {
+        let app = launch(readings: "1:0,2:0,3:0", seed: "farReview:1", cycle: "farReview:0")
+        let q4 = quarter(app, 4)
+        XCTAssertTrue(q4.waitForExistence(timeout: 20))
+        expectProgress(app, "3 من 4")
+        q4.tap()
+        expectValue(q4, "تلوته اليوم")
+        let done = app.descendants(matching: .any)["track.farReview.completed"]
+        expectLabel(done, "اكتملت دورة مراجعة البعيد في يوم واحد")
+        let q1 = quarter(app, 1)
+        expectBookmark(app, 1)
+        XCTAssertEqual(q1.value as? String, "تلوته اليوم", "الإطار وعلامة «اليوم» معاً")
+        shot(app, "40-complete-small")
+
+        q1.tap()
+        expectValue(q1, "لم يُتلَ")
+        expectGone(done, "التراجع أعاد الدورة المكتملة")
+        expectProgress(app, "3 من 4")
+        expectBookmark(app, 1)
+        XCTAssertEqual(q4.value as? String, "تلوته اليوم")
     }
 }
