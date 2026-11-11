@@ -62,7 +62,7 @@ final class SettingsUITests: XCTestCase {
         XCTAssertFalse(note.label.contains("ش7"), "لا اسم داخلي في نصّ يقرؤه المالك (م53)")
         expectContains(any(app, "settings.version"), "الإصدار")
         XCTAssertTrue(app.buttons["settings.about"].exists)
-        for word in ["الوضع الليلي", "المظهر", "الورد اليومي"] {
+        for word in ["الوضع الليلي", "المظهر", "الوضع الداكن"] {
             XCTAssertFalse(app.staticTexts[word].exists, "لا «\(word)» في الإعدادات")
         }
         shot(app, "82-settings")
@@ -88,7 +88,14 @@ final class SettingsUITests: XCTestCase {
         XCTAssertEqual(owner.count, 0, "لا اسم للمالك ولا شعار (القرار 32)")
         shot(app, "83-about")
 
-        app.buttons["about.back"].tap()
+        let back = app.buttons["about.back"]
+        if !back.waitForExistence(timeout: 20) {
+            // سجلّ CI لا يُظهر إلا الأسطر التي تبدأ بـ«تشخيص:».
+            for row in app.debugDescription.split(separator: "\n") where row.contains("Button") {
+                print("تشخيص: \(row)")
+            }
+        }
+        back.tap()
         XCTAssertTrue(app.buttons["settings.about"].waitForExistence(timeout: 20), "«‹ الإعدادات» يرجع داخل الورقة")
         XCTAssertTrue(wait(source, "exists == false"))
     }

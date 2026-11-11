@@ -213,7 +213,6 @@ struct AboutPage: View {
         }
         .background(Theme.paper)
         .toolbar(.hidden, for: .navigationBar)
-        .accessibilityIdentifier("about")
     }
 }
 
