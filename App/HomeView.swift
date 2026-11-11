@@ -55,6 +55,9 @@ struct HomeView: View {
         return 0.8
     }()
 
+    /// المسار الذي فُتح أرشيفه للتوّ، وينتظر قياس صفّ موضع التوقّف لينزل إليه (ذ18).
+    @State private var pendingBookmark: Track?
+
     /// موضع شريط «طيّ» في أسفل البطاقة المفتوحة، لإلصاقه بأسفل الشاشة إن نزل تحتها (م23).
     @State private var foldBar = FoldBarPosition()
 
@@ -73,7 +76,7 @@ struct HomeView: View {
                                 HomeHeader(now: now)
                                     .padding(.bottom, 6)
                                 ForEach(Track.allCases, id: \.self) { track in
-                                    card(for: track, narrow: narrow, proxy: proxy)
+                                    card(for: track, narrow: narrow, proxy: proxy, viewport: geo.size.height)
                                         .id("card.\(track.rawValue)")
                                 }
                             }
@@ -276,7 +279,7 @@ struct HomeView: View {
     }
 
     @ViewBuilder
-    private func card(for track: Track, narrow: Bool, proxy: ScrollViewProxy) -> some View {
+    private func card(for track: Track, narrow: Bool, proxy: ScrollViewProxy, viewport: CGFloat) -> some View {
         if track.isReview {
             let layout = reviewLayout(for: track)
             if layout.isEmpty {
@@ -288,7 +291,10 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     LastEntryLine(track: track, date: LastEntry.latest(in: layout.quarters, readings: readings), now: now)
                     ReviewTrackCard(layout: layout, isOpen: openTrack == track, narrow: narrow, hizbMenu: menu,
-                                    shading: shading, displayedHizb: pinned[track]) {
+                                    shading: shading, displayedHizb: pinned[track],
+                                    onBookmarkRow: { offset in
+                                        scrollToBookmark(track, rowOffset: offset, viewport: viewport, proxy: proxy)
+                                    }) {
                         toggle(track, proxy: proxy)
                     } onAdd: {
                         addTrack = track
@@ -380,10 +386,33 @@ struct HomeView: View {
             proxy.scrollTo("card.\(track.rawValue)", anchor: .top)
         } else {
             openTrack = track
-            // ينزل إلى موضع التوقّف عند الفتح (7.1). في ش1 هو أول المسار، فيُعرض من أعلى البطاقة.
+            // يُعرض من أعلى البطاقة، ثم ينزل إلى موضع التوقّف حين يُقاس صفّه (ذ18).
+            pendingBookmark = track
             proxy.scrollTo("card.\(track.rawValue)", anchor: .top)
         }
     }
+
+    /// النزول التلقائي (§14.2، ذ18): يُفتح الأرشيف وصفّ أول ظهور لموضع التوقّف عند 30% مما يُرى
+    /// فوق شريط «طيّ» الملتصق، بلا حركة تمرير. وإن كان قريباً من أعلى البطاقة بقي العرض من أعلاها،
+    /// فلا يتجاوز أعلى الأرشيف. ولا ينزل في غير الفتح، فالتظليل في الأرشيف لا يحرّك الشاشة.
+    private func scrollToBookmark(_ track: Track, rowOffset: CGFloat, viewport: CGFloat, proxy: ScrollViewProxy) {
+        guard pendingBookmark == track, openTrack == track else { return }
+        pendingBookmark = nil
+        guard viewport > 0, let id = reviewLayout(for: track).bookmarkRowID else { return }
+        let visible = viewport - Self.foldBarHeight
+        let target = visible * 0.3
+        // سطر «آخر إدخال» فوق البطاقة نحو 22 (18 وفراغ 4).
+        guard rowOffset + Self.lastEntryHeight > target else { return }
+        var plain = Transaction()
+        plain.disablesAnimations = true
+        withTransaction(plain) {
+            proxy.scrollTo(id, anchor: UnitPoint(x: 0.5, y: target / viewport))
+        }
+    }
+
+    /// ارتفاع شريط «طيّ» الملتصق: 35 وحشو 8 وخطّ 1.
+    private static let foldBarHeight: CGFloat = 44
+    private static let lastEntryHeight: CGFloat = 22
 }
 
 /// حزب أو أكثر ينتظر تأكيد إزالته من مساره.

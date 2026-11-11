@@ -170,4 +170,40 @@ final class CycleUITests: XCTestCase {
         expectBookmark(app, 21)
         XCTAssertFalse(isBookmark(places.element(boundBy: 0)))
     }
+
+    /// §14.2 (ذ18): يُفتح الأرشيف على موضعه: صفّ ح 6 عند نحو 30% مما يُرى، وفوقه ما قبله،
+    /// والتظليل في الأرشيف لا يحرّك الشاشة (سيناريو المعاين 6). وإن كان الموضع في أوله فُتح من أعلاه.
+    func test_14_2_archiveOpensAtBookmark() {
+        let app = launch(readings: Self.shaded(1...22))
+        let pull = app.buttons["track.farReview.pull"]
+        XCTAssertTrue(pull.waitForExistence(timeout: 20))
+        pull.tap()
+        XCTAssertTrue(app.otherElements["track.farReview.archive"].waitForExistence(timeout: 20))
+        let q23 = quarter(app, 23)
+        XCTAssertTrue(q23.waitForExistence(timeout: 20))
+        let height = app.windows.firstMatch.frame.height
+        let y = q23.frame.midY / height
+        XCTAssertTrue((0.2...0.45).contains(y), "صفّ الموضع عند \(y) من الشاشة")
+        let imran = app.otherElements["section.farReview.3"].frame.minY
+        XCTAssertTrue(imran > 0 && imran < q23.frame.minY, "يُرى عنوان القسم فوقه: \(imran)")
+        shot(app, "36-archive-at-bookmark")
+
+        let before = q23.frame.minY
+        q23.tap()
+        expectValue(q23, "تلوته اليوم")
+        expectBookmark(app, 24)
+        XCTAssertEqual(q23.frame.minY, before, accuracy: 0.5, "التظليل لا يحرّك الشاشة")
+    }
+
+    /// ذ18: الموضع في أول المسار، فيُفتح الأرشيف من أعلاه ولا يتجاوزه.
+    func test_14_2_archiveAtStartOpensFromTop() {
+        let app = launch(readings: "")
+        let pull = app.buttons["track.farReview.pull"]
+        XCTAssertTrue(pull.waitForExistence(timeout: 20))
+        pull.tap()
+        let card = app.otherElements["track.farReview.card"]
+        XCTAssertTrue(app.otherElements["track.farReview.archive"].waitForExistence(timeout: 20))
+        XCTAssertTrue(card.frame.minY >= 0, "البطاقة من أعلاها: \(card.frame.minY)")
+        expectBookmark(app, 1)
+    }
 }
