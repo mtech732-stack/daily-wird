@@ -16,8 +16,8 @@ enum Cycles {
     static func done(quarters: [Int], readings: [QuarterReading], since start: Date?, until end: Date? = nil) -> Set<Int> {
         guard let start else { return [] }
         let set = Set(quarters)
-        return Set(readings.lazy.filter {
-            set.contains($0.quarter) && $0.readAt > start && (end.map { end in $0.readAt <= end } ?? true)
+        return Set(readings.lazy.filter { reading in
+            set.contains(reading.quarter) && reading.readAt > start && (end.map { reading.readAt <= $0 } ?? true)
         }.map(\.quarter))
     }
 
