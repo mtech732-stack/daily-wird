@@ -75,6 +75,9 @@ struct HomeView: View {
     @State private var isShort = false
     /// حافّة الشاشة السفلى الآمنة، ليكون الشريط 88 من أسفل الشاشة والإشعار فوقه (§16.5).
     @State private var safeBottom: CGFloat = 0
+    @State private var safeTop: CGFloat = 0
+    /// الإشعار في أعلى الشاشة ما دام العدّاد دائرة كبيرة (ذ49)، وفي أسفلها مع الصفّ الأفقي والشريط.
+    private var toastOnTop: Bool { openTrack == nil && !isShort }
     @State private var screenWidth: CGFloat = 393
 
     /// المسار الذي فُتح أرشيفه للتوّ، وينتظر قياس صفّ موضع التوقّف لينزل إليه (ذ18).
@@ -167,6 +170,7 @@ struct HomeView: View {
             }
             }
             .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.bottom } action: { safeBottom = $0 }
+            .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.top } action: { safeTop = $0 }
             .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { screenWidth = $0 }
             .onChange(of: counterMode, initial: true) { _, mode in isShort = mode == .row }
             // اهتزاز خفيف مع كل ضغطة تزيد العدد (5.7، §16.3، ذ41)، ولا شيء غيره ولا صوت.
@@ -213,10 +217,19 @@ struct HomeView: View {
             }
         }
         .overlay(alignment: .bottom) {
-            if let toast {
+            if let toast, !toastOnTop {
                 // ومع الشريط فوقه: أسفله 104 من أسفل الشاشة، و96 على 375 (§16.5).
                 ToastView(text: toast)
                     .padding(.bottom, openTrack == nil ? 42 : max(42, (screenWidth < 390 ? 96 : 104) - safeBottom))
+                    .transition(.opacity)
+            }
+        }
+        .overlay(alignment: .top) {
+            if let toast, toastOnTop {
+                // والعدّاد كبير: في أعلى الشاشة فوق الرأس، أعلاه 58 من أعلى الشاشة و24 على 375 (§17.1، ذ49)،
+                // لأن أسفلها كله للدائرة والإشارة.
+                ToastView(text: toast)
+                    .padding(.top, max(0, (screenWidth < 390 ? 24 : 58) - safeTop))
                     .transition(.opacity)
             }
         }

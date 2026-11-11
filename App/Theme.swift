@@ -47,6 +47,13 @@ enum Theme {
     static let gilt = dynamic(light: 0xDF8C16, dark: 0xE39A33)
     static let ghost = dynamic(light: 0x0F3F6E, dark: 0xF2EDE2, lightAlpha: 0.09, darkAlpha: 0.10)
     static let scrim = dynamic(light: 0x0A1624, dark: 0x000000, lightAlpha: 0.42, darkAlpha: 0.50)
+    /// ما يطفو فوق الشاشة (§17.1، ذ46): ليلاً `#22405F` أفتح من البطاقة لأن الظلّ لا يُرى على الكحلي،
+    /// ونهاراً البطاقة كما كان. للقوائم المرسومة باليد، ولدائرة العدّاد ليلاً لحظة الضغط.
+    static let raised = dynamic(light: 0xFFFDF8, dark: 0x22405F)
+    /// الحوار المخصّص: نهاراً على الأرضية كما كان (§6)، وليلاً `raised` (ذ46).
+    static let dialog = dynamic(light: 0xF7F4EC, dark: 0x22405F)
+    /// ظلّ ما يطفو: نهاراً كحلي 22%، وليلاً أسود 45% (§17.1).
+    static let floatShadow = dynamic(light: 0x0A1624, dark: 0x000000, lightAlpha: 0.22, darkAlpha: 0.45)
 
     /// لون المسار (شريطه وتعبئة مربّعاته).
     static func trackColor(_ track: Track) -> Color {

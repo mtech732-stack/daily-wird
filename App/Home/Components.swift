@@ -191,13 +191,13 @@ struct HizbMenuOverlay: View {
             item("إزالة من المسار", icon: "trash", id: "hizbmenu.remove") { done(.remove) }
         }
         .frame(width: 252)
-        .background(Theme.card)
+        .background(Theme.raised)
         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.button, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: Theme.Radius.button, style: .continuous)
                 .strokeBorder(Theme.line, lineWidth: 1)
         )
-        .shadow(color: Color(red: 0x0A / 255, green: 0x16 / 255, blue: 0x24 / 255).opacity(0.22), radius: 16, y: 12)
+        .shadow(color: Theme.floatShadow, radius: 16, y: 12)
         .environment(\.layoutDirection, .rightToLeft)
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(.isModal)

@@ -371,7 +371,7 @@ private struct ConflictDialog: View {
             .padding(.top, 26)
             .padding(.horizontal, 22)
             .padding(.bottom, 18)
-            .background(RoundedRectangle(cornerRadius: Theme.Radius.dialog, style: .continuous).fill(Theme.paper))
+            .background(RoundedRectangle(cornerRadius: Theme.Radius.dialog, style: .continuous).fill(Theme.dialog))
             .padding(.horizontal, 28)
             .accessibilityElement(children: .contain)
             .accessibilityAddTraits(.isModal)
