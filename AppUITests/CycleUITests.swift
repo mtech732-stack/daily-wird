@@ -133,7 +133,9 @@ final class CycleUITests: XCTestCase {
     /// §14.3، م38: التراجع في المهلة يلغي الانتقال، فيبقى الصفّ على ح 6 والإطار على الربع 4
     /// (سيناريو المعاين 5).
     func test_14_3_undoWithinWindowKeepsRow() {
-        let app = launch(readings: Self.shaded(1...23), pinSeconds: 8)
+        // المهلة 20 ث لا 8: فقراءة «تلوته اليوم» تتأخّر على محاكي CI حتى 5 ث (#43)، فكانت المهلة
+        // تنقضي أحياناً قبل ضغطة التراجع فينتقل الصفّ ويختفي الربع 24 (main: 43132267210، الصغير الليلي).
+        let app = launch(readings: Self.shaded(1...23), pinSeconds: 20)
         let q24 = quarter(app, 24)
         XCTAssertTrue(q24.waitForExistence(timeout: 20))
         q24.tap()
@@ -142,7 +144,7 @@ final class CycleUITests: XCTestCase {
         expectValue(q24, "لم يُتلَ")
         expectBookmark(app, 24)
         // بعد انقضاء المهلة: لم ينتقل.
-        XCTAssertFalse(quarter(app, 25).waitForExistence(timeout: 10), "أُلغي الانتقال")
+        XCTAssertFalse(quarter(app, 25).waitForExistence(timeout: 25), "أُلغي الانتقال")
         XCTAssertTrue(quarter(app, 21).exists)
         expectBookmark(app, 24)
         expectProgress(app, "23 من 36")
