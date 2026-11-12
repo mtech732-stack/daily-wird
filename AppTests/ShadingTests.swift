@@ -145,6 +145,10 @@ final class ShadingTests: XCTestCase {
                               UITestSeed.Reading(quarter: 5, daysAgo: 3, hour: 23, minute: 30)])
         let now = date("2026-11-10T09:00:00")
         XCTAssertEqual(UITestSeed.date(of: list[1], now: now, calendar: cal), date("2026-11-07T23:30:00"))
+        // «اليوم» قبل دقيقة لا يسبق بداية اليوم، فلا يقع في الأمس قبل بداية دورة بدأت اليوم.
+        XCTAssertEqual(UITestSeed.date(of: list[0], now: now, calendar: cal), date("2026-11-10T08:59:00"))
+        let justAfterMidnight = date("2026-11-10T00:00:30")
+        XCTAssertEqual(UITestSeed.date(of: list[0], now: justAfterMidnight, calendar: cal), date("2026-11-10T00:00:00"))
     }
 
     /// §14: ما أُخفي في ش2 (ذ10، ذ16) يظهر في ش3: تقدّم الدورة وعلامة موضع التوقّف.

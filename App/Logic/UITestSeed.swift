@@ -88,7 +88,9 @@ struct UITestSeed: Equatable {
         let today = calendar.startOfDay(for: now)
         let day = calendar.date(byAdding: .day, value: -reading.daysAgo, to: today) ?? today
         guard let hour = reading.hour else {
-            return reading.daysAgo == 0 ? now.addingTimeInterval(-60) : day.addingTimeInterval(9 * 3600)
+            // «اليوم» قبل دقيقة، ولا يسبق بداية اليوم: فالتشغيل في أول دقيقة بعد منتصف الليل كان يضع
+            // التلاوة في الأمس قبل بداية الدورة (فشل test_14_4_completeSmallUndo في 00:00 على CI).
+            return reading.daysAgo == 0 ? max(today, now.addingTimeInterval(-60)) : day.addingTimeInterval(9 * 3600)
         }
         return calendar.date(bySettingHour: hour, minute: reading.minute, second: 0, of: day) ?? day
     }
