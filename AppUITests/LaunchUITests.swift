@@ -60,7 +60,7 @@ final class LaunchUITests: XCTestCase {
 
     private func waitFor(_ app: XCUIApplication, _ id: String) {
         XCTAssertTrue(app.descendants(matching: .any)[id].waitForExistence(timeout: 20), id)
-        // الأيقونة تظهر بحركة 0.3 ث، فتُنتظر قبل قراءة البكسل.
+        // يُنتظر أول رسم قبل قراءة البكسل.
         Thread.sleep(forTimeInterval: 0.5)
     }
 
@@ -81,22 +81,12 @@ final class LaunchUITests: XCTestCase {
         shot(app, "88-launch-dark")
     }
 
-    /// حركة البداية بعد انسدال العلامة: الأيقونة مبسوطة كما كانت شاشة البداية في ش6.
+    /// حركة البداية بعد انسدال العلامة: الأيقونة مبسوطة كما كانت شاشة البداية في ش6، ثم التلاشي إلى الشاشة الرئيسية.
     func test_launchSplashRibbonSettled() {
         let app = launch(dark: false, ["-launch-splash", "-splash-freeze", "ribbon"])
         waitFor(app, "splash.ribbon")
         check(app, paper: 0xF7F4EC, gilt: 0xDF8C16, ribbon: true)
         shot(app, "89-splash-ribbon")
-    }
-
-    /// ثم أيقونة التطبيق لحظة في وسط الشاشة، والشريط والعلامة قد ذهبا.
-    func test_launchSplashIcon() {
-        let app = launch(dark: false, ["-launch-splash", "-splash-freeze", "icon"])
-        waitFor(app, "splash.icon")
-        let w = app.frame.width
-        expectColor(app, at: CGPoint(x: 20, y: 160), 0xF7F4EC, "الأرضية")
-        expectColor(app, at: CGPoint(x: w * 0.68, y: 160), 0xF7F4EC, "لا علامة فوق الأيقونة")
-        shot(app, "90-splash-icon")
     }
 
     /// الحركة كاملة تنتهي وحدها إلى الشاشة الرئيسية في ثوانٍ.

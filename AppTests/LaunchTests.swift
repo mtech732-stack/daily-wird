@@ -38,10 +38,11 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(band.clipsToBounds)
     }
 
-    /// حركة البداية قصيرة (نحو ثانيتين)، فالأصل أن يصل المالك إلى ورده سريعاً.
+    /// حركة البداية قصيرة (نحو ثانية ونصف)، فالأصل أن يصل المالك إلى ورده سريعاً.
     func test_launchSplashIsShort() {
-        let total = LaunchSplash.lead + LaunchSplash.ribbonDrop + LaunchSplash.ribbonRest + LaunchSplash.iconIn + LaunchSplash.iconHold + LaunchSplash.fadeOut
-        XCTAssertLessThanOrEqual(total, 2.0)
+        let total = LaunchSplash.lead + LaunchSplash.ribbonDrop + LaunchSplash.ribbonRest + LaunchSplash.fadeOut
+        XCTAssertLessThanOrEqual(total, 1.6)
+        XCTAssertGreaterThanOrEqual(LaunchSplash.fadeOut, 0.4, "تلاشٍ هادئ")
         XCTAssertGreaterThanOrEqual(LaunchSplash.ribbonDrop, 0.5, "ينسدل بهدوء")
     }
 

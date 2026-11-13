@@ -44,7 +44,7 @@ struct DailyWirdApp: App {
                         .environment(\.layoutDirection, .rightToLeft)
                     if showsSplash {
                         LaunchSplash(done: {
-                            withAnimation(.easeOut(duration: LaunchSplash.fadeOut)) { showsSplash = false }
+                            withAnimation(.easeInOut(duration: LaunchSplash.fadeOut)) { showsSplash = false }
                         })
                         .transition(.opacity)
                         .zIndex(1)
