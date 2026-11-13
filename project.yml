@@ -7,6 +7,12 @@ options:
     iOS: "17.0"
   developmentLanguage: ar
   createIntermediateGroups: true
+# iCloud (ش7): إعداد ثالث بصلاحية iCloud، لا يوقّعه إلا حساب المطوّر المدفوع. ويبقى Debug وRelease
+# بلا صلاحية، فيُثبَّت التطبيق بالحساب المجاني كما هو (القرار 28). انظر App/Model/Cloud.swift.
+configs:
+  Debug: debug
+  Release: release
+  iCloud: release
 settings:
   base:
     SWIFT_VERSION: "6.0"
@@ -33,6 +39,10 @@ targets:
         # شاشة البداية (§17.2، ذ47): App/Resources/LaunchScreen.storyboard بأصولها في Assets.xcassets.
         UILaunchStoryboardName: LaunchScreen
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        # إشعارات CloudKit الصامتة تجلب تغييرات iCloud والتطبيق في الخلفية (بناء iCloud).
+        UIBackgroundModes: [remote-notification]
+        # لا تشفير خاص في التطبيق، فلا يُسأل عنه عند كل رفع إلى TestFlight.
+        ITSAppUsesNonExemptEncryption: false
         UIAppFonts:
           - IBMPlexSansArabic-Regular.ttf
           - IBMPlexSansArabic-Medium.ttf
@@ -44,6 +54,11 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
         # الأيقونة بأوضاعها الثلاثة (8.4، القرار 13، §17.5): Any وDark وTinted في AppIcon.
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      configs:
+        iCloud:
+          CODE_SIGN_ENTITLEMENTS: Support/DailyWird-iCloud.entitlements
+          CODE_SIGN_STYLE: Automatic
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: WIRD_ICLOUD
   DailyWirdTests:
     type: bundle.unit-test
     platform: iOS
@@ -74,3 +89,16 @@ schemes:
         - DailyWirdUITests
       language: ar
       region: SA
+  # يُشغَّل ويُؤرشَف لـ TestFlight بحساب المطوّر المدفوع وحده (خطوات المالك في docs/reports/ش7-خطوات-iCloud.md).
+  DailyWird iCloud:
+    build:
+      targets:
+        DailyWird: all
+    run:
+      config: iCloud
+    profile:
+      config: iCloud
+    analyze:
+      config: iCloud
+    archive:
+      config: iCloud

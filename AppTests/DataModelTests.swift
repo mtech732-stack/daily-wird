@@ -49,12 +49,22 @@ final class DataModelTests: XCTestCase {
         XCTAssertEqual(seen, expected)
     }
 
-    /// 4.4: المزامنة غير مفعّلة قبل ش7.
-    func test_4_4_cloudKitIsOffUntilSlice7() throws {
+    /// 4.4: مخازن الاختبار لا تُزامَن أبداً، ولو في بناء iCloud.
+    func test_4_4_testStoresNeverSync() throws {
         let container = try Persistence.makeContainer(inMemory: true)
         for configuration in container.configurations {
             XCTAssertEqual(configuration.cloudKitContainerIdentifier, nil)
         }
+    }
+
+    /// 5.8 (ش7): البناء المعتاد بلا iCloud، فيبقى يُثبَّت بالحساب المجاني (القرار 28)،
+    /// وحالته في الإعدادات «في هذا الجهاز». وiCloud في بنائه وحده بالحاوية الخاصة.
+    func test_5_8_defaultBuildStaysOnDevice() async throws {
+        XCTAssertFalse(Cloud.isBuiltIn)
+        XCTAssertEqual(Cloud.containerID, "iCloud.com.mtech732.dailywird")
+        XCTAssertEqual(BackupStatus.current, .device)
+        let resolved = await BackupStatus.resolved()
+        XCTAssertEqual(resolved, .device)
     }
 
     // MARK: 4.3 · لا يضيع السجلّ
