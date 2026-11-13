@@ -23,8 +23,10 @@ struct LaunchSplash: View {
     }
 
     // الأزمنة بالثواني. مبدئية (1.4).
+    /// الشريط وحده لحظة قبل الانسدال، فلا يفوت الانسدالَ أولُ رسم للتطبيق.
+    static let lead = 0.2
     static let ribbonDrop = 0.6
-    static let ribbonRest = 0.25
+    static let ribbonRest = 0.2
     static let iconIn = 0.3
     static let iconHold = 0.45
     static let fadeOut = 0.25
@@ -73,6 +75,14 @@ struct LaunchSplash: View {
         .task { await run() }
     }
 
+    /// `-splash-lead ث` في اختبارات الواجهة: تسجيل المعاينة على محاكي الفحص البطيء يبدأ بعد أن يُرسم التطبيق.
+    static var leadTime: Double {
+        let args = ProcessInfo.processInfo.arguments
+        guard args.contains("-ui-testing"), let i = args.firstIndex(of: "-splash-lead"), i + 1 < args.count,
+              let value = Double(args[i + 1]) else { return lead }
+        return value
+    }
+
     private func pause(_ seconds: Double) async {
         try? await Task.sleep(for: .seconds(seconds))
     }
@@ -82,6 +92,7 @@ struct LaunchSplash: View {
             phase = frozen
             return
         }
+        await pause(Self.leadTime)
         if reduceMotion {
             phase = .ribbon
             await pause(Self.ribbonRest + 0.15)

@@ -226,8 +226,9 @@ jobs:
             xcrun simctl io "$UDID" recordVideo --codec=h264 --force "build/splash-$look.mp4" &
             rec=$!
             sleep 1.5
-            xcrun simctl launch "$UDID" "$bundle" -ui-testing -launch-splash
-            sleep 4
+            # -splash-lead: المحاكي هنا بطيء الإقلاع، فيُرسم التطبيق بعد أن تنتهي الحركة لو بدأت فوراً.
+            xcrun simctl launch "$UDID" "$bundle" -ui-testing -launch-splash -splash-lead 2
+            sleep 6
             kill -INT "$rec"; wait "$rec" || true
             swift scripts/video-to-gif.swift "build/splash-$look.mp4" "site/screens/splash-$KEY-$look.gif" 300 15
           done
