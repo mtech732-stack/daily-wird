@@ -211,6 +211,29 @@ jobs:
           xcrun xcresulttool export attachments --path "$rb" --output-path "build/x-$KEY-$LOOK"
           python3 scripts/collect-shots.py "build/x-$KEY-$LOOK" site/screens "$KEY" "$LOOK"
 
+      - name: تسجيل حركة البداية (للمعاينة)
+        # حركة البداية لا تُرى في لقطة، فتُسجَّل من المحاكي نهاراً وليلاً وتُحوَّل GIF يراه المالك من هاتفه (القرار 11).
+        if: matrix.only == ''
+        continue-on-error: true # عون للمالك، ولا يفشل الفحص بسببه
+        run: |
+          set -euo pipefail
+          app=$(ls -d build/dd/Build/Products/*-iphonesimulator/DailyWird.app | head -n 1)
+          bundle=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist")
+          for look in light dark; do
+            xcrun simctl terminate "$UDID" "$bundle" 2>/dev/null || true
+            xcrun simctl ui "$UDID" appearance "$look"
+            sleep 2
+            xcrun simctl io "$UDID" recordVideo --codec=h264 --force "build/splash-$look.mp4" &
+            rec=$!
+            sleep 1.5
+            xcrun simctl launch "$UDID" "$bundle" -ui-testing -launch-splash
+            sleep 4
+            kill -INT "$rec"; wait "$rec" || true
+            swift scripts/video-to-gif.swift "build/splash-$look.mp4" "site/screens/splash-$KEY-$look.gif" 300 15
+          done
+          xcrun simctl ui "$UDID" appearance "$LOOK"
+          ls -la site/screens/splash-*
+
       - name: رفع لقطات هذا الوضع
         uses: actions/upload-artifact@v4
         with:

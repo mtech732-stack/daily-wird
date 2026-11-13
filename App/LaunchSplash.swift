@@ -1,0 +1,97 @@
+import SwiftUI
+
+/// حركة البداية (ملاحظة المالك 13 نوفمبر 2026، ش7): بعد كل إغلاق كلي للتطبيق ينسدل شريط العلامة من الأعلى بهدوء
+/// على شريط رأس السورة، ثم تظهر أيقونة التطبيق لحظة، ثم الشاشة الرئيسية. نحو ثانيتين، ولمسة تتخطّاها.
+///
+/// شاشة البداية الثابتة (`LaunchScreen.storyboard`) هي أول هذه الحركة: الأرضية والشريط وحدهما، بالقياسات نفسها
+/// (§17.2)، فلا قفزة بينهما. ومع «تقليل الحركة» لا انسدال: تظهر العلامة في موضعها ثم الأيقونة.
+/// ولا تُعرض عند الرجوع من الخلفية، لأن التطبيق لم يُغلق.
+struct LaunchSplash: View {
+    enum Phase: String { case band, ribbon, icon }
+
+    /// في اختبارات الواجهة لا تُعرض إلا بـ`-launch-splash`، فلا تؤخّر غيرها.
+    static var isEnabled: Bool {
+        let args = ProcessInfo.processInfo.arguments
+        return !args.contains("-ui-testing") || args.contains("-launch-splash")
+    }
+
+    /// `-splash-freeze ribbon|icon` في اختبارات الواجهة: تقف الحركة على مرحلة لتُلتقط.
+    static var frozen: Phase? {
+        let args = ProcessInfo.processInfo.arguments
+        guard args.contains("-ui-testing"), let i = args.firstIndex(of: "-splash-freeze"), i + 1 < args.count else { return nil }
+        return Phase(rawValue: args[i + 1])
+    }
+
+    // الأزمنة بالثواني. مبدئية (1.4).
+    static let ribbonDrop = 0.6
+    static let ribbonRest = 0.25
+    static let iconIn = 0.3
+    static let iconHold = 0.45
+    static let fadeOut = 0.25
+
+    let done: () -> Void
+    @State private var phase: Phase = .band
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width, h = geo.size.height
+            // كما في الـstoryboard: العلامة من أعلى الشاشة إلى أسفل الشريط + 32 + 2.04، ومركزها 68.35% من العرض.
+            let ribbonHeight = h / 2 + 42.5 + 34.04
+            ZStack {
+                Color("LaunchPaper")
+                ZStack {
+                    Image("LaunchBand")
+                        .frame(width: w, height: 85)
+                        .clipped()
+                        .position(x: w / 2, y: h / 2)
+                    Image("LaunchRibbon")
+                        .frame(width: 48.62, height: ribbonHeight, alignment: .bottom)
+                        .clipped()
+                        .position(x: w * 0.6835, y: ribbonHeight / 2)
+                        .offset(y: phase == .band ? -ribbonHeight : 0)
+                }
+                .opacity(phase == .icon ? 0 : 1)
+                // أيقونة التطبيق كما في «عن التطبيق» (ذ53) بنسبة زاويتها، الفاتحة نهاراً والداكنة ليلاً.
+                Image("AboutIcon")
+                    .resizable()
+                    .frame(width: 120, height: 120)
+                    .clipShape(RoundedRectangle(cornerRadius: 27, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 27, style: .continuous).strokeBorder(Theme.line, lineWidth: 1))
+                    .scaleEffect(phase == .icon ? 1 : 0.9)
+                    .opacity(phase == .icon ? 1 : 0)
+                    .position(x: w / 2, y: h / 2)
+                    .accessibilityIdentifier("splash.icon")
+            }
+        }
+        .ignoresSafeArea()
+        .environment(\.layoutDirection, .leftToRight)
+        .contentShape(Rectangle())
+        .onTapGesture { done() }
+        .accessibilityElement(children: .ignore)
+        .accessibilityIdentifier("splash.\(phase.rawValue)")
+        .task { await run() }
+    }
+
+    private func pause(_ seconds: Double) async {
+        try? await Task.sleep(for: .seconds(seconds))
+    }
+
+    private func run() async {
+        if let frozen = Self.frozen {
+            phase = frozen
+            return
+        }
+        if reduceMotion {
+            phase = .ribbon
+            await pause(Self.ribbonRest + 0.15)
+            withAnimation(.easeInOut(duration: Self.iconIn)) { phase = .icon }
+        } else {
+            withAnimation(.easeOut(duration: Self.ribbonDrop)) { phase = .ribbon }
+            await pause(Self.ribbonDrop + Self.ribbonRest)
+            withAnimation(.easeInOut(duration: Self.iconIn)) { phase = .icon }
+        }
+        await pause(Self.iconIn + Self.iconHold)
+        done()
+    }
+}

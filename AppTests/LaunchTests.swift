@@ -22,23 +22,27 @@ final class LaunchTests: XCTestCase {
         XCTAssertNotNil(UIImage(named: "LaunchRibbon"))
     }
 
-    /// §17.2 على 390×844: الشريط بعرض الشاشة وارتفاعه 85 ومركزه مركزها طولاً، والعلامة من أعلى الشاشة
-    /// إلى أسفل الشريط + 34.04، ومركزها على 68% من العرض كما في الأيقونة.
+    /// §17.2 على 390×844: الشريط بعرض الشاشة وارتفاعه 85 ومركزه مركزها طولاً. ولا علامة في الشاشة الثابتة:
+    /// تنسدل في حركة البداية (ملاحظة المالك في ش7، `LaunchSplash`).
     func test_8_3_launchScreenLayout() throws {
         let controller = try XCTUnwrap(UIStoryboard(name: "LaunchScreen", bundle: .main).instantiateInitialViewController())
         let view = try XCTUnwrap(controller.view)
         view.frame = CGRect(x: 0, y: 0, width: 390, height: 844)
         view.layoutIfNeeded()
         let images = view.subviews.compactMap { $0 as? UIImageView }
-        XCTAssertEqual(images.count, 2)
-        let band = try XCTUnwrap(images.first { $0.frame.width > 300 })
-        let ribbon = try XCTUnwrap(images.first { $0.frame.width < 60 })
+        XCTAssertEqual(images.count, 1, "الشريط وحده")
+        let band = try XCTUnwrap(images.first)
+        XCTAssertEqual(band.frame.width, 390, accuracy: 0.5)
         XCTAssertEqual(band.frame.height, 85, accuracy: 0.5)
         XCTAssertEqual(band.frame.midY, 422, accuracy: 0.5)
-        XCTAssertEqual(ribbon.frame.minY, 0, accuracy: 0.5, "من أعلى الشاشة لا المنطقة الآمنة")
-        XCTAssertEqual(ribbon.frame.maxY, band.frame.maxY + 34.04, accuracy: 0.5)
-        XCTAssertEqual(ribbon.frame.midX / 390, 0.68, accuracy: 0.01)
-        XCTAssertTrue(band.clipsToBounds && ribbon.clipsToBounds)
+        XCTAssertTrue(band.clipsToBounds)
+    }
+
+    /// حركة البداية قصيرة (نحو ثانيتين)، فالأصل أن يصل المالك إلى ورده سريعاً.
+    func test_launchSplashIsShort() {
+        let total = LaunchSplash.ribbonDrop + LaunchSplash.ribbonRest + LaunchSplash.iconIn + LaunchSplash.iconHold + LaunchSplash.fadeOut
+        XCTAssertLessThanOrEqual(total, 2.0)
+        XCTAssertGreaterThanOrEqual(LaunchSplash.ribbonDrop, 0.5, "ينسدل بهدوء")
     }
 
     private func hex(_ color: UIColor) -> Int {
