@@ -1,0 +1,245 @@
+# لقطات طلب الدمج #57 قبل دمجه
+
+الإيداع [`e9efbc3`](https://github.com/mtech732-stack/daily-wird/commit/e9efbc35954f663bb1f6073ba9ce1129fd90cf29) · [التشغيل](https://github.com/mtech732-stack/daily-wird/actions/runs/42881100834) · 2026-11-10 19:48 UTC
+
+اضغط أي لقطة لتكبيرها. وبعد الدمج تُنشر في صفحة اللقطات العامة.
+
+## أول فتحة: المسارات الثلاثة فارغة
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="01-home-empty__large__light.png"><img src="01-home-empty__large__light.png" width="160" alt="نهاري"></a> <a href="01-home-empty__large__dark.png"><img src="01-home-empty__large__dark.png" width="160" alt="ليلي"></a> <a href="01-home-empty__large__light-gray.png"><img src="01-home-empty__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="01-home-empty__large__dark-gray.png"><img src="01-home-empty__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="01-home-empty__small__light.png"><img src="01-home-empty__small__light.png" width="160" alt="نهاري"></a> <a href="01-home-empty__small__dark.png"><img src="01-home-empty__small__dark.png" width="160" alt="ليلي"></a> <a href="01-home-empty__small__light-gray.png"><img src="01-home-empty__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="01-home-empty__small__dark-gray.png"><img src="01-home-empty__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## قائمة «⋯» في مسار فارغ: «إضافة» وحدها
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="02-empty-menu__large__light.png"><img src="02-empty-menu__large__light.png" width="160" alt="نهاري"></a> <a href="02-empty-menu__large__dark.png"><img src="02-empty-menu__large__dark.png" width="160" alt="ليلي"></a> <a href="02-empty-menu__large__light-gray.png"><img src="02-empty-menu__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="02-empty-menu__large__dark-gray.png"><img src="02-empty-menu__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="02-empty-menu__small__light.png"><img src="02-empty-menu__small__light.png" width="160" alt="نهاري"></a> <a href="02-empty-menu__small__dark.png"><img src="02-empty-menu__small__dark.png" width="160" alt="ليلي"></a> <a href="02-empty-menu__small__light-gray.png"><img src="02-empty-menu__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="02-empty-menu__small__dark-gray.png"><img src="02-empty-menu__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## مطويّة على موضع التوقّف
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="03-folded__large__light.png"><img src="03-folded__large__light.png" width="160" alt="نهاري"></a> <a href="03-folded__large__dark.png"><img src="03-folded__large__dark.png" width="160" alt="ليلي"></a> <a href="03-folded__large__light-gray.png"><img src="03-folded__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="03-folded__large__dark-gray.png"><img src="03-folded__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="03-folded__small__light.png"><img src="03-folded__small__light.png" width="160" alt="نهاري"></a> <a href="03-folded__small__dark.png"><img src="03-folded__small__dark.png" width="160" alt="ليلي"></a> <a href="03-folded__small__light-gray.png"><img src="03-folded__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="03-folded__small__dark-gray.png"><img src="03-folded__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## أرشيف مراجعة البعيد مفتوحاً
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="04-archive-far__large__light.png"><img src="04-archive-far__large__light.png" width="160" alt="نهاري"></a> <a href="04-archive-far__large__dark.png"><img src="04-archive-far__large__dark.png" width="160" alt="ليلي"></a> <a href="04-archive-far__large__light-gray.png"><img src="04-archive-far__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="04-archive-far__large__dark-gray.png"><img src="04-archive-far__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="04-archive-far__small__light.png"><img src="04-archive-far__small__light.png" width="160" alt="نهاري"></a> <a href="04-archive-far__small__dark.png"><img src="04-archive-far__small__dark.png" width="160" alt="ليلي"></a> <a href="04-archive-far__small__light-gray.png"><img src="04-archive-far__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="04-archive-far__small__dark-gray.png"><img src="04-archive-far__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## أرشيف مراجعة القريب مفتوحاً (البعيد طُوي)
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="05-archive-near__large__light.png"><img src="05-archive-near__large__light.png" width="160" alt="نهاري"></a> <a href="05-archive-near__large__dark.png"><img src="05-archive-near__large__dark.png" width="160" alt="ليلي"></a> <a href="05-archive-near__large__light-gray.png"><img src="05-archive-near__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="05-archive-near__large__dark-gray.png"><img src="05-archive-near__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="05-archive-near__small__light.png"><img src="05-archive-near__small__light.png" width="160" alt="نهاري"></a> <a href="05-archive-near__small__dark.png"><img src="05-archive-near__small__dark.png" width="160" alt="ليلي"></a> <a href="05-archive-near__small__light-gray.png"><img src="05-archive-near__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="05-archive-near__small__dark-gray.png"><img src="05-archive-near__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## ورقة الإضافة: المسار ثم الأجزاء الثلاثون
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="06-add-sheet__large__light.png"><img src="06-add-sheet__large__light.png" width="160" alt="نهاري"></a> <a href="06-add-sheet__large__dark.png"><img src="06-add-sheet__large__dark.png" width="160" alt="ليلي"></a> <a href="06-add-sheet__large__light-gray.png"><img src="06-add-sheet__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="06-add-sheet__large__dark-gray.png"><img src="06-add-sheet__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="06-add-sheet__small__light.png"><img src="06-add-sheet__small__light.png" width="160" alt="نهاري"></a> <a href="06-add-sheet__small__dark.png"><img src="06-add-sheet__small__dark.png" width="160" alt="ليلي"></a> <a href="06-add-sheet__small__light-gray.png"><img src="06-add-sheet__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="06-add-sheet__small__dark-gray.png"><img src="06-add-sheet__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## اختيار الأجزاء 1–4 وح 9
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="07-add-selected__large__light.png"><img src="07-add-selected__large__light.png" width="160" alt="نهاري"></a> <a href="07-add-selected__large__dark.png"><img src="07-add-selected__large__dark.png" width="160" alt="ليلي"></a> <a href="07-add-selected__large__light-gray.png"><img src="07-add-selected__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="07-add-selected__large__dark-gray.png"><img src="07-add-selected__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="07-add-selected__small__light.png"><img src="07-add-selected__small__light.png" width="160" alt="نهاري"></a> <a href="07-add-selected__small__dark.png"><img src="07-add-selected__small__dark.png" width="160" alt="ليلي"></a> <a href="07-add-selected__small__light-gray.png"><img src="07-add-selected__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="07-add-selected__small__dark-gray.png"><img src="07-add-selected__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## بعد الإضافة: مطويّة على ح 1، وإشعار عابر
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="08-added__large__light.png"><img src="08-added__large__light.png" width="160" alt="نهاري"></a> <a href="08-added__large__dark.png"><img src="08-added__large__dark.png" width="160" alt="ليلي"></a> <a href="08-added__large__light-gray.png"><img src="08-added__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="08-added__large__dark-gray.png"><img src="08-added__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="08-added__small__light.png"><img src="08-added__small__light.png" width="160" alt="نهاري"></a> <a href="08-added__small__dark.png"><img src="08-added__small__dark.png" width="160" alt="ليلي"></a> <a href="08-added__small__light-gray.png"><img src="08-added__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="08-added__small__dark-gray.png"><img src="08-added__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## حالات الحزب في الورقة: في هذا المسار · في مسار آخر · مختار
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="09-add-states__large__light.png"><img src="09-add-states__large__light.png" width="160" alt="نهاري"></a> <a href="09-add-states__large__dark.png"><img src="09-add-states__large__dark.png" width="160" alt="ليلي"></a> <a href="09-add-states__large__light-gray.png"><img src="09-add-states__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="09-add-states__large__dark-gray.png"><img src="09-add-states__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="09-add-states__small__light.png"><img src="09-add-states__small__light.png" width="160" alt="نهاري"></a> <a href="09-add-states__small__dark.png"><img src="09-add-states__small__dark.png" width="160" alt="ليلي"></a> <a href="09-add-states__small__light-gray.png"><img src="09-add-states__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="09-add-states__small__dark-gray.png"><img src="09-add-states__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## العرض بالسور: أول الأرشيف، والربع المشترك ووسم الجزء
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="10-suras-top__large__light.png"><img src="10-suras-top__large__light.png" width="160" alt="نهاري"></a> <a href="10-suras-top__large__dark.png"><img src="10-suras-top__large__dark.png" width="160" alt="ليلي"></a> <a href="10-suras-top__large__light-gray.png"><img src="10-suras-top__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="10-suras-top__large__dark-gray.png"><img src="10-suras-top__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="10-suras-top__small__light.png"><img src="10-suras-top__small__light.png" width="160" alt="نهاري"></a> <a href="10-suras-top__small__dark.png"><img src="10-suras-top__small__dark.png" width="160" alt="ليلي"></a> <a href="10-suras-top__small__light-gray.png"><img src="10-suras-top__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="10-suras-top__small__dark-gray.png"><img src="10-suras-top__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## الحزب المقسوم بين سورتين
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="11-suras-split__large__light.png"><img src="11-suras-split__large__light.png" width="160" alt="نهاري"></a> <a href="11-suras-split__large__dark.png"><img src="11-suras-split__large__dark.png" width="160" alt="ليلي"></a> <a href="11-suras-split__large__light-gray.png"><img src="11-suras-split__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="11-suras-split__large__dark-gray.png"><img src="11-suras-split__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="11-suras-split__small__light.png"><img src="11-suras-split__small__light.png" width="160" alt="نهاري"></a> <a href="11-suras-split__small__dark.png"><img src="11-suras-split__small__dark.png" width="160" alt="ليلي"></a> <a href="11-suras-split__small__light-gray.png"><img src="11-suras-split__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="11-suras-split__small__dark-gray.png"><img src="11-suras-split__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## سورة في مسارين: النساء في القريب
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="12-suras-two-tracks__large__light.png"><img src="12-suras-two-tracks__large__light.png" width="160" alt="نهاري"></a> <a href="12-suras-two-tracks__large__dark.png"><img src="12-suras-two-tracks__large__dark.png" width="160" alt="ليلي"></a> <a href="12-suras-two-tracks__large__light-gray.png"><img src="12-suras-two-tracks__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="12-suras-two-tracks__large__dark-gray.png"><img src="12-suras-two-tracks__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="12-suras-two-tracks__small__light.png"><img src="12-suras-two-tracks__small__light.png" width="160" alt="نهاري"></a> <a href="12-suras-two-tracks__small__dark.png"><img src="12-suras-two-tracks__small__dark.png" width="160" alt="ليلي"></a> <a href="12-suras-two-tracks__small__light-gray.png"><img src="12-suras-two-tracks__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="12-suras-two-tracks__small__dark-gray.png"><img src="12-suras-two-tracks__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## جمع السور القصيرة: جزء عمّ
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="13-suras-amma__large__light.png"><img src="13-suras-amma__large__light.png" width="160" alt="نهاري"></a> <a href="13-suras-amma__large__dark.png"><img src="13-suras-amma__large__dark.png" width="160" alt="ليلي"></a> <a href="13-suras-amma__large__light-gray.png"><img src="13-suras-amma__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="13-suras-amma__large__dark-gray.png"><img src="13-suras-amma__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="13-suras-amma__small__light.png"><img src="13-suras-amma__small__light.png" width="160" alt="نهاري"></a> <a href="13-suras-amma__small__dark.png"><img src="13-suras-amma__small__dark.png" width="160" alt="ليلي"></a> <a href="13-suras-amma__small__light-gray.png"><img src="13-suras-amma__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="13-suras-amma__small__dark-gray.png"><img src="13-suras-amma__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## الحزب في مسار آخر: «أتنقله؟»
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="14-conflict__large__light.png"><img src="14-conflict__large__light.png" width="160" alt="نهاري"></a> <a href="14-conflict__large__dark.png"><img src="14-conflict__large__dark.png" width="160" alt="ليلي"></a> <a href="14-conflict__large__light-gray.png"><img src="14-conflict__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="14-conflict__large__dark-gray.png"><img src="14-conflict__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="14-conflict__small__light.png"><img src="14-conflict__small__light.png" width="160" alt="نهاري"></a> <a href="14-conflict__small__dark.png"><img src="14-conflict__small__dark.png" width="160" alt="ليلي"></a> <a href="14-conflict__small__light-gray.png"><img src="14-conflict__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="14-conflict__small__dark-gray.png"><img src="14-conflict__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## بعد «انقله»: ح 10 في البعيد وح 11 وحده في القريب
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="15-moved-by-add__large__light.png"><img src="15-moved-by-add__large__light.png" width="160" alt="نهاري"></a> <a href="15-moved-by-add__large__dark.png"><img src="15-moved-by-add__large__dark.png" width="160" alt="ليلي"></a> <a href="15-moved-by-add__large__light-gray.png"><img src="15-moved-by-add__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="15-moved-by-add__large__dark-gray.png"><img src="15-moved-by-add__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="15-moved-by-add__small__light.png"><img src="15-moved-by-add__small__light.png" width="160" alt="نهاري"></a> <a href="15-moved-by-add__small__dark.png"><img src="15-moved-by-add__small__dark.png" width="160" alt="ليلي"></a> <a href="15-moved-by-add__small__light-gray.png"><img src="15-moved-by-add__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="15-moved-by-add__small__dark-gray.png"><img src="15-moved-by-add__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## قائمة الحزب بالضغط المطوّل: نقل إلى البعيد، وإزالة من المسار
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="16-hizb-menu__large__light.png"><img src="16-hizb-menu__large__light.png" width="160" alt="نهاري"></a> <a href="16-hizb-menu__large__dark.png"><img src="16-hizb-menu__large__dark.png" width="160" alt="ليلي"></a> <a href="16-hizb-menu__large__light-gray.png"><img src="16-hizb-menu__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="16-hizb-menu__large__dark-gray.png"><img src="16-hizb-menu__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="16-hizb-menu__small__light.png"><img src="16-hizb-menu__small__light.png" width="160" alt="نهاري"></a> <a href="16-hizb-menu__small__dark.png"><img src="16-hizb-menu__small__dark.png" width="160" alt="ليلي"></a> <a href="16-hizb-menu__small__light-gray.png"><img src="16-hizb-menu__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="16-hizb-menu__small__dark-gray.png"><img src="16-hizb-menu__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## بعد «نقل إلى مراجعة البعيد»: ح 10 في البعيد بلا سؤال
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="17-moved__large__light.png"><img src="17-moved__large__light.png" width="160" alt="نهاري"></a> <a href="17-moved__large__dark.png"><img src="17-moved__large__dark.png" width="160" alt="ليلي"></a> <a href="17-moved__large__light-gray.png"><img src="17-moved__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="17-moved__large__dark-gray.png"><img src="17-moved__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="17-moved__small__light.png"><img src="17-moved__small__light.png" width="160" alt="نهاري"></a> <a href="17-moved__small__dark.png"><img src="17-moved__small__dark.png" width="160" alt="ليلي"></a> <a href="17-moved__small__light-gray.png"><img src="17-moved__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="17-moved__small__dark-gray.png"><img src="17-moved__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## ورقة الإزالة: أحزاب القريب وحدها
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="18-remove-sheet__large__light.png"><img src="18-remove-sheet__large__light.png" width="160" alt="نهاري"></a> <a href="18-remove-sheet__large__dark.png"><img src="18-remove-sheet__large__dark.png" width="160" alt="ليلي"></a> <a href="18-remove-sheet__large__light-gray.png"><img src="18-remove-sheet__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="18-remove-sheet__large__dark-gray.png"><img src="18-remove-sheet__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="18-remove-sheet__small__light.png"><img src="18-remove-sheet__small__light.png" width="160" alt="نهاري"></a> <a href="18-remove-sheet__small__dark.png"><img src="18-remove-sheet__small__dark.png" width="160" alt="ليلي"></a> <a href="18-remove-sheet__small__light-gray.png"><img src="18-remove-sheet__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="18-remove-sheet__small__dark-gray.png"><img src="18-remove-sheet__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## تأكيد الإزالة: «أتزيل الحزبين 10 و11؟»
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="19-remove-confirm__large__light.png"><img src="19-remove-confirm__large__light.png" width="160" alt="نهاري"></a> <a href="19-remove-confirm__large__dark.png"><img src="19-remove-confirm__large__dark.png" width="160" alt="ليلي"></a> <a href="19-remove-confirm__large__light-gray.png"><img src="19-remove-confirm__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="19-remove-confirm__large__dark-gray.png"><img src="19-remove-confirm__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="19-remove-confirm__small__light.png"><img src="19-remove-confirm__small__light.png" width="160" alt="نهاري"></a> <a href="19-remove-confirm__small__dark.png"><img src="19-remove-confirm__small__dark.png" width="160" alt="ليلي"></a> <a href="19-remove-confirm__small__light-gray.png"><img src="19-remove-confirm__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="19-remove-confirm__small__dark-gray.png"><img src="19-remove-confirm__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## بعد الإزالة: القريب فارغ، والسجلّ محفوظ
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="20-removed__large__light.png"><img src="20-removed__large__light.png" width="160" alt="نهاري"></a> <a href="20-removed__large__dark.png"><img src="20-removed__large__dark.png" width="160" alt="ليلي"></a> <a href="20-removed__large__light-gray.png"><img src="20-removed__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="20-removed__large__dark-gray.png"><img src="20-removed__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="20-removed__small__light.png"><img src="20-removed__small__light.png" width="160" alt="نهاري"></a> <a href="20-removed__small__dark.png"><img src="20-removed__small__dark.png" width="160" alt="ليلي"></a> <a href="20-removed__small__light-gray.png"><img src="20-removed__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="20-removed__small__dark-gray.png"><img src="20-removed__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## ورقة النقل: «إلى مراجعة القريب»
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="21-move-sheet__large__light.png"><img src="21-move-sheet__large__light.png" width="160" alt="نهاري"></a> <a href="21-move-sheet__large__dark.png"><img src="21-move-sheet__large__dark.png" width="160" alt="ليلي"></a> <a href="21-move-sheet__large__light-gray.png"><img src="21-move-sheet__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="21-move-sheet__large__dark-gray.png"><img src="21-move-sheet__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="21-move-sheet__small__light.png"><img src="21-move-sheet__small__light.png" width="160" alt="نهاري"></a> <a href="21-move-sheet__small__dark.png"><img src="21-move-sheet__small__dark.png" width="160" alt="ليلي"></a> <a href="21-move-sheet__small__light-gray.png"><img src="21-move-sheet__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="21-move-sheet__small__dark-gray.png"><img src="21-move-sheet__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## التظليل: ح 1 الربع 2 بعد الضغطة، وعلامة «اليوم»
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="22-shaded__large__light.png"><img src="22-shaded__large__light.png" width="160" alt="نهاري"></a> <a href="22-shaded__large__dark.png"><img src="22-shaded__large__dark.png" width="160" alt="ليلي"></a> <a href="22-shaded__large__light-gray.png"><img src="22-shaded__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="22-shaded__large__dark-gray.png"><img src="22-shaded__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="22-shaded__small__light.png"><img src="22-shaded__small__light.png" width="160" alt="نهاري"></a> <a href="22-shaded__small__dark.png"><img src="22-shaded__small__dark.png" width="160" alt="ليلي"></a> <a href="22-shaded__small__light-gray.png"><img src="22-shaded__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="22-shaded__small__dark-gray.png"><img src="22-shaded__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## الربع المشترك مظلّلاً في الموضعين: البقرة وآل عمران
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="23-shaded-shared__large__light.png"><img src="23-shaded-shared__large__light.png" width="160" alt="نهاري"></a> <a href="23-shaded-shared__large__dark.png"><img src="23-shaded-shared__large__dark.png" width="160" alt="ليلي"></a> <a href="23-shaded-shared__large__light-gray.png"><img src="23-shaded-shared__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="23-shaded-shared__large__dark-gray.png"><img src="23-shaded-shared__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="23-shaded-shared__small__light.png"><img src="23-shaded-shared__small__light.png" width="160" alt="نهاري"></a> <a href="23-shaded-shared__small__dark.png"><img src="23-shaded-shared__small__dark.png" width="160" alt="ليلي"></a> <a href="23-shaded-shared__small__light-gray.png"><img src="23-shaded-shared__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="23-shaded-shared__small__dark-gray.png"><img src="23-shaded-shared__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+## بعد منتصف الليل والتطبيق مفتوح: زالت علامة «اليوم»
+
+**iPhone 17 Pro Max · الأكبر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="24-after-midnight__large__light.png"><img src="24-after-midnight__large__light.png" width="160" alt="نهاري"></a> <a href="24-after-midnight__large__dark.png"><img src="24-after-midnight__large__dark.png" width="160" alt="ليلي"></a> <a href="24-after-midnight__large__light-gray.png"><img src="24-after-midnight__large__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="24-after-midnight__large__dark-gray.png"><img src="24-after-midnight__large__dark-gray.png" width="160" alt="ليلي رمادي"></a>
+
+**iPhone 17e · الأصغر** (نهاري · ليلي · نهاري رمادي · ليلي رمادي)
+
+<a href="24-after-midnight__small__light.png"><img src="24-after-midnight__small__light.png" width="160" alt="نهاري"></a> <a href="24-after-midnight__small__dark.png"><img src="24-after-midnight__small__dark.png" width="160" alt="ليلي"></a> <a href="24-after-midnight__small__light-gray.png"><img src="24-after-midnight__small__light-gray.png" width="160" alt="نهاري رمادي"></a> <a href="24-after-midnight__small__dark-gray.png"><img src="24-after-midnight__small__dark-gray.png" width="160" alt="ليلي رمادي"></a>
