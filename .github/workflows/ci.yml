@@ -228,9 +228,9 @@ jobs:
             sleep 1.5
             # -splash-lead: المحاكي هنا بطيء الإقلاع، فيُرسم التطبيق بعد أن تنتهي الحركة لو بدأت فوراً.
             xcrun simctl launch "$UDID" "$bundle" -ui-testing -launch-splash -splash-lead 2
-            sleep 6
+            sleep 5.5
             kill -INT "$rec"; wait "$rec" || true
-            swift scripts/video-to-gif.swift "build/splash-$look.mp4" "site/screens/splash-$KEY-$look.gif" 300 15
+            swift scripts/video-to-gif.swift "build/splash-$look.mp4" "site/screens/splash-$KEY-$look.gif" 300 25
           done
           xcrun simctl ui "$UDID" appearance "$LOOK"
           ls -la site/screens/splash-*
