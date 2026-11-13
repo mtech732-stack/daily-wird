@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- شاشة البداية (8.3، design/system.md §17.2، ذ47): الأيقونة مبسوطة على الشاشة، بلا نصّ ولا شعار.
-     الأرضية LaunchPaper، والشريط LaunchBand (ارتفاعه 85 ومركزه مركز الشاشة طولاً، يُقصّ من الجانبين)،
-     والعلامة LaunchRibbon (من أعلى الشاشة لا المنطقة الآمنة إلى أسفل الشريط + 32 + 2.04 (نصف الفاصل)، ومركزها 68% من العرض).
-     وصورة العلامة طويلة تُرسى من أسفلها، فيُقصّ أعلاها مكان التمديد. -->
+<!-- شاشة البداية (8.3، design/system.md §17.2، ذ47)، بلا نصّ ولا شعار: الأرضية LaunchPaper والشريط LaunchBand
+     (ارتفاعه 85 ومركزه مركز الشاشة طولاً، يُقصّ من الجانبين). وهي أول حركة البداية (App/LaunchSplash.swift، ملاحظة المالك
+     في ش7): العلامة LaunchRibbon لا تُرسم هنا، بل تنسدل في الحركة من أعلى الشاشة على الشريط نفسه. -->
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="LSV-cn-001">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
@@ -25,12 +24,6 @@
                                     <constraint firstAttribute="height" constant="85" id="LSC-04"/>
                                 </constraints>
                             </imageView>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="bottom" image="LaunchRibbon" translatesAutoresizingMaskIntoConstraints="NO" id="LSR-im-001" userLabel="LaunchRibbon">
-                                <rect key="frame" x="244.5" y="0.0" width="48.62" height="506.1"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="48.62" id="LSC-07"/>
-                                </constraints>
-                            </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="LSV-sa-001"/>
                         <color key="backgroundColor" name="LaunchPaper"/>
@@ -38,9 +31,6 @@
                             <constraint firstItem="LSB-im-001" firstAttribute="leading" secondItem="LSV-vw-001" secondAttribute="leading" id="LSC-01"/>
                             <constraint firstAttribute="trailing" secondItem="LSB-im-001" secondAttribute="trailing" id="LSC-02"/>
                             <constraint firstItem="LSB-im-001" firstAttribute="centerY" secondItem="LSV-vw-001" secondAttribute="centerY" id="LSC-03"/>
-                            <constraint firstItem="LSR-im-001" firstAttribute="top" secondItem="LSV-vw-001" secondAttribute="top" id="LSC-05"/>
-                            <constraint firstItem="LSR-im-001" firstAttribute="bottom" secondItem="LSB-im-001" secondAttribute="bottom" constant="34.04" id="LSC-06"/>
-                            <constraint firstItem="LSR-im-001" firstAttribute="centerX" secondItem="LSV-vw-001" secondAttribute="centerX" multiplier="1.367" id="LSC-08"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -51,7 +41,6 @@
     </scenes>
     <resources>
         <image name="LaunchBand" width="1320" height="85"/>
-        <image name="LaunchRibbon" width="49" height="640"/>
         <namedColor name="LaunchPaper">
             <color red="0.96862745098039216" green="0.95686274509803926" blue="0.92549019607843142" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

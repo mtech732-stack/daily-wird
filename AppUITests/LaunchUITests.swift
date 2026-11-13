@@ -10,9 +10,9 @@ final class LaunchUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    private func launch(dark: Bool) -> XCUIApplication {
+    private func launch(dark: Bool, _ extra: [String] = ["-launch-preview"]) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-ui-testing", "-launch-preview", dark ? "-dark" : "-light"]
+        app.launchArguments = ["-ui-testing", dark ? "-dark" : "-light"] + extra
         app.launch()
         return app
     }
@@ -44,22 +44,31 @@ final class LaunchUITests: XCTestCase {
         XCTAssertTrue(near, "\(what): \(c) والمطلوب #\(String(format: "%06X", hex))", file: file, line: line)
     }
 
-    /// يفحص الأرضية، والمسطرة العليا للشريط، والعلامة على 68% من العرض، وما يسارها.
-    private func check(_ app: XCUIApplication, paper: Int, gilt: Int) {
-        XCTAssertTrue(app.descendants(matching: .any)["launch.preview"].waitForExistence(timeout: 20)
-                      || app.windows.firstMatch.waitForExistence(timeout: 20))
+    /// يفحص الأرضية، والمسطرة العليا للشريط، والعلامة على 68% من العرض إن كانت، وما يسارها.
+    private func check(_ app: XCUIApplication, paper: Int, gilt: Int, ribbon: Bool) {
         let w = app.frame.width, h = app.frame.height
         expectColor(app, at: CGPoint(x: 20, y: 160), paper, "الأرضية")
         expectColor(app, at: CGPoint(x: 60, y: h / 2 - 42.5 + 1.8), gilt, "المسطرة الغليظة فوق الشريط")
-        expectColor(app, at: CGPoint(x: w * 0.68, y: 160), gilt, "العلامة على 68% من العرض")
+        if ribbon {
+            expectColor(app, at: CGPoint(x: w * 0.68, y: 160), gilt, "العلامة على 68% من العرض")
+        } else {
+            expectColor(app, at: CGPoint(x: w * 0.68, y: 160), paper, "لا علامة قبل انسدالها")
+        }
         expectColor(app, at: CGPoint(x: w * 0.5, y: 160), paper, "لا شيء يسار العلامة فوق الشريط")
         expectColor(app, at: CGPoint(x: w * 0.68, y: h / 2 + 42.5 + 60), paper, "العلامة تنتهي بعد الشريط بنحو 38")
     }
 
-    /// ذ47: الشريط والعلامة على `paper`، بلا نصّ.
+    private func waitFor(_ app: XCUIApplication, _ id: String) {
+        XCTAssertTrue(app.descendants(matching: .any)[id].waitForExistence(timeout: 20), id)
+        // الأيقونة تظهر بحركة 0.3 ث، فتُنتظر قبل قراءة البكسل.
+        Thread.sleep(forTimeInterval: 0.5)
+    }
+
+    /// ذ47: الشاشة الثابتة الشريط وحده على `paper`، بلا نصّ؛ والعلامة تنسدل بعدها في الحركة.
     func test_8_3_launchScreenLight() {
         let app = launch(dark: false)
-        check(app, paper: 0xF7F4EC, gilt: 0xDF8C16)
+        waitFor(app, "launch.preview")
+        check(app, paper: 0xF7F4EC, gilt: 0xDF8C16, ribbon: false)
         XCTAssertEqual(app.staticTexts.count, 0, "لا نصّ في شاشة البداية")
         shot(app, "87-launch")
     }
@@ -67,7 +76,36 @@ final class LaunchUITests: XCTestCase {
     /// §17.2 ليلاً: الأرضية #13283E، والذهبي #E39A33.
     func test_8_3_launchScreenDark() {
         let app = launch(dark: true)
-        check(app, paper: 0x13283E, gilt: 0xE39A33)
+        waitFor(app, "launch.preview")
+        check(app, paper: 0x13283E, gilt: 0xE39A33, ribbon: false)
         shot(app, "88-launch-dark")
+    }
+
+    /// حركة البداية بعد انسدال العلامة: الأيقونة مبسوطة كما كانت شاشة البداية في ش6.
+    func test_launchSplashRibbonSettled() {
+        let app = launch(dark: false, ["-launch-splash", "-splash-freeze", "ribbon"])
+        waitFor(app, "splash.ribbon")
+        check(app, paper: 0xF7F4EC, gilt: 0xDF8C16, ribbon: true)
+        shot(app, "89-splash-ribbon")
+    }
+
+    /// ثم أيقونة التطبيق لحظة في وسط الشاشة، والشريط والعلامة قد ذهبا.
+    func test_launchSplashIcon() {
+        let app = launch(dark: false, ["-launch-splash", "-splash-freeze", "icon"])
+        waitFor(app, "splash.icon")
+        let w = app.frame.width
+        expectColor(app, at: CGPoint(x: 20, y: 160), 0xF7F4EC, "الأرضية")
+        expectColor(app, at: CGPoint(x: w * 0.68, y: 160), 0xF7F4EC, "لا علامة فوق الأيقونة")
+        shot(app, "90-splash-icon")
+    }
+
+    /// الحركة كاملة تنتهي وحدها إلى الشاشة الرئيسية في ثوانٍ.
+    func test_launchSplashEndsOnHome() {
+        let app = launch(dark: false, ["-launch-splash"])
+        XCTAssertTrue(app.staticTexts["home.title"].waitForExistence(timeout: 20))
+        let splash = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'splash.'"))
+        let gone = expectation(for: NSPredicate(format: "count == 0"), evaluatedWith: splash)
+        wait(for: [gone], timeout: 8)
+        XCTAssertTrue(app.staticTexts["home.title"].isHittable)
     }
 }

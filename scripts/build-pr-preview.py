@@ -16,6 +16,10 @@ if out.exists():
 out.mkdir(parents=True)
 for png in src.glob("*.png"):
     shutil.copy(png, out / png.name)
+# حركة البداية (ش7): تسجيلات GIF من المحاكي، تُعرض في أول الصفحة.
+gifs = sorted(src.glob("splash-*.gif"))
+for gif in gifs:
+    shutil.copy(gif, out / gif.name)
 
 DEVICES = [("large", "iPhone 17 Pro Max · الأكبر"), ("small", "iPhone 17e · الأصغر")]
 VARIANTS = [("light", "", "نهاري"), ("dark", "", "ليلي"), ("light", "-gray", "نهاري رمادي"), ("dark", "-gray", "ليلي رمادي")]
@@ -29,6 +33,9 @@ lines = [
     "اضغط أي لقطة لتكبيرها. وبعد الدمج تُنشر في صفحة اللقطات العامة.",
     "",
 ]
+if gifs:
+    lines += ["## حركة البداية (تتكرّر في المعاينة، وفي التطبيق مرة واحدة عند الفتح)", "",
+              " ".join(f'<img src="{g.name}" width="200" alt="{"ليلاً" if "dark" in g.name else "نهاراً"}">' for g in gifs), ""]
 for key in keys:
     lines += [f"## {SCREENS.get(key, key)}", ""]
     for dev, dev_label in DEVICES:

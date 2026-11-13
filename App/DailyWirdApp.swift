@@ -4,6 +4,8 @@ import SwiftUI
 @main
 struct DailyWirdApp: App {
     let container: ModelContainer
+    /// حركة البداية مرة واحدة في كل تشغيل بعد إغلاق كلي (`LaunchSplash`).
+    @State private var showsSplash = LaunchSplash.isEnabled
 
     init() {
         // العدّاد في UserDefaults: يبدأ في اختبارات الواجهة صفراً أو بعدد معلوم (§16.8).
@@ -37,11 +39,20 @@ struct DailyWirdApp: App {
                     .accessibilityIdentifier("launch.preview")
                     .preferredColorScheme(Self.testScheme)
             } else {
-                HomeView()
-                    .environment(\.layoutDirection, .rightToLeft)
-                    // اختبارات الواجهة وحدها: `-dark` يفرض الليل، لأن فحص طلب الدمج نهاريّ (القرار 24).
-                    // وفي التطبيق يتبع الجهاز ولا اختيار له (§1، §17.3).
-                    .preferredColorScheme(Self.testScheme)
+                ZStack {
+                    HomeView()
+                        .environment(\.layoutDirection, .rightToLeft)
+                    if showsSplash {
+                        LaunchSplash(done: {
+                            withAnimation(.easeOut(duration: LaunchSplash.fadeOut)) { showsSplash = false }
+                        })
+                        .transition(.opacity)
+                        .zIndex(1)
+                    }
+                }
+                // اختبارات الواجهة وحدها: `-dark` يفرض الليل، لأن فحص طلب الدمج نهاريّ (القرار 24).
+                // وفي التطبيق يتبع الجهاز ولا اختيار له (§1، §17.3).
+                .preferredColorScheme(Self.testScheme)
             }
         }
         .modelContainer(container)
