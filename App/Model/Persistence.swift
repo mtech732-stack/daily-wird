@@ -10,8 +10,8 @@ enum WirdMigrationPlan: SchemaMigrationPlan {
 enum Persistence {
     static var schema: Schema { Schema(versionedSchema: SchemaV1.self) }
 
-    /// مخزن التطبيق على الجهاز. المزامنة مع iCloud تُفعَّل في ش7
-    /// بتغيير `cloudKitDatabase` إلى `.automatic` وحده، دون تغيير البنية (4.4).
+    /// مخزن التطبيق. يُزامَن مع حاوية iCloud الخاصة في بناء iCloud وحده (`Cloud`)، دون تغيير البنية (4.4).
+    /// ومخازن الاختبار (في الذاكرة أو بمسار) لا تُزامَن أبداً.
     static func makeContainer(url: URL? = nil, inMemory: Bool = false) throws -> ModelContainer {
         let config: ModelConfiguration
         if inMemory {
@@ -19,8 +19,13 @@ enum Persistence {
         } else if let url {
             config = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
         } else {
-            config = ModelConfiguration(schema: schema, cloudKitDatabase: .none)
+            config = ModelConfiguration(schema: schema, cloudKitDatabase: appDatabase)
         }
         return try ModelContainer(for: schema, migrationPlan: WirdMigrationPlan.self, configurations: [config])
+    }
+
+    /// قاعدة iCloud لمخزن التطبيق: الحاوية الخاصة في بناء iCloud، ولا شيء في غيره.
+    static var appDatabase: ModelConfiguration.CloudKitDatabase {
+        Cloud.isBuiltIn ? .private(Cloud.containerID) : .none
     }
 }

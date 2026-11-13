@@ -1,21 +1,45 @@
 import SwiftUI
+#if WIRD_ICLOUD
+import CloudKit
+#endif
 
 /// حالة النسخ الاحتياطي (5.8، §17.3). الحالة بشكل الشارة لا بلونها (8.3، ذ50).
 enum BackupStatus: String, CaseIterable {
-    /// قبل ش7: لا iCloud في البناء بعدُ.
+    /// بناء بلا iCloud (المثبَّت بالحساب المجاني): السجلّ في الجهاز وحده.
     case device
     /// iCloud يعمل.
     case iCloudOn = "on"
     /// iCloud غير مفعّل في الجهاز.
     case iCloudOff = "off"
 
-    /// قبل ش7 الحالة «في هذا الجهاز» دائماً. وفي اختبارات الواجهة `-backup on|off` يعرض الحالتين الأخريين
-    /// للمعاينة، حتى تُبنى المزامنة في ش7 فتُقرأ الحالة من الجهاز.
-    static var current: BackupStatus {
+    /// في اختبارات الواجهة `-backup on|off|device` يفرض الحالة للمعاينة.
+    static var forcedForUITesting: BackupStatus? {
         let args = ProcessInfo.processInfo.arguments
-        if args.contains("-ui-testing"), let i = args.firstIndex(of: "-backup"), i + 1 < args.count,
-           let status = BackupStatus(rawValue: args[i + 1]) { return status }
+        guard args.contains("-ui-testing"), let i = args.firstIndex(of: "-backup"), i + 1 < args.count else { return nil }
+        return BackupStatus(rawValue: args[i + 1])
+    }
+
+    /// الحالة عند فتح الورقة، قبل سؤال iCloud: في بناء iCloud تُقدَّر من تسجيل الدخول في الجهاز.
+    static var current: BackupStatus {
+        if let forced = forcedForUITesting { return forced }
+        guard Cloud.isBuiltIn else { return .device }
+        return FileManager.default.ubiquityIdentityToken != nil ? .iCloudOn : .iCloudOff
+    }
+
+    /// الحالة من iCloud نفسه (5.8): «iCloud» إن كان الحساب متاحاً، وإلا «متوقّف».
+    /// ولا يُسأل iCloud إلا في بنائه، فسؤاله بلا صلاحية يوقف التطبيق.
+    static func resolved() async -> BackupStatus {
+        if let forced = forcedForUITesting { return forced }
+        #if WIRD_ICLOUD
+        do {
+            let account = try await CKContainer(identifier: Cloud.containerID).accountStatus()
+            return account == .available ? .iCloudOn : .iCloudOff
+        } catch {
+            return .iCloudOff
+        }
+        #else
         return .device
+        #endif
     }
 
     var title: String {
@@ -50,7 +74,7 @@ enum BackupStatus: String, CaseIterable {
 struct SettingsSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showsAbout = false
-    var status: BackupStatus = .current
+    @State private var status: BackupStatus = .current
 
     var body: some View {
         NavigationStack {
@@ -116,6 +140,8 @@ struct SettingsSheet: View {
             }
         }
         .environment(\.layoutDirection, .rightToLeft)
+        // تُسأل حالة iCloud كلما فُتحت الورقة، فيظهر تسجيل الدخول أو الخروج في إعدادات الجهاز.
+        .task { status = await BackupStatus.resolved() }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
         .presentationCornerRadius(Theme.Radius.sheet)

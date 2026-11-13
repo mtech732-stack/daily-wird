@@ -7,7 +7,7 @@
 # - كل دمج في main: الشيء نفسه، ثم ينشر صفحة اللقطات على GitHub Pages.
 # - وفي طلب الدمج تُرفع لقطاته إلى فرع previews (مجلّد pr-[رقم]) ليراها المالك قبل الدمج (القرار 11).
 # بيئة مثبّتة صراحة (ملاحظة المعاين م2): صورة macos-26، وXcode 26.6، ومحاكيات iOS 26.5 بأسمائها.
-# لا توقيع ولا أسرار حتى ش7.
+# لا توقيع ولا أسرار في سير العمل: بناء iCloud يُترجَم هنا للمحاكي، ويوقَّع ويُؤرشَف على ماك المالك.
 name: ci
 
 on:
@@ -153,6 +153,23 @@ jobs:
               exit 1
             }
           tail -n 20 build/build.log
+
+      - name: بناء iCloud يُترجَم (ش7)
+        # بناء iCloud بصلاحيته لا يوقَّع هنا (لا أسرار في سير العمل)، فيُترجَم وحده للمحاكي ليُعرف
+        # أن كوده سليم. وفي مهمّة الوحدة وحدها، مرة واحدة في كل فحص.
+        if: matrix.only == ''
+        run: |
+          xcodebuild build \
+            -project DailyWird.xcodeproj -scheme "DailyWird iCloud" -configuration iCloud \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath build/dd-icloud \
+            CODE_SIGNING_ALLOWED=NO > build/icloud.log 2>&1 || {
+              grep -E ": error:" -A 3 build/icloud.log | head -n 80
+              tail -n 20 build/icloud.log
+              exit 1
+            }
+          grep -q "WIRD_ICLOUD" build/icloud.log && echo "بناء iCloud: ترجم بشرط WIRD_ICLOUD"
+          tail -n 5 build/icloud.log
 
       - name: تهيئة المحاكي
         run: |
