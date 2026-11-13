@@ -70,7 +70,9 @@ struct LaunchSplash: View {
         .environment(\.layoutDirection, .leftToRight)
         .contentShape(Rectangle())
         .onTapGesture { done() }
+        // م56: لا يقف VoiceOver على عنصر صامت لحظة الحركة.
         .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: AppInfo.name))
         .accessibilityIdentifier("splash.\(phase.rawValue)")
         .task { await run() }
     }
