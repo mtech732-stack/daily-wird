@@ -1,0 +1,146 @@
+<title>ورقة الجهاز · الورد اليومي</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+/* تخطيط: عمود واحد بقياس الهاتف، بطاقة لكل قسم، وفي كل بند سؤال نعم/لا بأزرار 44 */
+:root{
+  --paper:#F7F4EC; --card:#FFFDF8; --ink:#0F3F6E; --muted:#5E6B78; --line:#E2DED3;
+  --mark:#E39A33; --yes:#2E6B4F; --no:#9A4A1F; --chip:#EFEBE1;
+  --f:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#13283E; --card:#1B3450; --ink:#EEF2F6; --muted:#A9B7C6; --line:#2C4A6A;
+  --mark:#E39A33; --yes:#7CC4A0; --no:#F0A877; --chip:#22405F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#13283E; --card:#1B3450; --ink:#EEF2F6; --muted:#A9B7C6; --line:#2C4A6A;
+  --mark:#E39A33; --yes:#7CC4A0; --no:#F0A877; --chip:#22405F; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f);font-size:16px;line-height:1.7;direction:rtl;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+main{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-direction:column;gap:6px;position:relative;padding-top:4px}
+header .rib{position:absolute;top:-24px;left:22px;width:22px;height:64px;background:var(--mark);
+  clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%)}
+h1{font-size:26px;font-weight:700;margin:0;text-wrap:balance}
+.lead{color:var(--muted);margin:0}
+.prog{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:14px}
+section h2{font-size:18px;margin:0;font-weight:600}
+section.later{background:transparent;border-style:dashed}
+.item{display:flex;flex-direction:column;gap:8px;padding-top:14px;border-top:1px solid var(--line)}
+section h2 + .item{border-top:0;padding-top:0}
+.q{margin:0;font-weight:500}
+.q b{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:600;margin-left:6px}
+.how{margin:0;font-size:14px;color:var(--muted)}
+.ans{display:flex;gap:8px;flex-wrap:wrap}
+.ans button{font:inherit;font-size:15px;min-height:44px;min-width:72px;padding:0 14px;border-radius:12px;
+  border:1.5px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer}
+.ans button:focus-visible,.copy:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+.ans button[aria-pressed="true"]{border-color:currentColor;font-weight:600}
+.ans button[aria-pressed="true"]::before{content:"✓ "}
+.ans button.y[aria-pressed="true"]{color:var(--yes)}
+.ans button.n[aria-pressed="true"]{color:var(--no)}
+textarea{font:inherit;font-size:15px;width:100%;min-height:64px;border:1.5px solid var(--line);border-radius:12px;
+  background:var(--paper);color:var(--ink);padding:8px 12px}
+.later ul{margin:0;padding-right:20px;color:var(--muted)}
+.foot{display:flex;flex-direction:column;gap:10px}
+.copy{font:inherit;font-weight:600;min-height:52px;border-radius:14px;border:0;background:var(--ink);color:var(--paper);cursor:pointer}
+#out{white-space:pre-wrap;font-size:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;user-select:all}
+#msg{margin:0;font-size:14px;color:var(--muted);min-height:1.4em}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<main>
+<header>
+  <span class="rib" aria-hidden="true"></span>
+  <h1>ورقة الجهاز</h1>
+  <p class="lead">أسئلة لا يجيب عنها إلا هاتفك. جرّب كل بند بيدك واختر «نعم» أو «لا»، وإن قلت «لا» فاكتب ما رأيت بكلمات قليلة. وفي الآخر انسخ إجاباتك والصقها في المحادثة.</p>
+  <p class="lead">قبل البدء: اضغط الترس في أعلى التطبيق. إن رأيت ورقة «الإعدادات» فالنسخة التي على هاتفك هي الأحدث.</p>
+  <p class="prog" id="prog"></p>
+</header>
+<div id="sheet" style="display:contents"></div>
+<section class="later" aria-labelledby="lt">
+  <h2 id="lt">مؤجّل حتى تشترك في حساب المطوّرين</h2>
+  <ul>
+    <li>النسخ إلى iCloud يعمل، وتظهر في الإعدادات «يُنسخ سجلّك إلى iCloud تلقائياً».</li>
+    <li>تحذف التطبيق ثم تثبّته، فيعود سجلّك كاملاً.</li>
+    <li>توقف iCloud في الهاتف، فتظهر «النسخ الاحتياطي متوقّف: iCloud غير مفعّل».</li>
+  </ul>
+</section>
+<div class="foot">
+  <button class="copy" id="copy" type="button">انسخ إجاباتي</button>
+  <p id="msg" role="status"></p>
+  <div id="out" aria-label="إجاباتك"></div>
+</div>
+</main>
+
+<script>
+const SECTIONS=[
+ {t:'الفتح والأيقونة',items:[
+  {r:'بداية',q:'أغلق التطبيق تماماً ثم افتحه. هل ترى لحظةً شريطاً مزخرفاً تتدلّى عليه علامة برتقالية، ثم الشاشة الرئيسية؟',h:'تغلقه من مبدّل التطبيقات بسحبه إلى أعلى.'},
+  {r:'أيقونة داكنة',q:'اجعل هاتفك داكناً. هل تصير أيقونة التطبيق على الشاشة الرئيسية داكنة أيضاً؟',h:'من مركز التحكّم، أو الإعدادات › شاشة العرض والإضاءة › داكن.'},
+  {r:'أيقونة ملوّنة',q:'(إن شئت) اجعل أيقونات الشاشة الرئيسية «ملوّنة». هل تبقى العلامة أوضح ما في أيقونة التطبيق؟',h:'اضغط مطوّلاً على فراغ في الشاشة الرئيسية › تعديل › تخصيص › ملوّنة.'}
+ ]},
+ {t:'الليل',items:[
+  {r:'ليل العدّاد',q:'في غرفة مظلمة والهاتف داكن: هل يريح العدّادُ عينك ولا يبهرها؟'},
+  {r:'ليل القائمة',q:'ليلاً، اضغط مطوّلاً على «ح» في أول صفّ. هل تتميّز القائمة عن البطاقة التي تحتها؟'}
+ ]},
+ {t:'العدّاد',items:[
+  {r:'اهتزاز',q:'أغمض عينيك واضغط الدائرة عشر مرات. هل أحسست بنبضة خفيفة مع كل ضغطة، وزاد العدد عشراً؟'},
+  {r:'لمسة التصفير',q:'المس «تصفير» لمسة سريعة. هل بقي العدد كما هو؟'},
+  {r:'إمساك التصفير',q:'أمسك «تصفير» قرابة ثانية. هل صار العدد صفراً مع نبضة أوضح تعرفها دون أن تنظر؟'},
+  {r:'بقاء بعد الإغلاق',q:'اضغط الدائرة خمس مرات، ثم أغلق التطبيق من مبدّل التطبيقات وافتحه. هل بقي العدد 5؟'},
+  {r:'بقاء بعد التشغيل',q:'أطفئ الهاتف وشغّله، ثم افتح التطبيق. هل بقي العدد كما تركته؟'}
+ ]},
+ {t:'اللمس والحركة',items:[
+  {r:'م42',q:'اضغط «عرض كامل المراجعة» في مراجعة البعيد. هل ينزل مباشرة إلى موضعك، دون أن يومض أعلى القائمة أولاً؟'},
+  {r:'م14',q:'المس «عرض كامل المراجعة» أو «طيّ» قرب حافّته العليا أو السفلى. هل يستجيب من أول لمسة؟'},
+  {r:'م22',q:'اضغط مطوّلاً على «ح» في أول أيّ صفّ. هل تُفتح القائمة بسهولة دون أن تخطئه؟'},
+  {r:'م30',q:'افتح «إضافة» واختر جزءاً. هل تمتلئ دائرته وخاناته فوراً لحظة الضغط؟',h:'من «⋯» في رأس أيّ بطاقة › إضافة. ثم «إلغاء» إن لم ترد الإضافة.'},
+  {r:'ح 10',q:'في صفّ رقمه من خانتين مثل «ح 10»: هل يُقرأ الرقم مرتاحاً، غير ملاصق لحلقة الربع المختار؟'}
+ ]},
+ {t:'الخطّ والإعدادات',items:[
+  {r:'أكبر خط',q:'كبّر النصّ في هاتفك إلى أقصاه. هل تقرأ البطاقات كاملة بلا كلمة مقطوعة، والمربّعات بحجمها؟',h:'الإعدادات › تسهيلات الاستخدام › شاشة العرض وحجم النص › نص أكبر. وأعده كما كان بعد التجربة.'},
+  {r:'الإعدادات',q:'اضغط الترس. هل ترى «في هذا الجهاز» و«الإصدار»، وفي «عن التطبيق» أيقونة التطبيق ومصدر البيانات؟',h:'الإصدار يظهر 0.1 الآن، وهذا متوقّع، ويصير 1.0 عند الإطلاق.'},
+  {r:'VoiceOver',q:'(إن كنت تستعمل VoiceOver) هل يقرأ «العدّاد» وعدده، ويصفّره إجراء «صفّر العدّاد»؟'}
+ ]}
+];
+const KEY='wird-device-sheet-v1';
+let st={};try{st=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){st={}}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}};
+const all=[];SECTIONS.forEach(s=>s.items.forEach(i=>all.push(i)));
+const root=document.getElementById('sheet');let n=0;
+SECTIONS.forEach(s=>{
+  const sec=document.createElement('section');const h=document.createElement('h2');h.textContent=s.t;sec.append(h);
+  s.items.forEach(it=>{
+    n++;const id='i'+n;it.n=n;
+    const d=document.createElement('div');d.className='item';
+    d.innerHTML=`<p class="q"><b>${n}</b>${it.q}</p>${it.h?`<p class="how">${it.h}</p>`:''}
+      <div class="ans" role="group" aria-label="جواب البند ${n}">
+        <button type="button" class="y" data-v="نعم" id="${id}y">نعم</button>
+        <button type="button" class="n" data-v="لا" id="${id}n">لا</button>
+        <button type="button" data-v="لم أجرّب" id="${id}s">لم أجرّب</button></div>
+      <textarea id="${id}t" placeholder="ماذا رأيت؟" aria-label="ملاحظتك على البند ${n}" hidden></textarea>`;
+    const ta=d.querySelector('textarea');
+    const paint=()=>{const v=(st[id]||{}).v;d.querySelectorAll('.ans button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v?'true':'false'));
+      ta.hidden=v!=='لا';ta.value=(st[id]||{}).t||'';};
+    d.querySelectorAll('.ans button').forEach(b=>b.addEventListener('click',()=>{
+      const cur=(st[id]||{}).v;st[id]={...(st[id]||{}),v:cur===b.dataset.v?undefined:b.dataset.v};save();paint();update();}));
+    ta.addEventListener('input',()=>{st[id]={...(st[id]||{}),t:ta.value};save();update();});
+    paint();sec.append(d);
+  });
+  root.append(sec);
+});
+const out=document.getElementById('out'),prog=document.getElementById('prog');
+function text(){
+  return 'ورقة الجهاز:\n'+all.map(it=>{const a=st['i'+it.n]||{};let s=`${it.n} (${it.r}): ${a.v||'—'}`;if(a.v==='لا'&&a.t)s+=` · ${a.t.trim()}`;return s;}).join('\n');
+}
+function update(){const done=all.filter(it=>(st['i'+it.n]||{}).v).length;prog.textContent=`أجبت ${done} من ${all.length}`;out.textContent=text();}
+update();
+document.getElementById('copy').addEventListener('click',()=>{
+  const msg=document.getElementById('msg');const t=text();
+  const sel=()=>{const r=document.createRange();r.selectNodeContents(out);const s=getSelection();s.removeAllRanges();s.addRange(r);
+    msg.textContent='لم يُسمح بالنسخ هنا. حدّدتُ النصّ تحت الزرّ، فانسخه بيدك والصقه في المحادثة.';};
+  try{navigator.clipboard.writeText(t).then(()=>{msg.textContent='نُسخت. الصقها في المحادثة.';},sel);}catch(e){sel();}
+});
+</script>
