@@ -43,11 +43,10 @@ struct DailyWirdApp: App {
                     HomeView()
                         .environment(\.layoutDirection, .rightToLeft)
                     if showsSplash {
-                        LaunchSplash(done: {
-                            withAnimation(.easeInOut(duration: LaunchSplash.fadeOut)) { showsSplash = false }
-                        })
-                        .transition(.opacity)
-                        .zIndex(1)
+                        // التلاشي داخل الحركة نفسها؛ وبعده تُزال بلا انتقال. واللمسة تُزيلها بتلاشٍ قصير.
+                        LaunchSplash(done: { showsSplash = false })
+                            .transition(.opacity.animation(.easeOut(duration: 0.2)))
+                            .zIndex(1)
                     }
                 }
                 // اختبارات الواجهة وحدها: `-dark` يفرض الليل، لأن فحص طلب الدمج نهاريّ (القرار 24).

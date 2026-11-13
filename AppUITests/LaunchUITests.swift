@@ -89,6 +89,15 @@ final class LaunchUITests: XCTestCase {
         shot(app, "89-splash-ribbon")
     }
 
+    /// التلاشي هادئ لا ومضة: في منتصفه تُرى الحركة والشاشة الرئيسية معاً (ملاحظة المالك 21:04 UTC).
+    func test_launchSplashFadesGently() {
+        let app = launch(dark: false, ["-launch-splash", "-splash-freeze", "fading-half"])
+        waitFor(app, "splash.fading")
+        // تُرى الحركة والشاشة الرئيسية معاً في اللقطة 90، والتلاشي نفسه في المعاينة المتحرّكة.
+        XCTAssertTrue(app.staticTexts["home.title"].exists)
+        shot(app, "90-splash-fading")
+    }
+
     /// الحركة كاملة تنتهي وحدها إلى الشاشة الرئيسية في ثوانٍ.
     func test_launchSplashEndsOnHome() {
         let app = launch(dark: false, ["-launch-splash"])

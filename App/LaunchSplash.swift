@@ -2,13 +2,13 @@ import SwiftUI
 
 /// حركة البداية (ملاحظتا المالك 13 نوفمبر 2026، ش7): بعد كل إغلاق كلي للتطبيق ينسدل شريط العلامة من الأعلى بهدوء
 /// على شريط رأس السورة، ثم تظهر الشاشة الرئيسية بتلاشٍ هادئ، بلا أيقونة بينهما (الملاحظة الثانية 19:39 UTC).
-/// نحو ثانية ونصف، ولمسة تتخطّاها.
+/// نحو 1.7 ث، ولمسة تتخطّاها.
 ///
 /// شاشة البداية الثابتة (`LaunchScreen.storyboard`) هي أول هذه الحركة: الأرضية والشريط وحدهما، بالقياسات نفسها
 /// (§17.2)، فلا قفزة بينهما. ومع «تقليل الحركة» لا انسدال: تظهر العلامة في موضعها ثم التلاشي.
 /// ولا تُعرض عند الرجوع من الخلفية، لأن التطبيق لم يُغلق.
 struct LaunchSplash: View {
-    enum Phase: String { case band, ribbon }
+    enum Phase: String { case band, ribbon, fading }
 
     /// في اختبارات الواجهة لا تُعرض إلا بـ`-launch-splash`، فلا تؤخّر غيرها.
     static var isEnabled: Bool {
@@ -16,11 +16,16 @@ struct LaunchSplash: View {
         return !args.contains("-ui-testing") || args.contains("-launch-splash")
     }
 
-    /// `-splash-freeze band|ribbon` في اختبارات الواجهة: تقف الحركة على مرحلة لتُلتقط.
+    /// منتصف التلاشي للقطة (`-splash-freeze fading-half`).
+    static var isHalfFade: Bool {
+        ProcessInfo.processInfo.arguments.contains("fading-half")
+    }
+
+    /// `-splash-freeze band|ribbon|fading-half` في اختبارات الواجهة: تقف الحركة على مرحلة لتُلتقط.
     static var frozen: Phase? {
         let args = ProcessInfo.processInfo.arguments
         guard args.contains("-ui-testing"), let i = args.firstIndex(of: "-splash-freeze"), i + 1 < args.count else { return nil }
-        return Phase(rawValue: args[i + 1])
+        return args[i + 1] == "fading-half" ? .fading : Phase(rawValue: args[i + 1])
     }
 
     // الأزمنة بالثواني. مبدئية (1.4).
@@ -28,8 +33,9 @@ struct LaunchSplash: View {
     static let lead = 0.2
     static let ribbonDrop = 0.6
     static let ribbonRest = 0.3
-    /// التلاشي إلى الشاشة الرئيسية، هادئاً.
-    static let fadeOut = 0.5
+    /// التلاشي إلى الشاشة الرئيسية، هادئاً. يجري داخل الحركة نفسها (`fading`)، لا بانتقال إزالة العنصر،
+    /// لأن انتقال الإزالة ظهر في المعاينة ومضة في إطار واحد.
+    static let fadeOut = 0.6
 
     let done: () -> Void
     @State private var phase: Phase = .band
@@ -55,6 +61,7 @@ struct LaunchSplash: View {
                 }
             }
         }
+        .opacity(phase == .fading ? (Self.isHalfFade ? 0.5 : 0) : 1)
         .ignoresSafeArea()
         .environment(\.layoutDirection, .leftToRight)
         .contentShape(Rectangle())
@@ -91,6 +98,8 @@ struct LaunchSplash: View {
             withAnimation(.easeOut(duration: Self.ribbonDrop)) { phase = .ribbon }
             await pause(Self.ribbonDrop + Self.ribbonRest)
         }
+        withAnimation(.easeInOut(duration: Self.fadeOut)) { phase = .fading }
+        await pause(Self.fadeOut)
         done()
     }
 }
