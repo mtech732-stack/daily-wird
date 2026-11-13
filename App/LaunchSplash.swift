@@ -18,7 +18,8 @@ struct LaunchSplash: View {
 
     /// منتصف التلاشي للقطة (`-splash-freeze fading-half`).
     static var isHalfFade: Bool {
-        ProcessInfo.processInfo.arguments.contains("fading-half")
+        let args = ProcessInfo.processInfo.arguments
+        return args.contains("-ui-testing") && args.contains("fading-half")
     }
 
     /// `-splash-freeze band|ribbon|fading-half` في اختبارات الواجهة: تقف الحركة على مرحلة لتُلتقط.
